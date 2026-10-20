@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T00:00:00Z",
+  "title": "Design System: Readback",
+  "extensions": {
+    "colorMeta": {
+      "brass-dark": {
+        "role": "primary",
+        "displayName": "Instrument Brass (dark)",
+        "canonical": "oklch(0.76 0.10 72)",
+        "hex": "#d9a767",
+        "tonalRamp": [
+          "oklch(0.28 0.04 75)",
+          "oklch(0.38 0.06 74)",
+          "oklch(0.48 0.08 73)",
+          "oklch(0.58 0.09 72)",
+          "oklch(0.68 0.10 72)",
+          "oklch(0.76 0.10 72)",
+          "oklch(0.81 0.09 75)",
+          "oklch(0.90 0.05 78)"
+        ]
+      },
+      "brass-light": {
+        "role": "primary",
+        "displayName": "Instrument Brass (light)",
+        "canonical": "oklch(0.50 0.10 62)",
+        "hex": "#8b551c"
+      },
+      "slip-light": {
+        "role": "semantic",
+        "displayName": "Slip Red (squiggle stroke only)",
+        "canonical": "oklch(0.56 0.20 27)",
+        "hex": "#d02c2a"
+      },
+      "slip-dark": {
+        "role": "semantic",
+        "displayName": "Slip Red (dark)",
+        "canonical": "oklch(0.70 0.17 25)",
+        "hex": "#f66d67"
+      },
+      "bg-dark": {
+        "role": "neutral",
+        "displayName": "Cold Slate",
+        "canonical": "oklch(0.165 0.01 250)",
+        "hex": "#0b0f13",
+        "tonalRamp": [
+          "oklch(0.165 0.01 250)",
+          "oklch(0.20 0.012 250)",
+          "oklch(0.235 0.013 250)",
+          "oklch(0.27 0.014 250)",
+          "oklch(0.285 0.013 250)",
+          "oklch(0.50 0.015 250)",
+          "oklch(0.69 0.012 250)",
+          "oklch(0.94 0.006 250)"
+        ]
+      },
+      "bg-light": {
+        "role": "neutral",
+        "displayName": "Slate Paper",
+        "canonical": "oklch(0.98 0.003 250)",
+        "hex": "#f7f9fa"
+      }
+    },
+    "typographyMeta": {
+      "hero": {
+        "displayName": "Hero",
+        "purpose": "Landing H1 only, one per page."
+      },
+      "ui": {
+        "displayName": "UI",
+        "purpose": "Default text in popup, overlay and ledger (T8: 14/20)."
+      },
+      "label-strong": {
+        "displayName": "Label strong",
+        "purpose": "Brass-filled button labels (bible 4.3)."
+      },
+      "mono": {
+        "displayName": "Evidence",
+        "purpose": "Only values quoted from the thread, IDs and keycaps."
+      }
+    },
+    "shadows": [
+      {
+        "name": "e1-ring",
+        "value": "0 0 0 1px var(--border), 0 1px 2px oklch(0.25 0.02 250 / 0.04)",
+        "purpose": "Inputs and resting cards, light theme."
+      },
+      {
+        "name": "e3-float-light",
+        "value": "0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 2px 4px -1px oklch(0.25 0.02 250 / 0.08), 0 8px 16px -4px oklch(0.25 0.02 250 / 0.14)",
+        "purpose": "Guard card, ledger and pill over a light host page."
+      },
+      {
+        "name": "e3-float-dark",
+        "value": "0 0 0 1px var(--border), inset 0 1px 0 oklch(1 0 0 / 0.05), 0 12px 24px -8px oklch(0 0 0 / 0.55)",
+        "purpose": "Guard card, ledger and pill over a dark host page."
+      },
+      {
+        "name": "e4-modal-light",
+        "value": "0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 8px 16px -4px oklch(0.25 0.02 250 / 0.10), 0 24px 48px -12px oklch(0.25 0.02 250 / 0.22)",
+        "purpose": "Command palette and site dialogs."
+      },
+      {
+        "name": "e4-modal-dark",
+        "value": "0 0 0 1px oklch(1 0 0 / 0.06), 0 24px 48px -12px oklch(0 0 0 / 0.6)",
+        "purpose": "Command palette and site dialogs, dark."
+      }
+    ],
+    "motion": [
+      {
+        "name": "dur-0",
+        "value": "0ms",
+        "purpose": "Squiggles, counts, chips while typing; palette open."
+      },
+      {
+        "name": "dur-1",
+        "value": "100ms",
+        "purpose": "Hover/press colour, focus."
+      },
+      {
+        "name": "dur-2",
+        "value": "150ms",
+        "purpose": "Pill colour flip, check draw, reduced-motion fades."
+      },
+      {
+        "name": "dur-card",
+        "value": "160ms",
+        "purpose": "Guard card enter (exit 120ms)."
+      },
+      {
+        "name": "dur-line",
+        "value": "240ms",
+        "purpose": "Readback line draw; digit roll."
+      },
+      {
+        "name": "dur-swap",
+        "value": "280ms",
+        "purpose": "Swap-back letter morph (signature moment)."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Default enter/exit."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "Readback line draw."
+      },
+      {
+        "name": "spring-snappy",
+        "value": "spring visualDuration 0.18 bounce 0",
+        "purpose": "Shared letters sliding in swap-back."
+      },
+      {
+        "name": "hover-dwell",
+        "value": "300ms",
+        "purpose": "Delay before the guard card opens on hover."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "375px"
+      },
+      {
+        "name": "tablet",
+        "value": "768px"
+      },
+      {
+        "name": "stack",
+        "value": "960px"
+      },
+      {
+        "name": "inspector",
+        "value": "1280px"
+      },
+      {
+        "name": "desktop",
+        "value": "1440px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Brass-filled rectangle; one per view.",
+      "html": "<button class=\"ds-btn-primary\">Change to Kathryn</button>",
+      "css": ".ds-btn-primary{background:oklch(0.76 0.10 72);color:oklch(0.17 0.02 70);font:600 14px/18px 'Mona Sans Variable',system-ui,sans-serif;height:28px;padding:0 12px;border:0;border-radius:6px;transition:background-color 100ms,transform 100ms}.ds-btn-primary:hover{background:oklch(0.81 0.09 75)}.ds-btn-primary:active{transform:scale(.97)}.ds-btn-primary:focus-visible{outline:2px solid oklch(0.76 0.10 72);outline-offset:2px}"
+    },
+    {
+      "name": "Ask Pill (open)",
+      "kind": "chip",
+      "refersTo": "ask-pill-open",
+      "description": "Docked status object; brass while any ask is open.",
+      "html": "<button class=\"ds-pill\"><span class=\"ds-ring\"></span>3 asks, 1 open</button>",
+      "css": ".ds-pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border:0;border-radius:9999px;background:oklch(0.28 0.04 75);color:oklch(0.80 0.09 75);font:520 13px/18px 'Mona Sans Variable',system-ui,sans-serif;font-variant-numeric:tabular-nums;transition:background-color 150ms,color 150ms}.ds-ring{width:8px;height:8px;border:1.5px solid currentColor;border-radius:9999px}.ds-pill:focus-visible{outline:2px solid oklch(0.76 0.10 72);outline-offset:2px}"
+    },
+    {
+      "name": "Guard Card",
+      "kind": "card",
+      "refersTo": "guard-card",
+      "description": "Citation tooltip anchored to a slip.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-msg\">She signs Kathryn</p><div class=\"ds-cite\">Thanks, <u>Kathryn</u><small>From her signature</small></div><button class=\"ds-fix\">Change to Kathryn</button></div>",
+      "css": ".ds-card{width:320px;padding:12px;border-radius:10px;background:oklch(0.235 0.013 250);color:oklch(0.94 0.006 250);box-shadow:0 0 0 1px oklch(0.285 0.013 250),inset 0 1px 0 oklch(1 0 0/.05),0 12px 24px -8px oklch(0 0 0/.55);font:450 14px/20px 'Mona Sans Variable',system-ui,sans-serif}.ds-msg{margin:0 0 8px;font:550 17px/24px 'Mona Sans Variable',system-ui,sans-serif}.ds-cite{padding:8px 10px;border-radius:6px;background:oklch(0.20 0.012 250);color:oklch(0.80 0.012 250);font:450 13px/18px 'Geist Mono Variable',ui-monospace,monospace;margin-bottom:12px}.ds-cite u{color:oklch(0.94 0.006 250);text-decoration-color:oklch(0.76 0.10 72)}.ds-cite small{display:block;font:450 12px/16px 'Mona Sans Variable',system-ui,sans-serif;color:oklch(0.69 0.012 250)}.ds-fix{background:oklch(0.76 0.10 72);color:oklch(0.17 0.02 70);font:600 14px/18px 'Mona Sans Variable',system-ui,sans-serif;height:28px;padding:0 12px;border:0;border-radius:6px}.ds-fix:focus-visible{outline:2px solid oklch(0.76 0.10 72);outline-offset:2px}"
+    },
+    {
+      "name": "Slip squiggle",
+      "kind": "custom",
+      "refersTo": "slip-light",
+      "description": "::highlight rule; the only red in the product.",
+      "html": "<p class=\"ds-slip-demo\">Hi <span class=\"ds-slip\">Catherine</span>,</p>",
+      "css": ".ds-slip-demo{font:400 14px/20px system-ui,sans-serif;color:oklch(0.22 0.012 250);background:oklch(1 0 0);padding:8px}.ds-slip{text-decoration:wavy underline 1.5px oklch(0.56 0.20 27);text-underline-offset:3px}"
+    },
+    {
+      "name": "Keycap",
+      "kind": "custom",
+      "refersTo": "keycap",
+      "description": "Shortcut glyph with a physical edge.",
+      "html": "<kbd class=\"ds-key\">Alt</kbd> <kbd class=\"ds-key\">Shift</kbd> <kbd class=\"ds-key\">J</kbd>",
+      "css": ".ds-key{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:4px;border:1px solid oklch(0.285 0.013 250);background:oklch(0.235 0.013 250);color:oklch(0.80 0.012 250);box-shadow:inset 0 -1px 0 oklch(0.285 0.013 250);font:520 11px/16px 'Mona Sans Variable',system-ui,sans-serif}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Readback Line",
+    "overview": "A thin brass line connecting what you typed to what they said. Quiet by default and compact, like brass instrument markings on cold slate. The boldness is spent once, on the swap-back fix.",
+    "keyCharacteristics": [
+      "Dark-first brass-on-slate for Readback's own surfaces (popup, options, site). The Gmail overlay follows the host's theme.",
+      "One accent, brass, used as a signal: open asks, focus, the primary fix and the readback line. Never for errors.",
+      "Slips are red squiggles, always paired with a citation, never with a generic \"spelling\" label.",
+      "Evidence is set in Geist Mono: the cited amount, name or date the guard compared against.",
+      "Depth from a cold surface ladder and hairlines. Shadows only on things that float over a host page.",
+      "Zero motion on keystrokes. One choreographed moment on the fix."
+    ],
+    "rules": [
+      {
+        "name": "The Brass Means Reading Rule",
+        "body": "Brass says \"Readback is reading this with you\": open asks, focus and the fix. It never marks a mistake. Mistakes are red, carry an icon and are always cited.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Orphan Red Rule",
+        "body": "A red squiggle never appears without a reachable citation: hover, Alt+Shift+J, or the ledger's slip list. Colour is never the only carrier of meaning.",
+        "section": "colors"
+      },
+      {
+        "name": "The Five Percent Rule",
+        "body": "Brass covers ≤ 5% of pixels on any screen, with at most one brass-filled button per view.",
+        "section": "colors"
+      },
+      {
+        "name": "The Evidence Is Mono Rule",
+        "body": "Geist Mono sets only text quoted from the thread or text that must be read exactly. It never sets decorative labels, eyebrows or headings.",
+        "section": "typography"
+      },
+      {
+        "name": "The Three Hubots Rule",
+        "body": "Hubot Sans appears in at most 3 places per screen. In the extension it appears only on the options page title and section titles. The popup and overlay are Mona-only.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Caps Rule",
+        "body": "No all-caps labels and no tracked-out eyebrows anywhere. Taxonomy, where real, is sentence case at label size in text-muted.",
+        "section": "typography"
+      },
+      {
+        "name": "The Guest Shadow Rule",
+        "body": "A shadow means \"this floats over a page we don't own\". Nothing inside our own pages gets a shadow except e4 dialogs.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do cite the thread in every slip message, in the reader's terms: `She signs Kathryn`, not `Possible misspelling`.",
+      "Do set every quoted value in Geist Mono with `tnum`, exactly as the thread wrote it.",
+      "Do follow the host's theme in the overlay (measure the editor background luminance) and `prefers-color-scheme` in our own pages, with a System/Light/Dark toggle on the site.",
+      "Do keep one brass-filled button per view (the primary fix in the card, Open the playground in the empty popup, Load a sample thread in the empty playground).",
+      "Do label every synthetic example `Sample thread`.",
+      "Do reserve pill and count widths in `ch` so nothing shifts."
+    ],
+    "donts": [
+      "Don't use warning amber or info blue anywhere. Their hues collide with brass or add a second accent.",
+      "Don't add a draw-in animation to squiggles, a stagger to ledger rows, or hover lift on anything.",
+      "Don't use pills for buttons. The ask pill is the only full-radius element besides switch thumbs.",
+      "Don't show a model's guess as a fact: model-derived coverage is always the dotted ring until the user confirms.",
+      "Don't place the pill over Gmail's toolbar or Send button, or anywhere a click could be mistaken for sending.",
+      "Don't reproduce reference-brand surfaces (no lavender, no red stripes, no white CTA, no indigo hero, no #010102/#07080a ladders), names or proprietary fonts."
+    ]
+  }
+}
