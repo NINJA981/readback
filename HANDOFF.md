@@ -99,3 +99,16 @@ Not covered, and said so in `docs/TESTING.md`: live Gmail, Firefox runtime, the 
 - The ledger's row actions overlay the ask text on hover/focus with a flat tint; a soft fade on the left edge would read better.
 - Wide card content: a very long cited line is windowed to about 44 characters either side of the token, snapped to word boundaries.
 - `gallery/` is not part of the extension package and is excluded from lint and prettier via ignore files; it has its own type-checked sources under the root tsconfig.
+
+## QA round 1: design critic (read-only, no code changed)
+
+Score 8.3 of 10 on the DESIGN_BIBLE section 9 rubric, so the gate (average 9 or more, no criterion under 8, no hard fail) is not met. No hard fail was found: axe reported 0 violations on the landing page and `/app` in both themes, CLS was 0.0002, there was no horizontal scroll at 375, 768 or 1440, focus rings are visible, reduced motion is honoured, and there is no canvas or 3D. Fresh screenshots of every surface (landing, `/app`, real popup and options, the Gmail overlay on fixtures, the gallery states, signature-moment frames) are in `docs/screenshots/qa-r1/`.
+
+Fix list for the next stage (full detail is in the critic's report):
+
+- `site/src/shared/components.css`: `.pill__slips { display: inline-flex }` overrides the `hidden` attribute, so a pill with 0 slips (hero at rest, "All covered", "Fixed") shows a divider and a bare red dot. Add `.pill__slips[hidden] { display: none }`.
+- `site/src/landing/landing.css:52` and `site/src/app/app.css:26`: `color-mix(in oklch, var(--rb-bg) 92%, transparent)` loses the hue, so the sticky header renders #120D0F against a #0B0F13 page. Mix in srgb or use relative colour syntax.
+- `/app` has no command palette, no guard toggles in the header and no visible shortcut hints, which DESIGN.md specifies for the playground.
+- The app's green "Everything asked is covered." and the "All covered" pill appear for asks that are only "looks answered" (one of them is the $1,250 ask against a reply that says $1,520). DESIGN.md says a guess is never shown as a fact.
+- `landing.css:1006` `font-size: 0.92em` gives 11.04 px and 12.88 px code, off the type scale.
+- Landing display headings have collapsed word spaces; at 375 px the CSP and `git clone` code blocks are clipped.
