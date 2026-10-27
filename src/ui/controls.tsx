@@ -23,10 +23,10 @@ export function SwitchTrack({ checked }: { checked: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`flex h-5 w-9 shrink-0 items-center rounded-full border px-px transition-colors duration-100 ${
-        checked
-          ? 'justify-end border-brass bg-brass-soft'
-          : 'justify-start border-border-strong bg-surface-2'
+      data-switch-track=""
+      data-checked={checked ? '' : undefined}
+      className={`flex h-5 w-9 shrink-0 items-center rounded-full border border-border-strong px-px transition-colors duration-100 ${
+        checked ? 'justify-end bg-surface-3' : 'justify-start bg-surface-2'
       }`}
     >
       <span
@@ -78,7 +78,7 @@ export function PrimaryButton({ className = '', ...props }: ButtonProps) {
     <button
       type="button"
       {...props}
-      className={`inline-flex h-7 items-center justify-center gap-2 rounded-sm bg-brass px-3 text-ui font-semibold text-on-brass transition-[background-color,transform] duration-100 hover:bg-brass-hover active:scale-[.97] ${className}`}
+      className={`inline-flex h-7 items-center justify-center gap-2 rounded-sm border border-transparent bg-brass px-3 text-ui font-semibold text-on-brass transition-[background-color,transform] duration-100 hover:bg-brass-hover active:scale-[.97] ${className}`}
     />
   );
 }
@@ -98,7 +98,7 @@ export function GhostButton({ className = '', ...props }: ButtonProps) {
     <button
       type="button"
       {...props}
-      className={`inline-flex h-7 items-center justify-center gap-2 rounded-sm px-2.5 text-label text-text-muted transition-colors duration-100 hover:bg-surface-3 hover:text-text ${className}`}
+      className={`inline-flex h-7 items-center justify-center gap-2 rounded-sm px-2 text-label text-text-muted transition-colors duration-100 hover:bg-surface-3 hover:text-text ${className}`}
     />
   );
 }

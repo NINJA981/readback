@@ -7,10 +7,33 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
-/* Self-hosted variable fonts (Fontsource). No network fonts anywhere. */
-@import '@fontsource-variable/hubot-sans/wdth.css';
-@import '@fontsource-variable/mona-sans/wdth.css';
-@import '@fontsource-variable/geist-mono/index.css';
+/*
+ * Self-hosted faces, subset to what these pages show (scripts/subset-ui-fonts.py), each under the
+ * 40 KB budget. No network fonts anywhere. Family names match tokens.css.
+ */
+@font-face {
+  font-family: 'Hubot Sans Variable';
+  src: url('../assets/fonts/hubot-sans-ui.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Mona Sans Variable';
+  src: url('../assets/fonts/mona-sans-ui.woff2') format('woff2');
+  font-weight: 420 650;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono Variable';
+  src: url('../assets/fonts/geist-mono-ui.woff2') format('woff2');
+  font-weight: 450;
+  font-style: normal;
+  font-display: swap;
+}
 
 @theme inline {
   --color-*: initial;
@@ -129,5 +152,40 @@ body {
       transition-duration: 0ms !important;
       animation-duration: 0ms !important;
     }
+  }
+}
+
+/*
+ * Forced colors (Windows High Contrast): the user's palette replaces ours, so a switch's thumb,
+ * the selected radio and a filled button must carry their state in shape and system colours.
+ */
+@media (forced-colors: active) {
+  [data-switch-track] {
+    forced-color-adjust: none;
+    background: Canvas;
+    border-color: CanvasText;
+  }
+
+  [data-switch-track] > span {
+    background: CanvasText;
+  }
+
+  [data-switch-track][data-checked] {
+    border-color: Highlight;
+  }
+
+  [data-switch-track][data-checked] > span {
+    background: Highlight;
+  }
+
+  [role='radio'][aria-checked='true'] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  [role='radio'][aria-checked='false'] {
+    border-color: CanvasText;
   }
 }

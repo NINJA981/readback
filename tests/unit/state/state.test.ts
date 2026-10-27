@@ -23,6 +23,7 @@ import {
 import { createStore } from '../../../src/state/store';
 import {
   fixedLabel,
+  ledgerConfirmed,
   ledgerHeader,
   overflowLabel,
   pillModel,
@@ -224,7 +225,7 @@ describe('summary view models', () => {
     expect(pillModel({ asks: [], flags: [] })).toMatchObject({ tone: 'hidden', label: '' });
   });
 
-  it('says "3 asks · 1 open", then "All covered" (looks-answered and answered both count)', () => {
+  it('says "3 asks · 1 open", then how many only look answered, then "All covered" once confirmed', () => {
     const open = pillModel({
       asks: [ask('open'), ask('answered'), ask('looks-answered')],
       flags: [],
@@ -234,10 +235,24 @@ describe('summary view models', () => {
       total: 3,
       open: 1,
       covered: 2,
+      unconfirmed: 1,
+      dotted: false,
       label: '3 asks · 1 open',
     });
-    const done = pillModel({ asks: [ask('answered'), ask('looks-answered')], flags: [] });
-    expect(done).toMatchObject({ tone: 'covered', label: 'All covered' });
+    // Nothing open, but a guess is not a fact: brass, dotted, and it says so.
+    const guess = pillModel({ asks: [ask('answered'), ask('looks-answered')], flags: [] });
+    expect(guess).toMatchObject({
+      tone: 'open',
+      unconfirmed: 1,
+      dotted: true,
+      label: '1 looks answered',
+    });
+    expect(guess.announcement).toBe('1 of 2 asks look answered, not confirmed.');
+    expect(
+      pillModel({ asks: [ask('looks-answered'), ask('looks-answered')], flags: [] }).label,
+    ).toBe('2 look answered');
+    const done = pillModel({ asks: [ask('answered'), ask('answered')], flags: [] });
+    expect(done).toMatchObject({ tone: 'covered', label: 'All covered', dotted: false });
     expect(done.announcement).toBe('All 2 asks covered.');
   });
 
@@ -257,6 +272,12 @@ describe('summary view models', () => {
     expect(overflowLabel(0)).toBe('');
     expect(ledgerHeader({ asks: [] })).toBe('No asks in the last message.');
     expect(ledgerHeader({ asks: [ask('answered')] })).toBe('Everything asked is covered.');
+    expect(ledgerHeader({ asks: [ask('answered'), ask('looks-answered')] })).toBe(
+      'Nothing left open. Confirm each one to be sure.',
+    );
+    expect(ledgerConfirmed({ asks: [ask('answered')] })).toBe(true);
+    expect(ledgerConfirmed({ asks: [ask('looks-answered')] })).toBe(false);
+    expect(ledgerConfirmed({ asks: [] })).toBe(false);
     expect(ledgerHeader({ asks: [ask('open')] })).toBe('');
     expect(slipSummary([])).toBe('');
     const f = { ...flag('a', 0), found: 'Catherine', expected: 'Kathryn' };
@@ -276,7 +297,7 @@ describe('compose session', () => {
     expect(s.result.flags).toHaveLength(0);
   });
 
-  it('plays the signature moment: two slips, then clean and all covered (SPEC 11)', () => {
+  it('plays the signature moment: two slips, then clean, then confirmed (SPEC 11)', () => {
     const session = make();
     const seen = vi.fn();
     session.subscribe(seen);
@@ -286,7 +307,10 @@ describe('compose session', () => {
     expect(seen).toHaveBeenCalledTimes(1);
     const clean = session.setDraft(DEPOSIT_DRAFT_CLEAN);
     expect(clean.result.flags).toHaveLength(0);
-    expect(clean.pill).toMatchObject({ tone: 'covered', label: 'All covered' });
+    // All three asks look answered; nothing is confirmed, so the pill stays brass and says so.
+    expect(clean.pill).toMatchObject({ tone: 'open', dotted: true, label: '3 look answered' });
+    for (const a of clean.result.asks) session.dispatch({ type: 'confirm-ask', id: a.id });
+    expect(session.getSnapshot().pill).toMatchObject({ tone: 'covered', label: 'All covered' });
   });
 
   it('dismissing an ask updates the count at once and persists through the effect (AC-6.6)', () => {

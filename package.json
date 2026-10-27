@@ -24,6 +24,7 @@
     "test:watch": "vitest",
     "test:corpus": "vitest run tests/corpus",
     "test:coverage": "vitest run --coverage",
+    "size": "pnpm build && node scripts/check-size.mjs",
     "build:e2e": "node scripts/build-e2e.mjs",
     "test:e2e": "node scripts/build-e2e.mjs && playwright test"
   },
@@ -49,7 +50,7 @@
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-hooks": "7.1.1",
     "globals": "17.13.0",
-    "happy-dom": "21.0.3",
+    "happy-dom": "21.0.4",
     "motion": "14.7.1",
     "prettier": "3.9.10",
     "tailwindcss": "4.3.3",

@@ -5,8 +5,8 @@
  */
 import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
-import AxeBuilder from '@axe-core/playwright';
 import type { Page, Worker } from '@playwright/test';
+import { axeBuilder, violationsOf } from './axe';
 import { expect, highlightTexts, test } from './fixtures';
 
 declare const chrome: {
@@ -21,10 +21,7 @@ const EDITOR = 'div[g_editable="true"]';
 const GENERIC = resolve(import.meta.dirname, '..', 'tests', 'fixtures', 'generic', 'page.html');
 
 async function overlayViolations(page: Page): Promise<string[]> {
-  const results = await new AxeBuilder({ page }).include('readback-overlay').analyze();
-  return results.violations.map(
-    (v) => `${v.id} (${v.impact ?? '?'}): ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-  );
+  return violationsOf(axeBuilder(page).include('readback-overlay'));
 }
 
 async function command(worker: Worker, type: 'next-slip' | 'open-ledger'): Promise<void> {

@@ -1,12 +1,9 @@
-import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
+import { axeBuilder, violationsOf } from './axe';
 import { expect, isLocalRequest, readLocal, readSession, test, writeLocal } from './fixtures';
 
 async function axeViolations(page: Page): Promise<string[]> {
-  const results = await new AxeBuilder({ page }).analyze();
-  return results.violations.map(
-    (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-  );
+  return violationsOf(axeBuilder(page));
 }
 
 for (const scheme of ['dark', 'light'] as const) {
@@ -133,7 +130,7 @@ test('the ignored-words list shows what Never flag stored, and Remove takes it o
   const page = await context.newPage();
   await page.goto(`chrome-extension://${extensionId}/options.html`);
   await expect(page.getByText('Catherine', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Stop ignoring Catherine' }).click();
+  await page.getByRole('button', { name: 'Remove Catherine from ignored words' }).click();
   await expect(page.getByText(/Nothing ignored yet/)).toBeVisible();
   await expect
     .poll(async () => (await readLocal(worker)).ignore)

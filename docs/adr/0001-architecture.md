@@ -166,7 +166,7 @@ readback/
 ### Permissions and manifest
 - `permissions`: `storage`, `contextMenus`, `activeTab`, `scripting`, `offscreen` (Chrome only).
 - `host_permissions`: `https://mail.google.com/*`.
-- `content_security_policy.extension_pages`: `script-src 'self' 'wasm-unsafe-eval'; object-src 'self'`.
+- `content_security_policy.extension_pages`: `script-src 'self'; object-src 'self'` (`'wasm-unsafe-eval'` joins it only when the optional MiniLM host ships; QA round 1 removed it because nothing uses WebAssembly yet).
 - `commands`: `_execute_action` (Alt+Shift+R), `next-slip` (Alt+Shift+J), `open-ledger` (Alt+Shift+L).
 - Firefox: `browser_specific_settings.gecko.id` and `strict_min_version: "140.0"` (Custom Highlight API shipped in Firefox 140).
 - `web_accessible_resources`: fonts only, matched to `https://mail.google.com/*`. The model and wasm are not web-accessible because they load only in extension pages.

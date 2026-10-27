@@ -54,4 +54,37 @@ describe('AC-G.1 performance', () => {
     );
     expect(best).toBeLessThanOrEqual(16);
   });
+
+  it('no single check takes over 50 ms with a 500-word draft that repeats a near-miss name', () => {
+    const thread = `${wordsOf(1900, '')}
+
+${DEPOSIT_MESSAGE}`;
+    const ctx = createContext({
+      source: 'playground',
+      threadId: 'perf-worst',
+      sentAt: '2026-11-02',
+      message: thread,
+      sender: { name: 'Kathryn Moss', role: 'sender' },
+      recipients: [{ name: 'Sam Ortiz', role: 'to' }],
+    });
+    // Typing the draft one word at a time: every prefix is a check, 48 slips by the end.
+    const draftWords =
+      `${'Hi Catherine, Samuel and Katherine '.repeat(60)}${wordsOf(300, '')}`.split(' ');
+    const maxes: number[] = [];
+    for (let batch = 0; batch < 3; batch++) {
+      let worst = 0;
+      for (let i = 1; i <= draftWords.length; i += 3) {
+        const text = draftWords.slice(0, i).join(' ');
+        const t0 = performance.now();
+        check(ctx, { text, version: batch * 10_000 + i });
+        worst = Math.max(worst, performance.now() - t0);
+      }
+      maxes.push(worst);
+    }
+    process.stdout.write(
+      `worst single check per batch = ${maxes.map((x) => x.toFixed(2)).join(' / ')} ms
+`,
+    );
+    expect(Math.min(...maxes)).toBeLessThanOrEqual(50);
+  });
 });

@@ -309,6 +309,8 @@ export function attachOverlay(deps: OverlayControllerDeps): OverlayController {
       if (fromKeyboard) editor.focus({ preventScroll: true });
       return;
     }
+    // A refused or stale fix: re-read the field so the slips match what is there now.
+    if (outcome === 'failed') binding.refresh();
     const card = ui.getSnapshot().card;
     if (card) {
       patch({

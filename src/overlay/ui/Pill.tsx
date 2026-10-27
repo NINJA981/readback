@@ -69,6 +69,9 @@ export function Pill({ model, fixed, ledgerOpen, ledgerId, onToggle, onJumpToSli
   const covered = model.tone === 'covered' && !rolling;
   const tone = fixed ? 'covered' : covered ? 'covered' : 'open';
 
+  // The label remounts (and so crossfades) only when its mode changes: into and out of the
+  // six-second "Fixed" line, and when the last-ask roll hands over. A count that changes while
+  // the user types swaps in place at 0 ms ("never animate a keystroke").
   let label: React.ReactNode;
   let labelKey: string;
   if (fixed) {
@@ -84,8 +87,9 @@ export function Pill({ model, fixed, ledgerOpen, ledgerId, onToggle, onJumpToSli
     labelKey = 'rolling';
   } else {
     label = model.label;
-    labelKey = model.label;
+    labelKey = 'count';
   }
+  const reserve = fixed ? [] : reservedLabels(model.total);
 
   return (
     <>
@@ -95,7 +99,7 @@ export function Pill({ model, fixed, ledgerOpen, ledgerId, onToggle, onJumpToSli
             type="button"
             className="rb-pill-main"
             aria-expanded={ledgerOpen}
-            aria-controls={ledgerId}
+            aria-controls={ledgerOpen ? ledgerId : undefined}
             aria-haspopup="dialog"
             onClick={onToggle}
             onMouseDown={(e) => {
@@ -103,10 +107,21 @@ export function Pill({ model, fixed, ledgerOpen, ledgerId, onToggle, onJumpToSli
             }}
           >
             <span className="rb-pill-icon">
-              {tone === 'covered' ? <CheckIcon draw={!fixed} /> : <AskRing />}
+              {tone === 'covered' ? (
+                <CheckIcon draw={!fixed} />
+              ) : (
+                <AskRing dotted={!fixed && model.dotted} />
+              )}
             </span>
-            <span className="rb-pill-label" data-reserve={fixed ? 'fixed' : 'count'} key={labelKey}>
-              {label}
+            <span className="rb-pill-text">
+              <span className="rb-pill-label" key={labelKey}>
+                {label}
+              </span>
+              {reserve.map((text) => (
+                <span className="rb-pill-reserve" aria-hidden="true" key={text}>
+                  {text}
+                </span>
+              ))}
             </span>
           </button>
         ) : null}
@@ -132,6 +147,22 @@ export function Pill({ model, fixed, ledgerOpen, ledgerId, onToggle, onJumpToSli
       </div>
     </>
   );
+}
+
+/**
+ * Every count label the pill can show for `total` asks, stacked invisibly under the visible one
+ * so the pill is exactly as wide as its widest state: no layout shift when it flips, and no
+ * dead space after the text (figures are tabular, so one digit stands for all).
+ */
+export function reservedLabels(total: number): string[] {
+  if (total === 0) return [];
+  const asks = total === 1 ? 'ask' : 'asks';
+  return [
+    `${total} ${asks} · ${total} open`,
+    `${total} look answered`,
+    '1 looks answered',
+    'All covered',
+  ];
 }
 
 /** Passes `value` through at most once per `ms`, so screen readers are not flooded. */

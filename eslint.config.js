@@ -7,14 +7,34 @@ import tseslint from 'typescript-eslint';
 
 /**
  * Network ban (SPEC §8): Readback makes zero network requests. The allow-list is
- * empty, so any of these APIs anywhere in src/ fails lint.
+ * empty, so any of these APIs anywhere in src/ or site/src/ fails lint. (The built site also
+ * enforces it at runtime with `connect-src 'none'`; lint catches it before it is built.)
  */
-const networkGlobals = ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource'].map((name) => ({
+const networkApis = [
+  'fetch',
+  'XMLHttpRequest',
+  'WebSocket',
+  'EventSource',
+  'WebTransport',
+  'RTCPeerConnection',
+  'importScripts',
+  // Workers can fetch on their own, and a new one is a new place for a request to hide.
+  'Worker',
+  'SharedWorker',
+];
+const networkGlobals = networkApis.map((name) => ({
   name,
   message: 'Readback makes zero network requests (SPEC §8). The allow-list is empty.',
 }));
+// `new Image().src = url` is a request too.
+const networkSyntax = [
+  {
+    selector: "NewExpression[callee.name='Image']",
+    message: 'Readback makes zero network requests (SPEC §8): no new Image().',
+  },
+];
 const networkProperties = [
-  ...['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource'].flatMap((property) =>
+  ...networkApis.flatMap((property) =>
     ['window', 'globalThis', 'self'].map((object) => ({
       object,
       property,
@@ -66,6 +86,16 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       'no-restricted-globals': ['error', ...networkGlobals],
       'no-restricted-properties': ['error', ...networkProperties],
+      'no-restricted-syntax': ['error', ...networkSyntax],
+    },
+  },
+  {
+    // The static site gets the same network ban (its service worker is generated text, not source).
+    files: ['site/src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-globals': ['error', ...networkGlobals],
+      'no-restricted-properties': ['error', ...networkProperties],
+      'no-restricted-syntax': ['error', ...networkSyntax],
     },
   },
   {

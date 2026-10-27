@@ -38,7 +38,9 @@ export function createOverlayHost(doc: Document): OverlayHost {
     root,
     element,
     setTheme(theme) {
-      element.dataset.theme = theme;
+      // Only on change: an unconditional write is one attribute mutation per update, which every
+      // MutationObserver on the page (Gmail's, other extensions') would see on each keystroke.
+      if (element.dataset.theme !== theme) element.dataset.theme = theme;
     },
     destroy() {
       element.remove();

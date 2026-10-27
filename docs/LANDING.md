@@ -62,7 +62,7 @@ Each proof gets its own viewport: a 4–6 s loop from the playground capture on 
 - **Never fires:** "Counter-offer $1,200 and Readback stays quiet. It flags transpositions, not negotiations."
 
 ### Proof 3: dates (plus the supporting ask pill)
-- **Loop:** `drop the keys Thursday the 10th` → `The 10th is a Tuesday. Thread says Thursday the 12th.` → two fix buttons → `Thursday the 12th`. In the same loop, the docked pill rolls `1 open → All covered`.
+- **Loop:** `drop the keys Thursday the 10th` → `The 10th is a Tuesday. Thread says Thursday the 12th.` → two fix buttons → `Thursday the 12th`. In the same loop, the docked pill goes `1 open → 1 looks answered` (brass, dotted ring): it turns green only once the user confirms the ask.
 - **Heading:** "Dates that don't match the calendar, or her message."
 - **Line:** "Weekday and date that disagree, or a near-miss of the day she proposed. And a small pill counts what she asked that you haven't answered yet, so you don't need to reread."
 - **Never fires:** "Propose a different day entirely and Readback assumes you meant it."

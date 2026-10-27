@@ -83,6 +83,7 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
     state,
     asks: 0,
     open: 0,
+    unconfirmed: 0,
     slips: 0,
     contextWords: 0,
     failedChecks: [],

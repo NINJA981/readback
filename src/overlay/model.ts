@@ -6,7 +6,7 @@
  */
 import { citationSource } from '../engine/cite';
 import type { Ask, AskState, Flag, Fix, Guard } from '../engine/types';
-import { isCovered, ledgerHeader, overflowLabel } from '../state/summary';
+import { isCovered, ledgerConfirmed, ledgerHeader, overflowLabel } from '../state/summary';
 import type { SessionSnapshot } from '../state/session';
 
 const CITATION_WINDOW = 44;
@@ -115,6 +115,8 @@ export interface SlipRow {
 
 export interface LedgerModel {
   header: string;
+  /** True when the header is the success line (every ask confirmed), false for the muted nudge. */
+  headerOk: boolean;
   asks: AskRow[];
   slips: SlipRow[];
   overflow: string;
@@ -139,6 +141,7 @@ export function ledgerModel(snapshot: Pick<SessionSnapshot, 'result'>): LedgerMo
   const visible = result.asks.filter((a) => a.state !== 'dismissed');
   return {
     header: ledgerHeader(result),
+    headerOk: ledgerConfirmed(result),
     asks: visible.map(askRow),
     slips: result.flags.map((f) => ({
       id: f.id,

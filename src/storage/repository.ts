@@ -3,6 +3,13 @@
  * `StorageArea`s. Every read is parsed (storage is untrusted), every write is
  * validated, and read-modify-write updates on one key are serialised so two
  * quick clicks cannot lose an update.
+ *
+ * Known limit (accepted, documented in HANDOFF): the serial queue lives in one JS context. The
+ * popup, the options page and several Gmail tabs are separate contexts, and `chrome.storage` has
+ * no atomic update, so two writes to `settings` or `ignore` from different contexts within the
+ * same few milliseconds can still lose one of them (last writer wins). The data is a handful of
+ * toggles and ignored words, a lost one is visible and easy to redo, and a cross-context lock
+ * would need `navigator.locks` in every context, which is not worth it at this size.
  */
 import type { IgnoreList, Settings, ThreadState } from '../engine/types';
 import { parseIgnoreList } from '../state/ignore';

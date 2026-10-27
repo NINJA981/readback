@@ -84,7 +84,11 @@ export function Ledger({ id, model, actions, autoFocus, open }: LedgerProps) {
           <h3 className="rb-ledger-h" id={`${id}-asks`}>
             Asks
           </h3>
-          {model.header ? <p className="rb-ledger-title rb-ledger-ok">{model.header}</p> : null}
+          {model.header ? (
+            <p className={`rb-ledger-title ${model.headerOk ? 'rb-ledger-ok' : 'rb-ledger-hint'}`}>
+              {model.header}
+            </p>
+          ) : null}
           <ul className="rb-rows">
             {model.asks.map((ask) => (
               <li className="rb-row" key={ask.id} data-state={ask.state}>

@@ -290,6 +290,31 @@ describe('selection controller (AC-8.3)', () => {
     expect(t.registry.get('readback-slip')?.ranges.map((r) => r.toString())).toEqual(['Catherine']);
   });
 
+  it('two quick focusins attach once: the later field wins and the first is not left bound', async () => {
+    document.body.innerHTML =
+      '<div id="a" contenteditable="true"></div><div id="b" contenteditable="true"></div>';
+    const t = setup();
+    selection = createSelectionController({
+      doc: document,
+      storage: t.storage,
+      report: t.report,
+      painter: t.painter,
+    });
+    await selection.useSelection(DEPOSIT_MESSAGE);
+    const a = document.getElementById('a')!;
+    const b = document.getElementById('b')!;
+    a.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    a.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    b.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    await tick();
+    a.textContent = 'Hi Catherine,';
+    a.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(t.registry.get('readback-slip')?.ranges ?? []).toHaveLength(0);
+    b.textContent = 'Hi Catherine,';
+    b.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(t.registry.get('readback-slip')?.ranges.map((r) => r.toString())).toEqual(['Catherine']);
+  });
+
   it('navigation (hashchange) drops the context', async () => {
     document.body.innerHTML = '<textarea id="reply"></textarea>';
     const t = setup();
@@ -320,6 +345,7 @@ describe('status mapping', () => {
       state: 'reading',
       asks: 3,
       open: 3,
+      unconfirmed: 0,
       slips: 1,
       contextWords: 0,
       failedChecks: [],

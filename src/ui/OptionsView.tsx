@@ -84,7 +84,7 @@ function Heading({ id, children }: { id: string; children: ReactNode }) {
   return (
     <h2
       id={id}
-      className="font-display text-h2 font-semibold tracking-[-0.015em] [font-variation-settings:'wdth'_104]"
+      className="px-2 font-display text-h2 font-semibold tracking-[-0.015em] [font-variation-settings:'wdth'_104]"
     >
       {children}
     </h2>
@@ -127,7 +127,7 @@ function IgnoreRows({
           >
             <Mono>{entry}</Mono>
             <GhostButton
-              aria-label={`Stop ignoring ${entry}`}
+              aria-label={`Remove ${entry} from ignored words`}
               onClick={() => {
                 onRemove(kind, entry);
               }}
@@ -174,6 +174,7 @@ function ModelPanel({
               <div
                 className="h-1.5 w-full overflow-hidden rounded-full bg-surface-3"
                 role="progressbar"
+                aria-label="Loading the on-device model"
                 aria-valuemin={0}
                 aria-valuemax={100}
                 {...(model.progress !== undefined
@@ -256,7 +257,7 @@ export function OptionsView(props: OptionsViewProps) {
       </nav>
 
       <main className="flex max-w-[720px] flex-col gap-8">
-        <header className="flex flex-col gap-1">
+        <header className="flex flex-col gap-1 px-2">
           <h1 className="font-display text-h1 font-semibold tracking-[-0.02em] [font-variation-settings:'wdth'_106]">
             Readback options
           </h1>
@@ -306,13 +307,31 @@ export function OptionsView(props: OptionsViewProps) {
         </Panel>
 
         <Panel id="appearance" title="Appearance">
-          <div role="radiogroup" aria-label="Theme" className="flex gap-2 px-2">
+          <div
+            role="radiogroup"
+            aria-label="Theme"
+            className="flex gap-2 px-2"
+            onKeyDown={(e) => {
+              // One Tab stop for the group; arrows move the choice and the focus together.
+              const i = THEMES.indexOf(settings.theme);
+              let next: number;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % THEMES.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp')
+                next = (i + THEMES.length - 1) % THEMES.length;
+              else return;
+              e.preventDefault();
+              const target = THEMES[next];
+              if (target) actions.setTheme(target);
+              e.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]')[next]?.focus();
+            }}
+          >
             {THEMES.map((theme) => (
               <button
                 key={theme}
                 type="button"
                 role="radio"
                 aria-checked={settings.theme === theme}
+                tabIndex={settings.theme === theme ? 0 : -1}
                 onClick={() => {
                   actions.setTheme(theme);
                 }}
@@ -337,7 +356,7 @@ export function OptionsView(props: OptionsViewProps) {
             Choices you make about a reply (dismissed asks, ignored slips) are kept for this browser
             session only, as hashed ids with no message text. Mail text is never stored.
           </p>
-          <dl className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 rounded-md border border-border bg-surface px-3 py-2 text-ui tabular">
+          <dl className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 rounded-md border border-border bg-surface px-2 py-2 text-ui tabular">
             <dt className="text-text-muted">Settings saved</dt>
             <dd className="text-right">{inv ? (inv.settings ? 'Yes' : 'No') : '—'}</dd>
             <dt className="text-text-muted">Ignored names</dt>

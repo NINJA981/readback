@@ -65,17 +65,19 @@ function Row({
   icon,
   children,
   onClick,
-  label,
+  hint,
 }: {
   icon: ReactNode;
   children: ReactNode;
   onClick?: () => void;
-  label?: string;
+  /** What the button does. Read after the visible text, so the name starts with what is shown (WCAG 2.5.3). */
+  hint?: string;
 }) {
   const body = (
     <>
       <span className="flex size-4 shrink-0 items-center justify-center">{icon}</span>
       <span className="min-w-0 flex-1 truncate text-left">{children}</span>
+      {hint ? <span className="sr-only">{`. ${hint}`}</span> : null}
     </>
   );
   const cls = 'flex h-8 w-full items-center gap-2 rounded-sm px-2 text-ui';
@@ -83,7 +85,6 @@ function Row({
     <button
       type="button"
       onClick={onClick}
-      aria-label={label}
       className={`${cls} transition-colors duration-100 hover:bg-surface-3`}
     >
       {body}
@@ -105,6 +106,8 @@ function ReadingBlock({
   const s = status;
   if (!s) return null;
   const first = slips[0];
+  // Green "All covered" only when nothing is open and nothing is a guess.
+  const confirmedAll = s.open === 0 && s.unconfirmed === 0;
   return (
     <>
       <h2 className="px-2 text-h3 font-[550] tracking-[-0.01em]">Reading this reply</h2>
@@ -117,19 +120,23 @@ function ReadingBlock({
           ) : (
             <Row
               icon={
-                s.open === 0 ? (
+                confirmedAll ? (
                   <CheckIcon className="text-success" />
                 ) : (
                   <span className="text-brass-text">
-                    <AskRing />
+                    <AskRing dotted={s.open === 0} />
                   </span>
                 )
               }
               onClick={actions.openLedger}
-              label="Open the ask ledger"
+              hint="Open the ask ledger"
             >
-              <span className={`tabular ${s.open === 0 ? 'text-success' : 'text-brass-text'}`}>
-                {s.open === 0 ? 'All covered' : `${plural(s.asks, 'ask', 'asks')} · ${s.open} open`}
+              <span className={`tabular ${confirmedAll ? 'text-success' : 'text-brass-text'}`}>
+                {confirmedAll
+                  ? 'All covered'
+                  : s.open === 0
+                    ? `${s.unconfirmed} ${s.unconfirmed === 1 ? 'looks' : 'look'} answered`
+                    : `${plural(s.asks, 'ask', 'asks')} · ${s.open} open`}
               </span>
             </Row>
           )}
@@ -143,7 +150,7 @@ function ReadingBlock({
             <Row
               icon={<CircleAlertIcon className="text-danger" />}
               onClick={actions.openSlip}
-              label="Open the next slip"
+              hint="Open the next slip"
             >
               <span className="tabular">{plural(s.slips, 'slip', 'slips')}</span>
               {first ? (
@@ -198,8 +205,10 @@ function StatusBlock(props: PopupViewProps & { siteOn: boolean }) {
         </div>
       );
     case 'layout-error':
+      // gap-1 keeps the two-line heading, the next step and the button inside the status
+      // block's 132px, so the Checks hairline below never moves or runs under the button.
       return (
-        <div className="flex flex-col gap-2 px-2">
+        <div className="flex flex-col gap-1 px-2">
           <div className="flex items-start gap-2">
             <CircleAlertIcon className="mt-0.5 shrink-0 text-danger" />
             <h2 className="text-h3 font-[550] tracking-[-0.01em]">
@@ -287,7 +296,7 @@ export function PopupView(props: PopupViewProps) {
         ) : null}
       </header>
 
-      <div className="mt-2 min-h-33 py-1">
+      <div className="mt-2 min-h-33 shrink-0 py-1">
         <StatusBlock {...props} siteOn={siteOn} />
       </div>
 

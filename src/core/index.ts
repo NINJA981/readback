@@ -58,6 +58,7 @@ export {
   FIXED_CONFIRMATION_MS,
   fixedLabel,
   isCovered,
+  ledgerConfirmed,
   ledgerHeader,
   overflowLabel,
   pillModel,

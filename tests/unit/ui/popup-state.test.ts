@@ -6,6 +6,7 @@ const status = (patch: Partial<TabStatus>): TabStatus => ({
   state: 'reading',
   asks: 3,
   open: 1,
+  unconfirmed: 0,
   slips: 1,
   contextWords: 0,
   failedChecks: [],

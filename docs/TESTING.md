@@ -28,7 +28,7 @@ pnpm --dir site test:e2e           # starts vite preview on :4173 if it is not r
 pnpm build && pnpm build:firefox   # production builds
 ```
 
-`pnpm test:e2e` leaves the open-shadow e2e build in `.output/chrome-mv3`; run `pnpm build` again before loading the extension for real.
+`pnpm test:e2e` writes its open-shadow build to `.output/chrome-mv3-e2e`, so `.output/chrome-mv3` is always the production build (`pnpm build`).
 
 ## What is not tested, and why
 
@@ -72,7 +72,7 @@ pnpm build && pnpm build:firefox   # production builds
 | AC-6.2 | U | `Let me know if you have any questions!` yields 0 asks. Quoted history and signature yield 0 asks. A forwar... | `tests/unit/engine/acceptance.test.ts` |
 | AC-6.3 | U | A message with 8 asks yields 5, with `truncatedAsks = 3`. | `tests/corpus/corpus.test.ts`, `tests/unit/engine/acceptance.test.ts` |
 | AC-6.4 | F | Ask precision ≥ 0.90 on the labelled corpus (≥ 60 messages at MVP), reported by `pnpm test:corpus` and gate... | `tests/corpus/corpus.test.ts` |
-| AC-6.5 | E | The pill text and colour flip from `1 open` (brass) to `All covered` (success) when the draft covers the la... | `e2e/overlay.spec.ts` |
+| AC-6.5 | E | The pill text flips from `1 open` (brass) to `1 looks answered` (brass, dotted ring) when the draft address... | `e2e/overlay.spec.ts` |
 | AC-6.6 | E | Dismissing an ask updates the count immediately (0 ms) and persists for that thread in `chrome.storage.sess... | `e2e/overlay.spec.ts`, `tests/unit/content/controllers.test.ts`, `tests/unit/state/state.test.ts` |
 | AC-7.1 | U | With the model off, the lexical evidence rule marks `confirm the $1,250 deposit` as looks-answered for the... | `tests/unit/engine/acceptance.test.ts` |
 | AC-7.2 | U | Confirming a looks-answered ask sets the state to `answered`. Answer inline inserts `> ask` and counts as a... | `tests/unit/engine/acceptance.test.ts`, `tests/unit/state/state.test.ts` |
@@ -89,7 +89,7 @@ pnpm build && pnpm build:firefox   # production builds
 | AC-10.3 | E | Options → **Clear all** empties `chrome.storage.local` and `session` of Readback keys. | `e2e/pages.spec.ts`, `tests/unit/storage/storage.test.ts` |
 | AC-G.1 | U | Engine check time for a 2,000-word thread plus a 500-word draft is p95 ≤ 16 ms on the CI runner (excluding... | `tests/unit/engine/performance.test.ts` |
 | AC-G.2 | E | 0 non-local network requests across the whole e2e suite. | `e2e/fixtures.ts`, `e2e/gmail.spec.ts` |
-| AC-G.3 | E | axe-core reports 0 violations on the popup, options, playground and landing in both themes. | `e2e/a11y-overlay.spec.ts`, `e2e/pages.spec.ts`, `site/e2e/a11y.spec.ts` |
+| AC-G.3 | E | axe-core reports 0 violations on the popup, options, playground and landing in both themes. | `e2e/a11y-overlay.spec.ts`, `e2e/gallery-a11y.spec.ts`, `e2e/pages.spec.ts`, `site/e2e/a11y.spec.ts` |
 | AC-G.4 | E | The content script's injected UI lives in one shadow root, and the page's computed styles are unchanged (sn... | `e2e/overlay.spec.ts` |
 | AC-W.1 | E | `/app/` shows the h1, the privacy line and a `Try a sample` button with no thread and no reply. | `site/e2e/flows.spec.ts` |
 | AC-W.2 | E | `Try a sample` fills both fields and the Slips list shows exactly the two slips of the sample (`Catherine`... | `site/e2e/flows.spec.ts` |

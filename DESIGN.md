@@ -31,7 +31,7 @@ colors:
   border-strong-light: "oklch(0.60 0.012 250)"
   text-light: "oklch(0.22 0.012 250)"
   text-muted-light: "oklch(0.46 0.012 250)"
-  text-subtle-light: "oklch(0.55 0.012 250)"
+  text-subtle-light: "oklch(0.5 0.012 250)"
   brass-light: "oklch(0.50 0.10 62)"
   brass-hover-light: "oklch(0.45 0.09 62)"
   on-brass-light: "oklch(0.99 0.006 80)"
@@ -317,7 +317,7 @@ Cold slate neutrals (hue 250, chroma ≤ 0.016) under a warm brass accent (hue 6
 | border-strong | #5d646c (3.21:1) | #7b8187 (3.73:1) | Input borders, switch tracks, focusable outlines |
 | text | #e8ebef (16.08:1) | #161b20 (16.41:1) | Primary text |
 | text-muted | #b8bec5 (10.27:1) | #53595f (6.71:1) | Secondary text, citations |
-| text-subtle | #969ca3 (6.94:1, Lc 48) | #6c7278 (4.61:1) | Meta only; in dark only for ≥ 13px meta labels |
+| text-subtle | #969ca3 (6.94:1, Lc 48) | #5e646a (5.66:1 on bg, 4.88:1 on surface-3) | Meta only; in dark only for ≥ 13px meta labels. Light was #6c7278 (4.26:1 on surface-2) until QA round 1 |
 
 ### Brand distance
 Brass dark #d9a767 is ΔE_OK **0.069** from PostHog #f7a501 (the nearest blocklisted colour). Brass light #8b551c is **0.112** from Oura gold #af751b. Both clear the 0.06 floor (bible §4.4). CI rechecks this with culori.
@@ -417,9 +417,11 @@ Each component lists its states. "Light" variants use the same geometry with lig
 - **States:**
   - **Hidden:** no asks extracted, and no slips. Nothing renders, and the shadow host keeps `display:none`.
   - **Open (brass):** brass-soft background, brass-text, text `3 asks · 1 open`.
-  - **Covered (success):** success-soft background, success text, check icon, text `All covered`. The colour change takes 150 ms. The count rolls with NumberFlow.
+  - **Looks answered (brass, dotted):** nothing is open but at least one ask is only a guess (the dotted ring). Brass-soft background, brass-text, the dotted 8px ring, text `3 look answered` (the number of dotted asks; `1 looks answered`). Never success green and never `All covered`: coverage stays the dotted ring until the user confirms.
+  - **Covered (success):** only when every ask is confirmed. Success-soft background, success text, check icon, text `All covered`. The colour change takes 150 ms. The count rolls with NumberFlow when the last *open* ask is covered by confirming it.
   - **With slips:** a 6px slip-red dot and `1 slip` segment are appended after a 1px border divider (`3 asks · 1 open | 1 slip`). Clicking the slip segment jumps to the slip.
   - **Fixed confirmation (6 s):** `Fixed: Kathryn · Undo Ctrl+Z` replaces the text, then reverts.
+  - **Separator exception:** the middle dot in `3 asks · 1 open` and `Fixed: Kathryn · Undo Ctrl+Z` is a deliberate exception to the bible's no-middle-dot copy rule (section 2, item 25). The pill is a one-line status, and a comma reads as a sentence (`3 asks, 1 open`) where the dot reads as two separate readouts. It is used in the pill and the popup status row only, never in prose.
   - **Loading:** none. The pill appears only after the first check, which takes ≤ 16 ms. There is no skeleton because there's nothing to wait for.
   - **Error:** the adapter self-test fails, so the pill doesn't render (fail silent). The status shows in the popup.
 - **Interaction:** click or Alt+Shift+L opens the ledger. `aria-live="polite"` announces count changes at most once per 2 s.
@@ -525,7 +527,7 @@ Sections follow `docs/LANDING.md`: hero (live playground in demo mode), the real
 
 **Reduced motion:** no morph, roll or line draw. The card appears with a 150 ms fade. The fix is instant. The pill crossfades colour (150 ms) without the roll. The readback line appears fully drawn while the card is open.
 
-**Screenshot-ability:** the playground's `?demo=signature&t=<ms>` renders any frame above deterministically (all motion derives from the timeline's `t`, not wall-clock time). Frames t = 4,600 (card + line) and t = 9,800 (clean reply, green pill) are the poster frames.
+**Screenshot-ability:** the playground's `?demo=signature&t=<ms>` renders any frame above deterministically (all motion derives from the timeline's `t`, not wall-clock time). Frames t = 4,600 (card + line) and t = 9,800 (clean reply, brass dotted pill `3 look answered`) are the poster frames.
 
 ## Landing 3D / immersive plan (bible §11): CSS/SVG only, by decision
 

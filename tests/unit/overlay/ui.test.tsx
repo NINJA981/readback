@@ -10,7 +10,7 @@ import { check, createContext } from '../../../src/core/index';
 import { cardModel, ledgerModel } from '../../../src/overlay/model';
 import { GuardCard, fixLabel } from '../../../src/overlay/ui/GuardCard';
 import { Ledger } from '../../../src/overlay/ui/Ledger';
-import { Pill } from '../../../src/overlay/ui/Pill';
+import { Pill, reservedLabels } from '../../../src/overlay/ui/Pill';
 import { pillModel } from '../../../src/state/summary';
 import { SAMPLES } from '../../../site/src/shared/samples';
 import type { Sample } from '../../../site/src/shared/samples';
@@ -36,6 +36,11 @@ const openAndSlipped = resultFor('Hi Catherine, thanks.');
 const clean = resultFor(
   "Hi Kathryn, the $1,250 deposit is confirmed, I'll drop the keys off Thursday the 12th and send the signed lease back.",
 );
+/** The user confirmed every ask (state `answered`), as the ledger's check button does. */
+const confirmed = <T extends { asks: { state: string }[] }>(result: T): T => ({
+  ...result,
+  asks: result.asks.map((a) => ({ ...a, state: 'answered' as const })),
+});
 const quiet = createContext({ source: 'playground', threadId: 'q', message: 'Thanks.' }, NOW);
 
 const noop = (): void => undefined;
@@ -49,8 +54,10 @@ const actions = {
   fix: noop,
 };
 
+const RESERVE_RE = /<span class="rb-pill-reserve" aria-hidden="true">[^<]*<\/span>/g;
+
 describe('pill', () => {
-  const render = (result: Parameters<typeof pillModel>[0], fixed?: string) =>
+  const markup = (result: Parameters<typeof pillModel>[0], fixed?: string) =>
     renderToStaticMarkup(
       <Pill
         model={pillModel(result)}
@@ -61,25 +68,56 @@ describe('pill', () => {
         onJumpToSlip={noop}
       />,
     );
+  /** What is shown: the hidden width-reserving labels are stripped. */
+  const render = (result: Parameters<typeof pillModel>[0], fixed?: string) =>
+    markup(result, fixed).replace(RESERVE_RE, '');
+
+  it('reserves the width of every count label it can show, hidden from screen readers', () => {
+    expect(reservedLabels(3)).toEqual([
+      '3 asks · 3 open',
+      '3 look answered',
+      '1 looks answered',
+      'All covered',
+    ]);
+    expect(reservedLabels(0)).toEqual([]);
+    const html = markup(openAndSlipped);
+    expect(html.match(RESERVE_RE)).toHaveLength(4);
+    // The six-second confirmation is not reserved: it is a one-off, wider line.
+    expect(markup(clean, 'Kathryn')).not.toMatch(RESERVE_RE);
+  });
 
   it('shows open asks and the slip count, and says both to a screen reader', () => {
     const html = render(openAndSlipped);
     expect(html).toContain('3 asks · 3 open');
     expect(html).toContain('1 slip');
     expect(html).toContain('aria-live="polite"');
-    expect(html).toContain('aria-controls="ledger"');
+    // aria-controls names an element that exists only while the ledger is open.
+    expect(html).not.toContain('aria-controls');
     expect(html).toContain('aria-expanded="false"');
   });
 
-  it('shows All covered once every ask has an answer, with the slips still counted', () => {
+  it('says how many only look answered, in brass with a dotted ring, never All covered', () => {
     const html = render(slipped);
+    expect(html).toContain('data-tone="open"');
+    expect(html).toContain('3 look answered');
+    expect(html).toContain('stroke-dasharray="2 2"');
+    expect(html).not.toContain('All covered');
+    expect(html).toContain('2 slips');
+    const clean3 = render(clean);
+    expect(clean3).toContain('3 look answered');
+    expect(clean3).not.toContain('rb-pill-slip');
+  });
+
+  it('shows All covered once every ask is confirmed, with the slips still counted', () => {
+    const html = render(confirmed(slipped));
     expect(html).toContain('data-tone="covered"');
     expect(html).toContain('All covered');
+    expect(html).not.toContain('stroke-dasharray');
     expect(html).toContain('2 slips');
   });
 
-  it('shows All covered alone when there is nothing to fix', () => {
-    const html = render(clean);
+  it('shows All covered alone when everything is confirmed and there is nothing to fix', () => {
+    const html = render(confirmed(clean));
     expect(html).toContain('All covered');
     expect(html).not.toContain('rb-pill-slip');
   });

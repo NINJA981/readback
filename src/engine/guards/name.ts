@@ -41,6 +41,75 @@ export interface NameGuardInput {
   ignored: ReadonlySet<string>;
 }
 
+interface PreparedTarget {
+  key: string;
+  len: number;
+  target: NameRef;
+}
+
+interface Prepared {
+  known: ReadonlySet<string>;
+  targets: readonly PreparedTarget[];
+  /** token -> best near-miss (null when none). Pure in (token, names), so it is safe to keep. */
+  best: Map<string, Candidate | null>;
+}
+
+const BEST_CACHE_MAX = 4000;
+
+/**
+ * Everything derived from the thread's names, computed once per names array (the
+ * context's harvested list is stable across checks). Without this, every
+ * keystroke re-ran an edit distance for each draft word against each name.
+ */
+const prepared = new WeakMap<readonly NameRef[], Prepared>();
+
+function prepare(names: readonly NameRef[]): Prepared {
+  const hit = prepared.get(names);
+  if (hit) return hit;
+  const known = new Set(names.map((n) => fold(n.text)));
+  // Strongest reference per folded name.
+  const strongest = new Map<string, NameRef>();
+  for (const n of names) {
+    const key = fold(n.text);
+    const prev = strongest.get(key);
+    if (!prev || NAME_SOURCE_RANK[n.source] < NAME_SOURCE_RANK[prev.source]) strongest.set(key, n);
+  }
+  const targets = [...strongest].map(([key, target]) => ({
+    key,
+    len: Array.from(key).length,
+    target,
+  }));
+  const made: Prepared = { known, targets, best: new Map() };
+  prepared.set(names, made);
+  return made;
+}
+
+function bestFor(token: string, targets: readonly PreparedTarget[]): Candidate | null {
+  let best: Candidate | undefined;
+  for (const { key, len, target } of targets) {
+    const max = len <= 5 ? 1 : 2;
+    const strong = target.source !== 'body';
+    let candidate: Candidate | undefined;
+    if (firstLetterOk(token, key) && (strong || len >= 6)) {
+      const d = osaDistance(token, key, max);
+      if (d >= 1 && d <= max) candidate = { target, rule: 'edit-distance', distance: d };
+    }
+    if (!candidate && isVariantPair(token, key)) {
+      candidate = { target, rule: 'variant', distance: 3 };
+    }
+    if (!candidate) continue;
+    if (
+      !best ||
+      candidate.distance < best.distance ||
+      (candidate.distance === best.distance &&
+        NAME_SOURCE_RANK[candidate.target.source] < NAME_SOURCE_RANK[best.target.source])
+    ) {
+      best = candidate;
+    }
+  }
+  return best ?? null;
+}
+
 /**
  * Name guard (SPEC F1). A capitalised draft token fires only when it is not a
  * thread name itself and is a near-miss of one: edit distance 1 (names ≤ 5
@@ -51,14 +120,7 @@ export interface NameGuardInput {
 export function nameGuard(input: NameGuardInput): Flag[] {
   if (input.names.length === 0) return [];
 
-  const known = new Set(input.names.map((n) => fold(n.text)));
-  // Strongest reference per folded name.
-  const targets = new Map<string, NameRef>();
-  for (const n of input.names) {
-    const key = fold(n.text);
-    const prev = targets.get(key);
-    if (!prev || NAME_SOURCE_RANK[n.source] < NAME_SOURCE_RANK[prev.source]) targets.set(key, n);
-  }
+  const { known, targets, best: cache } = prepare(input.names);
 
   const flags: Flag[] = [];
   for (const w of words(input.draft)) {
@@ -67,28 +129,11 @@ export function nameGuard(input: NameGuardInput): Flag[] {
     const token = fold(text);
     if (known.has(token) || input.threadWords.has(token) || input.ignored.has(token)) continue;
 
-    let best: Candidate | undefined;
-    for (const [key, target] of targets) {
-      const len = Array.from(key).length;
-      const max = len <= 5 ? 1 : 2;
-      const strong = target.source !== 'body';
-      let candidate: Candidate | undefined;
-      if (firstLetterOk(token, key) && (strong || len >= 6)) {
-        const d = osaDistance(token, key, max);
-        if (d >= 1 && d <= max) candidate = { target, rule: 'edit-distance', distance: d };
-      }
-      if (!candidate && isVariantPair(token, key)) {
-        candidate = { target, rule: 'variant', distance: 3 };
-      }
-      if (!candidate) continue;
-      if (
-        !best ||
-        candidate.distance < best.distance ||
-        (candidate.distance === best.distance &&
-          NAME_SOURCE_RANK[candidate.target.source] < NAME_SOURCE_RANK[best.target.source])
-      ) {
-        best = candidate;
-      }
+    let best = cache.get(token);
+    if (best === undefined) {
+      best = bestFor(token, targets);
+      if (cache.size >= BEST_CACHE_MAX) cache.clear();
+      cache.set(token, best);
     }
     if (!best) continue;
 

@@ -1,7 +1,7 @@
 # HANDOFF: Readback
 
-**Current stage:** 3a (product UI: overlay, popup, options) is complete. Next: the site (landing and playground, another agent), real Gmail snapshots, the model host.
-**Last updated:** 2026-10-27
+**Current stage:** Stage 3a re-run (product UI polish) on top of QA fix round 1 (stage 4 test pass and QA round 1 findings). The extension (stage 3a), the site (landing and `/app`, stage 3b) and the test pass (stage 4) are all in. Next: QA round 2 (design re-score, state sheet, Lighthouse by hand), real Gmail snapshots, the model host.
+**Last updated:** 2026-10-28
 
 Readback is "spellcheck that has read the thread you're replying to": a browser extension (WXT, Chrome MV3 first, Firefox MV3 build too) whose guards underline near-miss names, numbers and dates in a reply by checking them against the message being answered, plus an ask pill. Scope authority is `_studio/picks.json`, `SPEC.md` and `DESIGN.md`.
 
@@ -72,6 +72,25 @@ See the results block at the bottom of this file for the numbers of the last run
 - Ledger rows: the ask text now fades under the hover actions instead of being cut (`overlay.css`).
 - ESLint ignores `site/dist` and treats `.mjs` as untyped JS. (Superseded in Stage 4: repo-wide `pnpm lint` and `pnpm typecheck` pass.)
 
+## Stage 3a re-run (2026-10-28, product UI polish pass)
+
+A restarted session re-ran stage 3a on top of the stage 4 and QA round 1 work. The uncommitted QA-fix-round-1 changes outside `site/` were left in the tree by an interrupted session; they were checked (green, coherent with the SPEC/DESIGN edits for the "looks answered" pill) and are committed with this stage. `site/` was not touched and is not in this commit.
+
+Fixed in this pass, each seen in the screenshots first:
+
+- **Pill: counts animated on every keystroke.** The label was keyed by its text, so each count change while typing remounted it with the 150 ms blur fade, against DESIGN.md P8 ("never animate a keystroke"). It now remounts only when its mode changes (into and out of the six-second `Fixed:` line, and after the last-ask roll).
+- **Pill: dead space after the count.** The 15ch reservation in a proportional face left about 20 px of empty brass before the divider. The pill now stacks every count label it can show for that many asks invisibly in one grid cell (`reservedLabels` in `src/overlay/ui/Pill.tsx`, `aria-hidden`, `visibility: hidden`), so it is exactly as wide as its widest state. AC-6.5's no-shift e2e still passes.
+- **Popup: the layout-error state ran 8 px past its block**, so `Copy diagnostics` sat on the Checks hairline. The block is now `gap-1` and `shrink-0` and fits its 132 px.
+- **Options: three left edges** (headings at 0, text at 8, the data table's text at 12). Headings, the header and the table text now share the 8 px text edge; row hover fills and boxes bleed to 0.
+- **Ghost buttons** used 10 px padding, so `Options` in the popup footer sat 2 px right of every other text edge; now 8 px.
+- Lint: `scripts/check-size.mjs` (new) used `console` without the CLI-script exemption. The AC matrix in `docs/TESTING.md` was stale (the new `e2e/gallery-a11y.spec.ts`); regenerated. `e2e/pages.spec.ts` still looked for the old `Stop ignoring` label after the label-in-name fix renamed it `Remove X from ignored words`.
+
+Screenshots: `node scripts/screenshots.mjs` rewrote `docs/screenshots/` (gallery states plus the live extension on the Gmail fixtures at 375 / 768 / 1440, light and dark, the real popup and options). My own read of the DESIGN_BIBLE section 9 rubric for the extension surfaces after these fixes is about 9 (identity 9, type 9, colour 9, layout 9, hierarchy 9, components 9, states and a11y 9, motion 9, system states 9, platform fit 9). That is a self-assessment by the builder, not an independent critic's score, and it was judged on synthetic Gmail fixtures, not live Gmail.
+
+Green at the end of this pass: `pnpm lint`, `pnpm typecheck`, `pnpm test` (23 files, 419 tests), `pnpm test:e2e` (51), `pnpm build`, `pnpm build:firefox`, `node scripts/check-size.mjs` (gmail.js 143.7 KB gz). The site's own suites were not run here (another agent owns `site/`).
+
+Still not done here: the shadcn MCP server failed to connect in this session (connection timeout), so no registry primitives were pulled; the hand-written primitives stand, as recorded above.
+
 ## Stage 4 test pass (this session)
 
 How it is tested lives in `docs/TESTING.md`: layers, how to run everything, what is not tested, and a generated matrix of every SPEC acceptance criterion with the tests that name it. `tests/unit/spec-traceability.test.ts` fails when a criterion has no test of the kind it asks for, when a test names an id the spec does not have, or when the matrix is stale (`UPDATE_MATRIX=1 pnpm vitest run tests/unit/spec-traceability.test.ts` rewrites it). It proves every criterion has an owner, not that the owner is good.
@@ -93,8 +112,9 @@ Not covered, and said so in `docs/TESTING.md`: live Gmail, Firefox runtime, the 
 
 ## Known issues and open risks
 
-- Everything from Stage 2 still applies: short-name near-misses (Tim/Tom) can false-positive, only the first reply compose is bound, fonts in the popup and options are Fontsource's full subsets (Hubot latin alone is 93 KB against the 40 KB per face budget), no `size-limit`, dependency pins a few patches behind, TypeScript 6.0.3, no trademark check of "Readback".
-- The Gmail content script is about 146 KB gzipped: React and react-dom are about 60 KB, the two embedded faces about 27 KB as base64. That is inside the 150 KB budget with almost no room. Anything added there needs a matching cut.
+- Everything from Stage 2 still applies: short-name near-misses (Tim/Tom) can false-positive, only the first reply compose is bound, dependency pins a few patches behind, TypeScript 6.0.3, no trademark check of "Readback".
+- Popup and options fonts are now subset (`scripts/subset-ui-fonts.py`: Mona 30.2 KB, Hubot 23.6 KB, Geist Mono 7.5 KB) and `pnpm size` (`scripts/check-size.mjs`) gates the 40 KB per-face and 150 KB per-content-script budgets.
+- The Gmail content script is about 144 KB gzipped (143.7 KB at the stage 3a re-run): React and react-dom are about 60 KB, the two embedded faces about 27 KB as base64. That is inside the 150 KB budget with almost no room. Anything added there needs a matching cut.
 - `pnpm typecheck` and `pnpm lint` also walk `site/`; a type error there fails the whole command.
 - The ledger's row actions overlay the ask text on hover/focus with a flat tint; a soft fade on the left edge would read better.
 - Wide card content: a very long cited line is windowed to about 44 characters either side of the token, snapped to word boundaries.

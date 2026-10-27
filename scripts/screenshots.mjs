@@ -87,6 +87,7 @@ async function galleryPage(width, height, scene, theme, scale = 2) {
 const popupScenes = [
   'reading',
   'reading-clean',
+  'reading-unconfirmed',
   'idle',
   'idle-no-playground',
   'idle-mail',

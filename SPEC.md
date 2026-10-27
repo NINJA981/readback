@@ -99,13 +99,13 @@ Underlines a date whose weekday doesn't match its day number, or that is a near-
 - **Coordinated asks split:** `can you confirm the $1,250 deposit, drop off the keys on Thursday the 12th, and send the signed lease back?` becomes 3 asks when every segment starts with a verb from the request-verb list.
 - **Stop-list** for boilerplate: `let me know if you have any questions`, `any questions?`, `thoughts?`, `how are you?`, `hope you're well`, `does that make sense?` and about 40 more.
 - **Cap:** at most 5 asks. Extras are dropped by position, and the ledger says `+2 more not shown`. Every ask can be dismissed.
-- **UI:** one pill docked to the compose box (`3 asks · 1 open`, brass while any ask is open, success green with a check when all are covered). Clicking the pill or pressing **Alt+Shift+L** opens the ledger: up to 5 rows, each with its state and a dismiss button. The pill **never** blocks or delays Send. If the adapter breaks, the pill is simply missing.
+- **UI:** one pill docked to the compose box (`3 asks · 1 open`, brass while any ask is open or only looks answered, success green with a check when all are confirmed). Clicking the pill or pressing **Alt+Shift+L** opens the ledger: up to 5 rows, each with its state and a dismiss button. The pill **never** blocks or delays Send. If the adapter breaks, the pill is simply missing.
 
 ### F7. Coverage states (free typing is the default)
 - **Open:** no evidence in the draft.
 - **Looks answered (dotted ring):** deterministic lexical evidence (the ask's key terms such as amounts, names, dates and nouns, at ≥ 50% overlap, or a yes/no answer cue next to a key term), or, when the optional on-device MiniLM is enabled, cosine similarity ≥ 0.62 between the ask and a draft sentence. The threshold is calibrated on the fixture corpus.
 - **Answered (solid check):** the user confirms with a click or Enter on the row, or an **Answer inline** slot is filled. Answer inline is an optional power move from the ledger row menu: it inserts `> ask` plus an empty line at the caret through the editor's input path.
-- The pill counts dotted and solid both as covered. The ledger shows the difference.
+- The pill does not count a guess as a fact. A dotted ask is no longer open, so the count drops, but the pill turns success green and says `All covered` only when every ask is solid (confirmed). While any ask is only dotted and none is open, the pill stays brass with a dotted ring and reads `3 look answered` (the number of dotted asks), and the ledger's line is a muted `Nothing left open. Confirm each one to be sure.` rather than the green `Everything asked is covered.` (QA round 1: DESIGN.md "Don't show a model's guess as a fact" wins over the earlier wording, which counted dotted and solid both as covered.)
 
 ### F8. Adapters
 - **Gmail (first):** detects reply and forward compose boxes, both inline and pop-out. It builds the thread context from the open conversation: the latest message not sent by the user, sender name, signature block, sent date, To and Cc chips. All selectors live in one module with fallback chains and a self-test. When the self-test fails, the adapter goes silent and the popup says `Gmail's layout wasn't recognised. Select the message and use "Use as Readback context".`
@@ -215,7 +215,7 @@ interface ThreadState {                           // chrome.storage.session, key
 **Network policy: zero requests.**
 - The extension makes **no network requests at all**: no backend, telemetry, remote fonts, model download or update check beyond the browser's own store updates.
 - The only host permission is `https://mail.google.com/*`. Other sites are reached only through `activeTab` after a user gesture (context-menu click).
-- Extension CSP: `script-src 'self' 'wasm-unsafe-eval'; object-src 'self'`, with no remote origins.
+- Extension CSP: `script-src 'self'; object-src 'self'`, with no remote origins. `'wasm-unsafe-eval'` is added only when the optional MiniLM host ships (it is not built yet).
 - The site (landing + playground) is static. It loads no third-party scripts, fonts or analytics, and the playground makes no requests after page load.
 - **Enforced in CI:** an e2e test records every request from the extension and the playground while running the fixture suite and fails on any non-`chrome-extension://` / non-`localhost` request. A lint rule bans `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon` and `EventSource` outside an empty allow-list.
 - **Logging:** a `log()` wrapper is compiled out in production. It accepts only enum codes and counts, never strings derived from mail.
@@ -275,7 +275,7 @@ IDs are referenced by tests. **U** = vitest unit, **F** = fixture corpus, **E** 
 - AC-6.2 (U) `Let me know if you have any questions!` yields 0 asks. Quoted history and signature yield 0 asks. A forwarded message yields 0 asks.
 - AC-6.3 (U) A message with 8 asks yields 5, with `truncatedAsks = 3`.
 - AC-6.4 (F) Ask precision ≥ 0.90 on the labelled corpus (≥ 60 messages at MVP), reported by `pnpm test:corpus` and gated in CI.
-- AC-6.5 (E) The pill text and colour flip from `1 open` (brass) to `All covered` (success) when the draft covers the last ask. No layout shift (CLS 0 on the pill's bounding box).
+- AC-6.5 (E) The pill text flips from `1 open` (brass) to `1 looks answered` (brass, dotted ring) when the draft addresses the last ask, and to `All covered` (success) only once every ask is confirmed. No layout shift (CLS 0 on the pill's bounding box).
 - AC-6.6 (E) Dismissing an ask updates the count immediately (0 ms) and persists for that thread in `chrome.storage.session`.
 
 **F7 Coverage**
@@ -315,10 +315,10 @@ Recorded from the playground's deterministic timeline (`?demo=signature`), captu
 | 2 | 1.4–3.0 s | Typing | `Hi Catherine,` is typed at 14 chars/s. As the comma lands, a red squiggle appears under `Catherine` at 0 ms (no animation). | none |
 | 3 | 3.0–4.2 s | Card | The pointer rests on the squiggle. At 3.3 s the guard card opens (160 ms, origin at the word): `She signs Kathryn`, with the signature line `Thanks, Kathryn` cited and `Kathryn` underlined in brass. The **readback line** (1 px brass hairline) draws from the squiggle to `Kathryn` in the thread over 240 ms. | `Checked against her signature.` |
 | 4 | 4.2–5.0 s | Fix | Click **Change to Kathryn**. Swap-back: `Catherine` morphs into `Kathryn`. The shared letters (`a`, `t`, `h`, `r`, `n`) slide into place, `C`, `e`, `i` and the final `e` blur out, and `K` and `y` blur in (280 ms). The squiggle is gone. | none |
-| 5 | 5.0–6.6 s | Typing | `The $1,520 deposit is confirmed` is typed. A squiggle lands under `$1,520`. The pill rolls to `2 open` because the deposit ask now looks answered (dotted). | none |
+| 5 | 5.0–6.6 s | Typing | `The $1,520 deposit is confirmed` is typed. A squiggle lands under `$1,520`. The pill reads `2 open` because the deposit ask now looks answered (dotted). | none |
 | 6 | 6.6–7.6 s | Card + fix | Card: `Thread says $1,250. Digits swapped?` Click the fix. Swap-back digit roll: the `5` and `2` trade places vertically (M5-style roll, 240 ms). | `$1,520 → $1,250, from her own email.` |
-| 7 | 7.6–9.2 s | Typing | `, and I'll drop the keys off Thursday the 12th and send the lease tonight.` is typed. The pill rolls `1 open` → `0 open`, then flips from brass to success green with a check: `All covered` (150 ms colour, 1 frame of check draw). | none |
-| 8 | 9.2–10.0 s | Hold | A clean reply, no squiggles, green pill. A corner chip reads `0 network requests`. Last frame equals the poster. | `Readback. Spellcheck that read the thread.` |
+| 7 | 7.6–9.2 s | Typing | `, and I'll drop the keys off Thursday the 12th and send the lease tonight.` is typed. The pill reads `3 look answered`: nothing is open, but the three asks are only guesses, so it stays brass with a dotted ring (it turns green only when the user confirms them). | none |
+| 8 | 9.2–10.0 s | Hold | A clean reply, no squiggles, the brass dotted pill. A corner chip reads `0 network requests`. Last frame equals the poster. | `Readback. Spellcheck that read the thread.` |
 
 The 10 s cut shows two guard catches (name, number) and one supporting pill flip. That is one mechanism shown twice, plus the resolve. The date guard gets its own 4 s loop on the landing page (beat 3, proof 3).
 

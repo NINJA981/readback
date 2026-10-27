@@ -16,12 +16,14 @@ export interface SplitMessage {
   forwarded: boolean;
 }
 
+// Line starts use `[ \t]*`, never `\s*`: with the /m flag `\s*` also matches newlines, so a run of
+// blank lines would make every line start scan the rest of the run (quadratic on hostile input).
 const QUOTE_HEADER_RE =
-  /^\s*(?:On\s[^\n]{4,200}?(?:\n[^\n]{0,120})?\bwrote:|Le\s[^\n]{4,160}\sa\sécrit\s?:|Am\s[^\n]{4,160}\sschrieb[^\n]*:)\s*$/m;
+  /^[ \t]*(?:On\s[^\n]{4,200}?(?:\n[^\n]{0,120})?\bwrote:|Le\s[^\n]{4,160}\sa\sécrit\s?:|Am\s[^\n]{4,160}\sschrieb[^\n]*:)[ \t]*$/m;
 const OUTLOOK_HEADER_RE =
-  /^\s*-{2,}\s*Original Message\s*-{2,}\s*$|^\s*From:\s.+\n\s*(?:Sent|Date):\s.+$/im;
+  /^[ \t]*-{2,}[ \t]*Original Message[ \t]*-{2,}[ \t]*$|^[ \t]*From:[ \t].+\n[ \t]*(?:Sent|Date):[ \t].+$/im;
 const FORWARD_RE =
-  /^\s*(?:-{3,}\s*Forwarded message\s*-{3,}|Begin forwarded message:|-{3,}\s*Original Message\s*-{3,}\s*\n\s*From:.*\n(?:.*\n)?\s*Subject:\s*(?:Fwd?|FW):)/im;
+  /^[ \t]*(?:-{3,}[ \t]*Forwarded message[ \t]*-{3,}|Begin forwarded message:|-{3,}[ \t]*Original Message[ \t]*-{3,}[ \t]*\n[ \t]*From:.*\n(?:.*\n)?[ \t]*Subject:[ \t]*(?:Fwd?|FW):)/im;
 const SIG_DELIMITER_RE = /^-- ?$/m;
 
 /** Sign-off phrases (matched case-insensitively at line start). */
@@ -68,8 +70,11 @@ export const SIGN_OFF_RE = new RegExp(
   'u',
 );
 
+/** Longest incoming message the engine reads (the selection path uses the same cap). */
+export const MAX_MESSAGE_CHARS = 60_000;
+
 export function splitMessage(raw: string): SplitMessage {
-  let text = raw.replace(/\r\n?/g, '\n');
+  let text = raw.slice(0, MAX_MESSAGE_CHARS).replace(/\r\n?/g, '\n');
   let forwarded = false;
 
   const fwd = FORWARD_RE.exec(text);
@@ -103,7 +108,8 @@ export function splitMessage(raw: string): SplitMessage {
     text = text.slice(0, signOffIndex);
   }
 
-  return { body: text.replace(/\s+$/, ''), signature, forwarded };
+  // trimEnd, not /\s+$/: that regex rescans a long whitespace run from every position in it.
+  return { body: text.trimEnd(), signature, forwarded };
 }
 
 /**

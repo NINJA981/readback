@@ -80,7 +80,7 @@
     --rb-border-strong: oklch(0.6 0.012 250);
     --rb-text: oklch(0.22 0.012 250);
     --rb-text-muted: oklch(0.46 0.012 250);
-    --rb-text-subtle: oklch(0.55 0.012 250);
+    --rb-text-subtle: oklch(0.5 0.012 250);
     --rb-brass: oklch(0.5 0.1 62);
     --rb-brass-hover: oklch(0.45 0.09 62);
     --rb-on-brass: oklch(0.99 0.006 80);
@@ -113,7 +113,7 @@
   --rb-border-strong: oklch(0.6 0.012 250);
   --rb-text: oklch(0.22 0.012 250);
   --rb-text-muted: oklch(0.46 0.012 250);
-  --rb-text-subtle: oklch(0.55 0.012 250);
+  --rb-text-subtle: oklch(0.5 0.012 250);
   --rb-brass: oklch(0.5 0.1 62);
   --rb-brass-hover: oklch(0.45 0.09 62);
   --rb-on-brass: oklch(0.99 0.006 80);

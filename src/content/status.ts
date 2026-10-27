@@ -16,6 +16,7 @@ export function statusFrom(
     state,
     asks: visible.length,
     open: visible.filter((a) => !isCovered(a)).length,
+    unconfirmed: visible.filter((a) => a.state === 'looks-answered').length,
     slips: snapshot.result.flags.length,
     contextWords,
     failedChecks: [],

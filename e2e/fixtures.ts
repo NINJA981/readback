@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 import { chromium, expect, test as base } from '@playwright/test';
 import type { BrowserContext, Page, Worker } from '@playwright/test';
 
-const EXTENSION = resolve(import.meta.dirname, '..', '.output', 'chrome-mv3');
+const EXTENSION = resolve(import.meta.dirname, '..', '.output', 'chrome-mv3-e2e');
 const GMAIL_FIXTURES = resolve(import.meta.dirname, '..', 'tests', 'fixtures', 'gmail');
 
 /** Every network request the browser made, so the privacy gate can inspect them. */

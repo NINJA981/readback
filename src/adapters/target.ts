@@ -59,6 +59,15 @@ export function createContentEditableTarget(
     async fix(span, replacement, clipboard) {
       const range = index.toRange(span);
       if (!range) return 'failed';
+      // The editor may have changed since the last read (a re-render, autosave, a script that
+      // sent no input event). Replace only the text the engine flagged, never whatever sits there now.
+      if (
+        !range.startContainer.isConnected ||
+        !range.endContainer.isConnected ||
+        range.toString() !== index.text.slice(span.start, span.end)
+      ) {
+        return 'failed';
+      }
       return applyFixToRange({
         doc,
         range,
@@ -81,17 +90,25 @@ export function createTextareaTarget(
   slipRects: (span: Span) => RectLike[],
 ): DraftTarget {
   const doc = element.ownerDocument;
+  let lastRead = element.value;
   return {
     kind: 'textarea',
     element,
-    read: () => element.value,
+    read: () => {
+      lastRead = element.value;
+      return lastRead;
+    },
     rangeFor: () => undefined,
     rectsFor: slipRects,
     caret() {
       if (doc.activeElement !== element) return undefined;
       return element.selectionStart === element.selectionEnd ? element.selectionStart : undefined;
     },
-    fix(span, replacement, clipboard) {
+    async fix(span, replacement, clipboard) {
+      // Same guard as the contenteditable target: the text under the span must still be what was flagged.
+      if (element.value.slice(span.start, span.end) !== lastRead.slice(span.start, span.end)) {
+        return 'failed';
+      }
       return applyFixToField({
         doc,
         field: element,

@@ -132,7 +132,17 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
     }, CONTEXT_ERROR_MS);
   };
 
+  /**
+   * Bumped by every unbind, so an `attach` that is still awaiting storage can tell it was
+   * superseded (another field took focus, the context was replaced or cleared) and must not
+   * install a binding of its own.
+   */
+  let attachGeneration = 0;
+  let pendingField: Element | undefined;
+
   const unbind = (): void => {
+    attachGeneration++;
+    pendingField = undefined;
     overlay?.destroy();
     overlay = undefined;
     binding?.destroy();
@@ -140,20 +150,27 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
     hideChip();
   };
 
+  const loadSettings = (threadKey: string) =>
+    Promise.all([storage.getSettings(), storage.getIgnore(), storage.getThreadState(threadKey)]);
+
   const attach = async (field: Element): Promise<void> => {
     if (!context || stopped) return;
     const kind = editableKindOf(field);
     if (!kind) return;
-    if (binding?.target.element === field) return;
+    if (binding?.target.element === field || pendingField === field) return;
     unbind();
-    const [settings, ignore, threadState] = await Promise.all([
-      storage.getSettings(),
-      storage.getIgnore(),
-      storage.getThreadState(context.threadKey),
-    ]);
-    // The context may have been cleared while the settings loaded.
+    const generation = attachGeneration;
+    pendingField = field;
+    let loaded: Awaited<ReturnType<typeof loadSettings>>;
+    try {
+      loaded = await loadSettings(context.threadKey);
+    } finally {
+      if (generation === attachGeneration) pendingField = undefined;
+    }
+    const [settings, ignore, threadState] = loaded;
+    // The context may have been cleared, or another attach may have started, while storage loaded.
     const current = currentContext();
-    if (!current || isStopped()) return;
+    if (!current || isStopped() || generation !== attachGeneration || binding) return;
     const session = createComposeSession({
       context: current,
       settings,
@@ -227,6 +244,7 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
         state: 'selection-context',
         asks: 0,
         open: 0,
+        unconfirmed: 0,
         slips: 0,
         contextWords: words,
         failedChecks: [],
@@ -241,7 +259,15 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
       unbind();
       context = undefined;
       words = 0;
-      report({ state: 'idle', asks: 0, open: 0, slips: 0, contextWords: 0, failedChecks: [] });
+      report({
+        state: 'idle',
+        asks: 0,
+        open: 0,
+        unconfirmed: 0,
+        slips: 0,
+        contextWords: 0,
+        failedChecks: [],
+      });
     },
     session: () => binding?.session,
     nextSlip: () => {

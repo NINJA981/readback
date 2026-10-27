@@ -6,6 +6,7 @@ import type { PopupActions, PopupViewProps } from '../src/ui/PopupView';
 export const POPUP_SCENES = [
   'popup:reading',
   'popup:reading-clean',
+  'popup:reading-unconfirmed',
   'popup:idle',
   'popup:idle-no-playground',
   'popup:idle-mail',
@@ -33,6 +34,7 @@ const status = (patch: Partial<TabStatus>): TabStatus => ({
   state: 'reading',
   asks: 0,
   open: 0,
+  unconfirmed: 0,
   slips: 0,
   contextWords: 0,
   failedChecks: [],
@@ -63,7 +65,10 @@ export function PopupScene({ name }: { name: string }) {
       };
       break;
     case 'reading-clean':
-      props = { ...base, status: status({ asks: 3, open: 0, slips: 0 }) };
+      props = { ...base, status: status({ asks: 3, open: 0, unconfirmed: 0, slips: 0 }) };
+      break;
+    case 'reading-unconfirmed':
+      props = { ...base, status: status({ asks: 3, open: 0, unconfirmed: 3, slips: 0 }) };
       break;
     case 'idle':
       props = { ...base, url: 'https://example.com/', host: 'example.com', status: undefined };

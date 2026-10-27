@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { splitSentences } from '../../../src/engine/text/sentences';
-import { findSignOff, signOffName, splitMessage } from '../../../src/engine/text/strip';
+import { createContext } from '../../../src/engine/index';
+import {
+  MAX_MESSAGE_CHARS,
+  findSignOff,
+  signOffName,
+  splitMessage,
+} from '../../../src/engine/text/strip';
 
 describe('splitSentences', () => {
   it('splits on terminal punctuation and keeps exact spans', () => {
@@ -113,5 +119,44 @@ describe('signOffName', () => {
   it('returns undefined when no name follows', () => {
     expect(signOffName('Thanks,\n+1 415 555 0142')).toBeUndefined();
     expect(signOffName('')).toBeUndefined();
+  });
+});
+
+describe('hostile input', () => {
+  const quick = (fn: () => void): number => {
+    const t0 = performance.now();
+    fn();
+    return performance.now() - t0;
+  };
+
+  it('splits a message that is mostly blank lines in under 100 ms (no quadratic scan)', () => {
+    const raw = `Hi\n${'\n'.repeat(50_000)}Thanks, Kathryn`;
+    expect(quick(() => splitMessage(raw))).toBeLessThan(100);
+    const spaced = `Hi\n${' \n'.repeat(25_000)}`;
+    expect(quick(() => splitMessage(spaced))).toBeLessThan(100);
+  });
+
+  it('builds a context from 50,000 blank lines in under 1 s', () => {
+    const message = `Can you confirm the $1,250 deposit?${'\n'.repeat(50_000)}Kathryn`;
+    expect(
+      quick(() => createContext({ source: 'playground', threadId: 'hostile', message })),
+    ).toBeLessThan(1000);
+  });
+
+  it('reads at most MAX_MESSAGE_CHARS of an incoming message', () => {
+    const raw = `${'word '.repeat(40_000)}Thanks, Kathryn`;
+    expect(raw.length).toBeGreaterThan(MAX_MESSAGE_CHARS);
+    expect(splitMessage(raw).body.length).toBeLessThanOrEqual(MAX_MESSAGE_CHARS);
+  });
+
+  it('still finds quote headers, Outlook headers and forwards after the line-start change', () => {
+    expect(
+      splitMessage('Yes.\n\n  On Mon, 2 Nov 2026 at 09:00, Kathryn <k@x.com> wrote:\n> hi').body,
+    ).toBe('Yes.');
+    expect(splitMessage('Yes.\n\n-----Original Message-----\nFrom: a\n').body).toBe('Yes.');
+    expect(splitMessage('Yes.\n\nFrom: Sam\nSent: Monday\nTo: you').body).toBe('Yes.');
+    const fwd = splitMessage('FYI\n\n---------- Forwarded message ---------\nFrom: a');
+    expect(fwd.forwarded).toBe(true);
+    expect(fwd.body).toBe('FYI');
   });
 });

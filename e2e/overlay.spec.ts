@@ -266,8 +266,9 @@ test.describe('guard card, fix and undo', () => {
 });
 
 test.describe('ask pill and ledger', () => {
-  test('AC-6.5: the pill flips from open (brass) to All covered (success) with no layout shift', async ({
+  test('AC-6.5: the pill goes from open (brass) to looks answered (brass, dotted) to All covered (success) once confirmed, with no layout shift', async ({
     openGmail,
+    worker,
   }) => {
     const page = await openGmail('inline-reply');
     await typeReply(page, ['Hi Kathryn,']);
@@ -281,6 +282,21 @@ test.describe('ask pill and ledger', () => {
     await page.keyboard.type(
       'The $1,250 deposit is confirmed. I will drop the keys off Thursday the 12th and send the signed lease back.',
     );
+    // Every ask looks answered, but a guess is not a fact: brass, a dotted ring, never "All covered".
+    await expect(pill).toHaveText('3 look answered', { timeout: 2000 });
+    await expect(page.locator(PILL)).toHaveAttribute('data-tone', 'open');
+    await expect(page.locator(`${PILL} .rb-ring circle`).first()).toHaveAttribute(
+      'stroke-dasharray',
+      '2 2',
+    );
+
+    // Confirming each ask is what turns the pill green.
+    await command(worker, 'open-ledger');
+    const confirms = page.locator(
+      'readback-overlay .rb-ledger button[aria-label^="Mark as answered"]',
+    );
+    await expect(confirms).toHaveCount(3);
+    for (let i = 0; i < 3; i++) await confirms.first().click();
     await expect(page.locator(PILL)).toHaveAttribute('data-tone', 'covered', { timeout: 2000 });
     await expect(pill).toHaveText('All covered');
     const after = (await box())!;

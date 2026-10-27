@@ -203,4 +203,28 @@ describe('draft targets', () => {
       /failed|copied|inserted/,
     );
   });
+
+  it('refuses a fix when the text under the span is no longer the flagged word', async () => {
+    const field = document.createElement('textarea');
+    field.value = 'Hi Catherine';
+    document.body.append(field);
+    const target = createTextareaTarget(field, () => []);
+    expect(target.read()).toBe('Hi Catherine');
+    // An edit with no input event: the engine still thinks "Catherine" sits at 3..12.
+    field.value = 'Dear Mr Catherine';
+    await expect(target.fix({ start: 3, end: 12 }, 'Kathryn')).resolves.toBe('failed');
+    expect(field.value).toBe('Dear Mr Catherine');
+
+    const root = document.createElement('div');
+    root.contentEditable = 'true';
+    root.textContent = 'Hi Catherine';
+    document.body.append(root);
+    const ce = createContentEditableTarget(root);
+    expect(ce.read()).toBe('Hi Catherine');
+    (root.firstChild as Text).data = 'Dear Mr Catherine';
+    await expect(ce.fix({ start: 3, end: 12 }, 'Kathryn')).resolves.toBe('failed');
+    expect(root.textContent).toBe('Dear Mr Catherine');
+    root.replaceChildren(document.createTextNode('Hi Catherine'));
+    await expect(ce.fix({ start: 3, end: 12 }, 'Kathryn')).resolves.toBe('failed');
+  });
 });

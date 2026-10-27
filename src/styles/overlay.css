@@ -160,7 +160,8 @@
 }
 
 .rb-btn-primary .rb-keycap {
-  background: color-mix(in oklch, var(--rb-on-brass) 14%, transparent);
+  /* 8%, not 14%: a lighter tint under the glyph dropped it to 4.42:1 in the light theme. */
+  background: color-mix(in oklch, var(--rb-on-brass) 8%, transparent);
   color: var(--rb-on-brass);
   box-shadow: none;
 }
@@ -271,16 +272,22 @@
   height: 16px;
 }
 
+.rb-pill-text {
+  display: inline-grid;
+  justify-items: start;
+}
+
+/* The visible label and the reserved widths share one cell (see reservedLabels in Pill.tsx). */
+.rb-pill-text > * {
+  grid-area: 1 / 1;
+}
+
 .rb-pill-label {
-  display: inline-block;
-  /* Reserved so "3 asks · 1 open" and "All covered" swap without a layout shift. */
-  min-width: 13ch;
-  text-align: left;
   animation: rb-fade-in var(--rb-dur-2) var(--rb-ease-out) both;
 }
 
-.rb-pill-label[data-reserve='fixed'] {
-  min-width: 0;
+.rb-pill-reserve {
+  visibility: hidden;
 }
 
 .rb-pill-sep {
@@ -380,6 +387,11 @@
 
 .rb-ledger-ok {
   color: var(--rb-success);
+}
+
+/* Asks that only look answered: a neutral nudge, never the success colour. */
+.rb-ledger-hint {
+  color: var(--rb-text-muted);
 }
 
 .rb-ledger-empty {
@@ -835,5 +847,11 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@media (forced-colors: active) {
+  .rb-btn-primary {
+    border: 1px solid ButtonText;
   }
 }

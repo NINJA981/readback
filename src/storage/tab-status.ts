@@ -22,6 +22,8 @@ export interface TabStatus {
   state: TabState;
   asks: number;
   open: number;
+  /** Asks that only look answered (nothing confirmed them). Counts toward "not open". */
+  unconfirmed: number;
   slips: number;
   /** Words in the selection context (generic adapter), for the context chip. */
   contextWords: number;
@@ -48,6 +50,7 @@ export function parseTabStatus(raw: unknown): TabStatus | undefined {
     state,
     asks: count(r.asks),
     open: count(r.open),
+    unconfirmed: count(r.unconfirmed),
     slips: count(r.slips),
     contextWords: count(r.contextWords),
     failedChecks: failed.slice(0, 20),

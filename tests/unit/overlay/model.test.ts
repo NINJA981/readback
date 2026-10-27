@@ -92,7 +92,9 @@ describe('ledger model', () => {
     expect(model.empty).toBe(false);
     // The sample draft addresses all three, so every ask at least looks answered (dotted).
     expect(model.asks.every((a) => a.covered)).toBe(true);
-    expect(model.header).toBe('Everything asked is covered.');
+    // ...but a guess is not a fact: the header is the muted nudge, not the success line.
+    expect(model.header).toBe('Nothing left open. Confirm each one to be sure.');
+    expect(model.headerOk).toBe(false);
   });
 
   it('confirming every ask gives the success header; dismissed asks leave the list and can be restored', () => {
@@ -104,6 +106,7 @@ describe('ledger model', () => {
     expect(model.asks).toHaveLength(2);
     expect(model.dismissed).toBe(1);
     expect(model.header).toBe('Everything asked is covered.');
+    expect(model.headerOk).toBe(true);
     expect(model.asks.every((a) => a.state === 'answered' && !a.canConfirm)).toBe(true);
   });
 
