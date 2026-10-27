@@ -1,0 +1,133 @@
+/*
+ * Styles for Readback's own pages (popup, options) and, later, the site.
+ * Tailwind v4 reads the DESIGN.md tokens from tokens.css through @theme inline:
+ * the default palette, radii, shadows and type scale are reset, so a utility
+ * like bg-red-500 or rounded-2xl simply does not exist. Only role tokens do.
+ */
+@import 'tailwindcss';
+@import './tokens.css';
+
+/* Self-hosted variable fonts (Fontsource). No network fonts anywhere. */
+@import '@fontsource-variable/hubot-sans/wdth.css';
+@import '@fontsource-variable/mona-sans/wdth.css';
+@import '@fontsource-variable/geist-mono/index.css';
+
+@theme inline {
+  --color-*: initial;
+  --color-bg: var(--rb-bg);
+  --color-surface: var(--rb-surface);
+  --color-surface-2: var(--rb-surface-2);
+  --color-surface-3: var(--rb-surface-3);
+  --color-border: var(--rb-border);
+  --color-border-strong: var(--rb-border-strong);
+  --color-text: var(--rb-text);
+  --color-text-muted: var(--rb-text-muted);
+  --color-text-subtle: var(--rb-text-subtle);
+  --color-brass: var(--rb-brass);
+  --color-brass-hover: var(--rb-brass-hover);
+  --color-on-brass: var(--rb-on-brass);
+  --color-brass-soft: var(--rb-brass-soft);
+  --color-brass-text: var(--rb-brass-text);
+  --color-slip: var(--rb-slip);
+  --color-danger: var(--rb-danger);
+  --color-danger-soft: var(--rb-danger-soft);
+  --color-success: var(--rb-success);
+  --color-success-soft: var(--rb-success-soft);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-*: initial;
+  --font-display: var(--rb-font-display);
+  --font-ui: var(--rb-font-ui);
+  --font-mono: var(--rb-font-mono);
+
+  /* DESIGN.md scale: micro 11, caption 12, label 13, ui 14, body 15, h3 17, h2 22, h1 28 */
+  --text-*: initial;
+  --text-micro: 11px;
+  --text-micro--line-height: 16px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-label: 13px;
+  --text-label--line-height: 18px;
+  --text-ui: 14px;
+  --text-ui--line-height: 20px;
+  --text-body: 15px;
+  --text-body--line-height: 24px;
+  --text-h3: 17px;
+  --text-h3--line-height: 24px;
+  --text-h2: 22px;
+  --text-h2--line-height: 28px;
+  --text-h1: 28px;
+  --text-h1--line-height: 32px;
+
+  --radius-*: initial;
+  --radius-xs: var(--rb-radius-xs);
+  --radius-sm: var(--rb-radius-sm);
+  --radius-md: var(--rb-radius-md);
+  --radius-lg: var(--rb-radius-lg);
+  --radius-full: var(--rb-radius-full);
+
+  --shadow-*: initial;
+  --shadow-e1: var(--rb-e1);
+  --shadow-e3: var(--rb-e3);
+  --shadow-e4: var(--rb-e4);
+
+  --ease-*: initial;
+  --ease-out: var(--rb-ease-out);
+  --ease-in-out: var(--rb-ease-in-out);
+
+  --spacing: 4px;
+}
+
+/*
+ * Chrome adds its own unlayered `body { font-family: ... }` to extension pages, and an
+ * unlayered rule beats anything in @layer base. So this one rule is deliberately unlayered.
+ */
+body {
+  margin: 0;
+  font: inherit;
+}
+
+@layer base {
+  html {
+    background: var(--rb-bg);
+    color: var(--rb-text);
+    font-family: var(--rb-font-ui);
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 450;
+    font-synthesis: none;
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Curly quotes and wrapping per DESIGN.md. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* The Evidence Is Mono Rule: tabular figures for every count and amount. */
+  :where(.tabular) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--rb-brass);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0ms !important;
+      animation-duration: 0ms !important;
+    }
+  }
+}

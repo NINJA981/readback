@@ -1,0 +1,63 @@
+/*
+ * Squiggles for the CSS Custom Highlight API (SPEC F4, DESIGN.md "Shapes").
+ * Declared in the manifest as a content-script stylesheet, so no <style> node is
+ * added to Gmail's DOM. The page has no Readback variables, so the slip colours
+ * are literal and must equal --rb-slip / --rb-danger-soft in tokens.css
+ * (tests/unit/styles/tokens.test.ts enforces it).
+ *
+ * Light set for light hosts, dark set for dark hosts: Gmail's theme is
+ * independent of prefers-color-scheme, so the content script picks the set.
+ */
+
+::highlight(readback-slip) {
+  text-decoration: underline wavy oklch(0.56 0.2 27) 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+}
+
+::highlight(readback-slip-active) {
+  text-decoration: underline wavy oklch(0.56 0.2 27) 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+  background-color: #ffe8e6;
+}
+
+::highlight(readback-slip-dark) {
+  text-decoration: underline wavy oklch(0.7 0.17 25) 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+}
+
+::highlight(readback-slip-active-dark) {
+  text-decoration: underline wavy oklch(0.7 0.17 25) 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+  background-color: oklch(0.28 0.06 25);
+}
+
+/*
+ * Firefox 140+: whether ::highlight honours a wavy text-decoration is unverified
+ * (ADR-0002). Until it is, Firefox gets the fallback from ADR-0001 Decision 1:
+ * a solid underline plus the danger-soft tint.
+ */
+@supports (-moz-appearance: none) {
+  ::highlight(readback-slip) {
+    text-decoration: underline solid oklch(0.56 0.2 27) 1.5px;
+    background-color: #ffe8e6;
+  }
+
+  ::highlight(readback-slip-active) {
+    text-decoration: underline solid oklch(0.56 0.2 27) 2px;
+    background-color: #ffe8e6;
+  }
+
+  ::highlight(readback-slip-dark) {
+    text-decoration: underline solid oklch(0.7 0.17 25) 1.5px;
+    background-color: oklch(0.28 0.06 25);
+  }
+
+  ::highlight(readback-slip-active-dark) {
+    text-decoration: underline solid oklch(0.7 0.17 25) 2px;
+    background-color: oklch(0.28 0.06 25);
+  }
+}

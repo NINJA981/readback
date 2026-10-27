@@ -1,0 +1,20 @@
+{
+  "status": "ready",
+  "threadId": "18c4a1f2b3d4e5f6",
+  "sentAt": "2026-11-02",
+  "sender": {
+    "name": "Kathryn Moss",
+    "emailLocal": "kathryn.moss",
+    "role": "sender"
+  },
+  "recipients": [
+    {
+      "name": "Jo Park",
+      "emailLocal": "jo.park",
+      "role": "to"
+    }
+  ],
+  "signatureBlock": "Kathryn Moss\nProperty Manager, Larchmont Lettings",
+  "message": "Hi Sam,\n\nGreat news, the flat at 14 Larchmont Road is yours from the 1st. Before I hand over the keys, can you confirm the $1,250 deposit, drop off the keys on Thursday the 12th, and send the signed lease back?\n\nLet me know if you have any questions!\n\nThanks,\nKathryn",
+  "kind": "forward"
+}

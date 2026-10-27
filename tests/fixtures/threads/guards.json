@@ -1,0 +1,226 @@
+{
+  "threads": {
+    "deposit": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Kathryn Moss", "emailLocal": "kathryn.moss", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nThe flat is yours from the 1st. Please confirm the $1,250 deposit and drop off the keys on Thursday the 12th.\n\nThanks,\nKathryn"
+    },
+    "jon": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Mira Patel", "emailLocal": "mira.patel", "role": "sender" },
+      "recipients": [{ "name": "Jon Reyes", "emailLocal": "jon.reyes", "role": "to" }],
+      "message": "Hi both,\n\nThe notes from the review are in the shared folder. Reyes team, please check section 3.\n\nMira"
+    },
+    "stephen": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Stephen Hale", "emailLocal": "stephen.hale", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nThe survey is complete and the report goes out tomorrow.\n\nRegards,\nStephen"
+    },
+    "sarah": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Sarah Quinn", "emailLocal": "sarah.quinn", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nI have moved our catch-up to the afternoon.\n\nSarah"
+    },
+    "philip": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Phillip Grant", "emailLocal": "phillip.grant", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nThe drawings are approved.\n\nPhillip"
+    },
+    "megan": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Meghan Doyle", "emailLocal": "meghan.doyle", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nThanks for the intro.\n\nMeghan"
+    },
+    "geoff": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Geoff Marsh", "emailLocal": "geoff.marsh", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nSee you at the site on Friday.\n\nGeoff"
+    },
+    "aimee": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Aimee Laurent", "emailLocal": "aimee.laurent", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hello Sam,\n\nThe samples have shipped.\n\nAimee"
+    },
+    "jamie": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Jaime Ortega", "emailLocal": "jaime.ortega", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hello Sam,\n\nThe keys are with reception.\n\nJaime"
+    },
+    "shaun": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Shaun Pierce", "emailLocal": "shaun.pierce", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hello Sam,\n\nThe pitch went well.\n\nShaun"
+    },
+    "anne": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Anne Whitlock", "emailLocal": "anne.whitlock", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hello Sam,\n\nThe garden is ready.\n\nAnne"
+    },
+    "markus": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Markus Lindqvist", "emailLocal": "markus.lindqvist", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hello Sam,\n\nThe prototype is on the desk.\n\nMarkus"
+    },
+    "isabelle": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Isabelle Fontaine", "emailLocal": "isabelle.fontaine", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hello Sam,\n\nI have booked the room.\n\nIsabelle"
+    },
+    "invoice": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Accounts Team", "emailLocal": "accounts", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hello Sam,\n\nInvoice INV-20931 for $2,430.00 is due on the 20th. Please quote the invoice number with your payment.\n\nAccounts"
+    },
+    "order": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Ayesha Khan", "emailLocal": "ayesha.khan", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nI can see order #48213 on our side. It was $89.50 including postage.\n\nAyesha, Support"
+    },
+    "euro": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Lena Vogel", "emailLocal": "lena.vogel", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nThe agreed rent is 1.250,00 € per month.\n\nLena"
+    },
+    "gbp": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Dev Shah", "emailLocal": "dev.shah", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nThe contractor quote is £890 for the full job.\n\nDev"
+    },
+    "booking": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Front Desk", "emailLocal": "frontdesk", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hello Sam,\n\nYour booking reference is BK-77421 for 14 nights.\n\nFront Desk"
+    },
+    "account": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Helena Roy", "emailLocal": "helena.roy", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nPlease use account 770218 for the transfer.\n\nHelena"
+    },
+    "dates": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Tess Brandt", "emailLocal": "tess.brandt", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nHow about Thursday the 12th for the walkthrough?\n\nTess"
+    },
+    "plain": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Ruth Mendel", "emailLocal": "ruth.mendel", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nThanks for the update. Speak soon.\n\nRuth"
+    },
+    "twonames": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Kathryn Moss", "emailLocal": "kathryn.moss", "role": "sender" },
+      "recipients": [
+        { "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" },
+        { "name": "Catherine Wu", "emailLocal": "catherine.wu", "role": "cc" }
+      ],
+      "message": "Hi Sam and Catherine,\n\nHere is the plan for the handover.\n\nKathryn"
+    },
+    "twoamounts": {
+      "sentAt": "2026-11-02",
+      "sender": { "name": "Dev Shah", "emailLocal": "dev.shah", "role": "sender" },
+      "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
+      "message": "Hi Sam,\n\nOption A is $1,250 and option B is $1,520. Which do you prefer?\n\nDev"
+    }
+  },
+  "cases": [
+    { "id": "s01-name-catherine", "kind": "slip", "thread": "deposit", "draft": "Hi Catherine,\n\nSee you Thursday.", "flags": [{ "guard": "name", "found": "Catherine", "expected": "Kathryn" }] },
+    { "id": "s02-name-steven", "kind": "slip", "thread": "stephen", "draft": "Thanks Steven, that is great news.", "flags": [{ "guard": "name", "found": "Steven", "expected": "Stephen" }] },
+    { "id": "s03-name-john", "kind": "slip", "thread": "jon", "draft": "Thanks John, I will take a look.", "flags": [{ "guard": "name", "found": "John", "expected": "Jon" }] },
+    { "id": "s04-name-sara", "kind": "slip", "thread": "sarah", "draft": "Hi Sara, the afternoon works.", "flags": [{ "guard": "name", "found": "Sara", "expected": "Sarah" }] },
+    { "id": "s05-name-philip", "kind": "slip", "thread": "philip", "draft": "Hi Philip, great to hear.", "flags": [{ "guard": "name", "found": "Philip", "expected": "Phillip" }] },
+    { "id": "s06-name-megan", "kind": "slip", "thread": "megan", "draft": "Hi Megan, you are welcome.", "flags": [{ "guard": "name", "found": "Megan", "expected": "Meghan" }] },
+    { "id": "s07-name-jeff", "kind": "slip", "thread": "geoff", "draft": "Hi Jeff, see you there.", "flags": [{ "guard": "name", "found": "Jeff", "expected": "Geoff" }] },
+    { "id": "s08-name-amy", "kind": "slip", "thread": "aimee", "draft": "Hi Amy, thank you for sending them.", "flags": [{ "guard": "name", "found": "Amy", "expected": "Aimee" }] },
+    { "id": "s09-name-jamie", "kind": "slip", "thread": "jamie", "draft": "Hi Jamie, I will collect them at five.", "flags": [{ "guard": "name", "found": "Jamie", "expected": "Jaime" }] },
+    { "id": "s10-name-sean", "kind": "slip", "thread": "shaun", "draft": "Hi Sean, that is wonderful.", "flags": [{ "guard": "name", "found": "Sean", "expected": "Shaun" }] },
+    { "id": "s11-name-ann", "kind": "slip", "thread": "anne", "draft": "Hi Ann, I will be there at nine.", "flags": [{ "guard": "name", "found": "Ann", "expected": "Anne" }] },
+    { "id": "s12-name-marcus", "kind": "slip", "thread": "markus", "draft": "Hi Marcus, thank you.", "flags": [{ "guard": "name", "found": "Marcus", "expected": "Markus" }] },
+    { "id": "s13-name-isabel", "kind": "slip", "thread": "isabelle", "draft": "Hi Isabel, thanks for booking.", "flags": [{ "guard": "name", "found": "Isabel", "expected": "Isabelle" }] },
+    { "id": "s14-number-1520", "kind": "slip", "thread": "deposit", "draft": "I will send the $1,520 deposit today.", "flags": [{ "guard": "number", "found": "$1,520", "expected": "$1,250" }] },
+    { "id": "s15-number-2340", "kind": "slip", "thread": "invoice", "draft": "Paying $2,340.00 on Friday.", "flags": [{ "guard": "number", "found": "$2,340.00", "expected": "$2,430.00" }] },
+    { "id": "s16-number-gbp", "kind": "slip", "thread": "gbp", "draft": "The £980 quote is fine by me.", "flags": [{ "guard": "number", "found": "£980", "expected": "£890" }] },
+    { "id": "s17-number-euro", "kind": "slip", "thread": "euro", "draft": "I will transfer 1.520,00 € monthly.", "flags": [{ "guard": "number", "found": "1.520,00 €", "expected": "1.250,00 €" }] },
+    { "id": "s18-id-transposed", "kind": "slip", "thread": "order", "draft": "My order #48231 never arrived.", "flags": [{ "guard": "number", "found": "48231", "expected": "48213" }] },
+    { "id": "s19-id-substituted", "kind": "slip", "thread": "order", "draft": "My order #48218 never arrived.", "flags": [{ "guard": "number", "found": "48218", "expected": "48213" }] },
+    { "id": "s20-id-invoice", "kind": "slip", "thread": "invoice", "draft": "Please note payment for INV-20913 is on its way.", "flags": [{ "guard": "number", "found": "INV-20913", "expected": "INV-20931" }] },
+    { "id": "s21-id-booking", "kind": "slip", "thread": "booking", "draft": "My booking reference is BK-77412.", "flags": [{ "guard": "number", "found": "BK-77412", "expected": "BK-77421" }] },
+    { "id": "s22-id-account", "kind": "slip", "thread": "account", "draft": "Transferred to account 770281 this morning.", "flags": [{ "guard": "number", "found": "770281", "expected": "770218" }] },
+    { "id": "s23-date-weekday-mismatch", "kind": "slip", "thread": "plain", "draft": "I can do Thursday the 10th.", "flags": [{ "guard": "date", "found": "Thursday the 10th", "expected": "Tuesday the 10th" }] },
+    { "id": "s24-date-thu-10-nov", "kind": "slip", "thread": "plain", "draft": "See you Thu 10 Nov at the office.", "flags": [{ "guard": "date", "found": "Thu 10 Nov" }] },
+    { "id": "s25-date-monday-10th", "kind": "slip", "thread": "plain", "draft": "Monday the 10th works for me.", "flags": [{ "guard": "date", "found": "Monday the 10th" }] },
+    { "id": "s26-date-thread-near-miss", "kind": "slip", "thread": "dates", "draft": "Thursday the 10th is perfect.", "flags": [{ "guard": "date", "found": "Thursday the 10th", "expected": "Thursday the 12th" }] },
+    { "id": "s27-date-same-day-other-weekday", "kind": "slip", "thread": "dates", "draft": "Tuesday the 12th is perfect.", "flags": [{ "guard": "date", "found": "Tuesday the 12th" }] },
+    { "id": "s28-both-slips-hero", "kind": "slip", "thread": "deposit", "draft": "Hi Catherine,\n\nThe $1,520 deposit is confirmed and I will drop the keys off Thursday the 12th.", "flags": [{ "guard": "name", "found": "Catherine", "expected": "Kathryn" }, { "guard": "number", "found": "$1,520", "expected": "$1,250" }] },
+    { "id": "s29-name-and-date", "kind": "slip", "thread": "deposit", "draft": "Thanks Catherine, Thursday the 10th it is.", "flags": [{ "guard": "name", "found": "Catherine", "expected": "Kathryn" }, { "guard": "date", "found": "Thursday the 10th" }] },
+    { "id": "s30-name-possessive", "kind": "slip", "thread": "deposit", "draft": "I will pass this on to Catherine's team.", "flags": [{ "guard": "name", "found": "Catherine" }] },
+
+    { "id": "d01-name-different-person", "kind": "deliberate", "thread": "deposit", "draft": "Hi Kathryn, I will ask Bob to cover the keys.", "flags": [] },
+    { "id": "d02-name-both-spellings-in-thread", "kind": "deliberate", "thread": "twonames", "draft": "Hi Kathryn and Catherine, thanks both.", "flags": [] },
+    { "id": "d03-name-third-person", "kind": "deliberate", "thread": "deposit", "draft": "Hi Kathryn, my colleague Marcus will join.", "flags": [] },
+    { "id": "d04-name-unrelated-short", "kind": "deliberate", "thread": "sarah", "draft": "Hi Sarah, Sam here. Thanks for moving it.", "flags": [] },
+    { "id": "d05-name-correct", "kind": "deliberate", "thread": "stephen", "draft": "Thanks Stephen, that is great news.", "flags": [] },
+    { "id": "d06-name-sentence-start-word", "kind": "deliberate", "thread": "deposit", "draft": "Kathryn, Thanks again. Then I will call.", "flags": [] },
+    { "id": "d07-name-month", "kind": "deliberate", "thread": "deposit", "draft": "Hi Kathryn, I can move in during March or April.", "flags": [] },
+    { "id": "d08-name-weekday", "kind": "deliberate", "thread": "deposit", "draft": "Hi Kathryn, Tuesday is better than Monday for me.", "flags": [] },
+    { "id": "d09-name-place", "kind": "deliberate", "thread": "deposit", "draft": "Hi Kathryn, I am coming from Manchester and then London.", "flags": [] },
+    { "id": "d10-name-company", "kind": "deliberate", "thread": "jon", "draft": "Hi Mira and Jon, our firm Reyes and Co. can help.", "flags": [] },
+    { "id": "d11-name-ignored-global", "kind": "deliberate", "thread": "deposit", "ignore": { "names": ["Catherine"], "numbers": [] }, "draft": "Hi Catherine, I am writing about the other flat.", "flags": [] },
+    { "id": "d12-name-ignored-accents", "kind": "deliberate", "thread": "deposit", "ignore": { "names": ["catherine"], "numbers": [] }, "draft": "Hi Catherine,", "flags": [] },
+    { "id": "d13-name-lowercase", "kind": "deliberate", "thread": "deposit", "draft": "hi kathryn, catherine is my aunt.", "flags": [] },
+    { "id": "d14-name-in-quote-ignored-no", "kind": "deliberate", "thread": "plain", "draft": "Hi Ruth, thanks for the update.", "flags": [] },
+    { "id": "d15-number-1200", "kind": "deliberate", "thread": "deposit", "draft": "Could I pay $1,200 now instead?", "flags": [] },
+    { "id": "d16-number-1350", "kind": "deliberate", "thread": "deposit", "draft": "I can stretch to $1,350 if needed.", "flags": [] },
+    { "id": "d17-number-1100", "kind": "deliberate", "thread": "deposit", "draft": "The $1,100 figure came from the last flat.", "flags": [] },
+    { "id": "d18-number-counter-offer", "kind": "deliberate", "thread": "deposit", "draft": "Could we do $1,520 instead?", "flags": [] },
+    { "id": "d19-number-how-about", "kind": "deliberate", "thread": "deposit", "draft": "How about $1,520 for the deposit?", "flags": [] },
+    { "id": "d20-number-we-can-offer", "kind": "deliberate", "thread": "deposit", "draft": "We can offer $1,520 as a final price.", "flags": [] },
+    { "id": "d21-number-kind-mismatch", "kind": "deliberate", "thread": "deposit", "draft": "We stayed 1,520 nights in total.", "flags": [] },
+    { "id": "d22-number-currency-mismatch", "kind": "deliberate", "thread": "deposit", "draft": "The €1,520 fee was for the other place.", "flags": [] },
+    { "id": "d23-number-verbatim-in-thread", "kind": "deliberate", "thread": "twoamounts", "draft": "Option B at $1,520 is my choice.", "flags": [] },
+    { "id": "d24-number-correct-amount", "kind": "deliberate", "thread": "deposit", "draft": "I will send the $1,250 deposit today.", "flags": [] },
+    { "id": "d25-number-year", "kind": "deliberate", "thread": "deposit", "draft": "The lease runs to 2027 and renews in 2028.", "flags": [] },
+    { "id": "d26-number-different-length", "kind": "deliberate", "thread": "deposit", "draft": "Parking is $125 a month.", "flags": [] },
+    { "id": "d27-number-small", "kind": "deliberate", "thread": "order", "draft": "I need 2 or 3 copies.", "flags": [] },
+    { "id": "d28-number-id-different", "kind": "deliberate", "thread": "order", "draft": "My other order #12345 is fine.", "flags": [] },
+    { "id": "d29-number-amount-substitution", "kind": "deliberate", "thread": "invoice", "draft": "Paying $2,530.00 on Friday.", "flags": [] },
+    { "id": "d30-number-time", "kind": "deliberate", "thread": "deposit", "draft": "Let us meet at 10:30 or 12:15.", "flags": [] },
+    { "id": "d31-number-ignored-global", "kind": "deliberate", "thread": "deposit", "ignore": { "names": [], "numbers": ["$1,520"] }, "draft": "The $1,520 was a typo in my notes.", "flags": [] },
+    { "id": "d32-number-phone", "kind": "deliberate", "thread": "plain", "draft": "Call me on 555-0142 any time.", "flags": [] },
+    { "id": "d33-number-percent", "kind": "deliberate", "thread": "deposit", "draft": "That is a 15 percent increase.", "flags": [] },
+    { "id": "d34-number-gbp-other", "kind": "deliberate", "thread": "gbp", "draft": "I can pay £1,200 now.", "flags": [] },
+    { "id": "d35-date-different-proposal", "kind": "deliberate", "thread": "dates", "draft": "Monday the 23rd works better for me.", "flags": [] },
+    { "id": "d36-date-relative", "kind": "deliberate", "thread": "plain", "draft": "Let us talk next Friday.", "flags": [] },
+    { "id": "d37-date-correct-weekday", "kind": "deliberate", "thread": "plain", "draft": "Friday the 13th is fine.", "flags": [] },
+    { "id": "d38-date-correct-wednesday", "kind": "deliberate", "thread": "plain", "draft": "Wednesday the 11th works.", "flags": [] },
+    { "id": "d39-date-same-as-thread", "kind": "deliberate", "thread": "dates", "draft": "Thursday the 12th is perfect.", "flags": [] },
+    { "id": "d40-date-tomorrow", "kind": "deliberate", "thread": "plain", "draft": "I will come tomorrow, or the day after.", "flags": [] },
+    { "id": "d41-date-weekday-only", "kind": "deliberate", "thread": "dates", "draft": "Thursday works for me.", "flags": [] },
+    { "id": "d42-date-day-only", "kind": "deliberate", "thread": "plain", "draft": "On the 10th I am away.", "flags": [] },
+    { "id": "d43-date-month-day-correct", "kind": "deliberate", "thread": "plain", "draft": "Tue 10 Nov is fine.", "flags": [] },
+    { "id": "d44-date-time", "kind": "deliberate", "thread": "plain", "draft": "Friday 3pm suits me.", "flags": [] },
+    { "id": "d45-date-far-from-thread", "kind": "deliberate", "thread": "dates", "draft": "Thursday the 26th is when I return.", "flags": [] },
+    { "id": "d46-plain-nothing", "kind": "deliberate", "thread": "plain", "draft": "Thanks Ruth, speak soon.", "flags": [] },
+    { "id": "d47-empty-draft", "kind": "deliberate", "thread": "deposit", "draft": "", "flags": [] },
+    { "id": "d48-quoted-in-draft-correct", "kind": "deliberate", "thread": "deposit", "draft": "Hi Kathryn,\n\nConfirming the $1,250 deposit and Thursday the 12th.\n\nSam", "flags": [] }
+  ]
+}

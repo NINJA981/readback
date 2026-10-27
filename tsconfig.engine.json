@@ -1,0 +1,21 @@
+{
+  "//": "The engine is pure: no DOM, no browser APIs, no Node APIs. Typechecking it with lib ES2023 only fails on any DOM global (ADR-0001 dependency rule).",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": [],
+    "target": "ES2023",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/engine/**/*.ts"]
+}

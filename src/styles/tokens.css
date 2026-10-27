@@ -1,0 +1,132 @@
+/*
+ * Readback design tokens: DESIGN.md (D5 Bronze Vault, T8) as CSS variables.
+ * OKLCH is canonical. `:root, :host` so the same file styles pages (popup,
+ * options, site) and the overlay's shadow root (imported with ?inline).
+ *
+ * Theme: dark is primary. Light applies when the OS prefers it, unless
+ * data-theme="dark" is set; data-theme="light" forces it. data-theme="dark"
+ * forces dark. The Gmail overlay sets data-theme from the host's background.
+ *
+ * Every colour, radius, shadow and duration the UI uses comes from here;
+ * tests/unit/styles/tokens.test.ts checks this file against DESIGN.md.
+ */
+
+:root,
+:host {
+  /* Dark */
+  --rb-bg: oklch(0.165 0.01 250);
+  --rb-surface: oklch(0.2 0.012 250);
+  --rb-surface-2: oklch(0.235 0.013 250);
+  --rb-surface-3: oklch(0.27 0.014 250);
+  --rb-border: oklch(0.285 0.013 250);
+  --rb-border-strong: oklch(0.5 0.015 250);
+  --rb-text: oklch(0.94 0.006 250);
+  --rb-text-muted: oklch(0.8 0.012 250);
+  --rb-text-subtle: oklch(0.69 0.012 250);
+  --rb-brass: oklch(0.76 0.1 72);
+  --rb-brass-hover: oklch(0.81 0.09 75);
+  --rb-on-brass: oklch(0.17 0.02 70);
+  --rb-brass-soft: oklch(0.28 0.04 75);
+  --rb-brass-text: oklch(0.8 0.09 75);
+  --rb-slip: oklch(0.7 0.17 25);
+  --rb-danger: oklch(0.77 0.13 25);
+  --rb-danger-soft: oklch(0.28 0.06 25);
+  --rb-success: oklch(0.76 0.13 150);
+  --rb-success-soft: oklch(0.28 0.05 150);
+
+  /* Shadows exist only for things that float over a page we do not own (e3) and dialogs (e4). */
+  --rb-e1: 0 0 0 1px var(--rb-border), 0 1px 2px oklch(0.25 0.02 250 / 0.04);
+  --rb-e3:
+    0 0 0 1px var(--rb-border), inset 0 1px 0 oklch(1 0 0 / 0.05),
+    0 12px 24px -8px oklch(0 0 0 / 0.55);
+  --rb-e4: 0 0 0 1px oklch(1 0 0 / 0.06), 0 24px 48px -12px oklch(0 0 0 / 0.6);
+  --rb-scrim: oklch(0.12 0.01 250 / 0.65);
+
+  /* Radius */
+  --rb-radius-xs: 4px;
+  --rb-radius-sm: 6px;
+  --rb-radius-md: 8px;
+  --rb-radius-lg: 10px;
+  --rb-radius-full: 9999px;
+
+  /* Motion */
+  --rb-dur-0: 0ms;
+  --rb-dur-1: 100ms;
+  --rb-dur-2: 150ms;
+  --rb-dur-card: 160ms;
+  --rb-dur-line: 240ms;
+  --rb-dur-swap: 280ms;
+  --rb-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --rb-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Type */
+  --rb-font-display: 'Hubot Sans Variable', 'Mona Sans Variable', system-ui, sans-serif;
+  --rb-font-ui: 'Mona Sans Variable', system-ui, sans-serif;
+  --rb-font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']),
+  :host(:not([data-theme='dark'])) {
+    --rb-bg: oklch(0.98 0.003 250);
+    --rb-surface: oklch(1 0 0);
+    --rb-surface-2: oklch(0.955 0.005 250);
+    --rb-surface-3: oklch(0.93 0.006 250);
+    --rb-border: oklch(0.905 0.008 250);
+    --rb-border-strong: oklch(0.6 0.012 250);
+    --rb-text: oklch(0.22 0.012 250);
+    --rb-text-muted: oklch(0.46 0.012 250);
+    --rb-text-subtle: oklch(0.55 0.012 250);
+    --rb-brass: oklch(0.5 0.1 62);
+    --rb-brass-hover: oklch(0.45 0.09 62);
+    --rb-on-brass: oklch(0.99 0.006 80);
+    --rb-brass-soft: oklch(0.95 0.03 75);
+    --rb-brass-text: oklch(0.48 0.1 62);
+    --rb-slip: oklch(0.56 0.2 27);
+    --rb-danger: oklch(0.54 0.19 27);
+    --rb-danger-soft: #ffe8e6;
+    --rb-success: oklch(0.52 0.12 150);
+    --rb-success-soft: oklch(0.95 0.035 150);
+    --rb-e3:
+      0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 2px 4px -1px oklch(0.25 0.02 250 / 0.08),
+      0 8px 16px -4px oklch(0.25 0.02 250 / 0.14);
+    --rb-e4:
+      0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 8px 16px -4px oklch(0.25 0.02 250 / 0.1),
+      0 24px 48px -12px oklch(0.25 0.02 250 / 0.22);
+    --rb-scrim: oklch(0.12 0.01 250 / 0.45);
+    color-scheme: light;
+  }
+}
+
+:root[data-theme='light'],
+:host([data-theme='light']) {
+  --rb-bg: oklch(0.98 0.003 250);
+  --rb-surface: oklch(1 0 0);
+  --rb-surface-2: oklch(0.955 0.005 250);
+  --rb-surface-3: oklch(0.93 0.006 250);
+  --rb-border: oklch(0.905 0.008 250);
+  --rb-border-strong: oklch(0.6 0.012 250);
+  --rb-text: oklch(0.22 0.012 250);
+  --rb-text-muted: oklch(0.46 0.012 250);
+  --rb-text-subtle: oklch(0.55 0.012 250);
+  --rb-brass: oklch(0.5 0.1 62);
+  --rb-brass-hover: oklch(0.45 0.09 62);
+  --rb-on-brass: oklch(0.99 0.006 80);
+  --rb-brass-soft: oklch(0.95 0.03 75);
+  --rb-brass-text: oklch(0.48 0.1 62);
+  --rb-slip: oklch(0.56 0.2 27);
+  --rb-danger: oklch(0.54 0.19 27);
+  --rb-danger-soft: #ffe8e6;
+  --rb-success: oklch(0.52 0.12 150);
+  --rb-success-soft: oklch(0.95 0.035 150);
+  --rb-e3:
+    0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 2px 4px -1px oklch(0.25 0.02 250 / 0.08),
+    0 8px 16px -4px oklch(0.25 0.02 250 / 0.14);
+  --rb-e4:
+    0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 8px 16px -4px oklch(0.25 0.02 250 / 0.1),
+    0 24px 48px -12px oklch(0.25 0.02 250 / 0.22);
+  --rb-scrim: oklch(0.12 0.01 250 / 0.45);
+  color-scheme: light;
+}

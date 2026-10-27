@@ -1,0 +1,18 @@
+node_modules
+.output
+.wxt
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+# Architect documents are hand-formatted; do not reflow them.
+SPEC.md
+DESIGN.md
+PRODUCT.md
+docs/
+.impeccable/
+tests/fixtures/gmail/*.html
+tests/fixtures/pages/*.html
+tests/fixtures/gmail/*.expected.json
+tests/fixtures/threads/*.json
+tests/fixtures/gmail/generate.mjs

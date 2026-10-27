@@ -1,0 +1,52 @@
+/*
+ * Styles inside Readback's shadow root (the Gmail/page overlay). Placeholder
+ * set for Stage 2: the context chip and the textarea mirror. The guard card,
+ * ask pill and ledger arrive with the Stage 3 UI. Tokens come from tokens.css,
+ * injected next to this file.
+ */
+
+:host {
+  all: initial;
+}
+
+[data-readback-mirror] {
+  box-sizing: border-box;
+}
+
+.rb-mirror-slip {
+  text-decoration: underline wavy var(--rb-slip) 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+}
+
+.rb-chip {
+  position: fixed;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+  padding: 2px 8px;
+  border-radius: var(--rb-radius-xs);
+  background: var(--rb-surface-2);
+  color: var(--rb-text-muted);
+  box-shadow: var(--rb-e3);
+  font-family: var(--rb-font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 450;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+}
+
+.rb-chip button {
+  all: unset;
+  cursor: pointer;
+  color: var(--rb-brass-text);
+  font-weight: 520;
+  border-radius: var(--rb-radius-xs);
+}
+
+.rb-chip button:focus-visible {
+  outline: 2px solid var(--rb-brass);
+  outline-offset: 2px;
+}

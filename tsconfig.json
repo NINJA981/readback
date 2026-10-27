@@ -1,0 +1,12 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "noImplicitReturns": true,
+    "allowUnreachableCode": false,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [".wxt/wxt.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", ".output", "coverage", "playwright-report", "test-results"]
+}
