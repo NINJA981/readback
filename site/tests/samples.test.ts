@@ -36,7 +36,7 @@ const expected: Record<string, { found: string; expected: string }[]> = {
   ],
 };
 
-describe('sample threads against the real engine', () => {
+describe('AC-W.5: sample threads against the real engine', () => {
   it('covers every sample', () => {
     expect(Object.keys(expected).sort()).toEqual(SAMPLES.map((s) => s.id).sort());
   });

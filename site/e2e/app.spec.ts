@@ -29,7 +29,9 @@ test.describe('web app (AC-W*)', () => {
     await expect(page.locator('.success-line')).toContainText('No slips');
   });
 
-  test('typing live: a different person is not flagged, a near-miss is', async ({ page }) => {
+  test('AC-W.3: typing live, a different person is not flagged and a near-miss is', async ({
+    page,
+  }) => {
     await page.goto('/app/');
     await page.getByRole('button', { name: 'Try a sample' }).click();
     const reply = page.getByRole('textbox', { name: 'Your reply' });
@@ -86,7 +88,7 @@ test.describe('web app (AC-W*)', () => {
     await context.setOffline(false);
   });
 
-  test('manifest is installable', async ({ page, request }) => {
+  test('AC-W.8: manifest is installable', async ({ page, request }) => {
     await page.goto('/app/');
     const href = await page.locator('link[rel="manifest"]').getAttribute('href');
     const res = await request.get(new URL(href ?? '', page.url()).href);
@@ -101,7 +103,7 @@ test.describe('web app (AC-W*)', () => {
   });
 
   for (const width of [375, 768, 1440]) {
-    test(`${width}px: no horizontal scroll, touch targets at least 44px on touch layouts`, async ({
+    test(`AC-W.9: ${width}px, no horizontal scroll, touch targets at least 44px on touch layouts`, async ({
       browser,
     }) => {
       const ctx = await browser.newContext({

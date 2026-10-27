@@ -171,7 +171,7 @@ export function Ledger({ id, model, actions, autoFocus, open }: LedgerProps) {
                   <button
                     type="button"
                     className="rb-btn rb-btn-secondary rb-btn-sm"
-                    aria-label={`Change ${slip.found} to ${slip.expected}`}
+                    aria-label={`Fix: change ${slip.found} to ${slip.expected}`}
                     onMouseDown={keep}
                     onClick={() => {
                       actions.fix(slip.id, 0);

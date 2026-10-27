@@ -339,7 +339,7 @@ test.describe('ask pill and ledger', () => {
     await command(worker, 'open-ledger');
     await page
       .locator('readback-overlay .rb-ledger')
-      .getByRole('button', { name: 'Change Catherine to Kathryn' })
+      .getByRole('button', { name: 'Fix: change Catherine to Kathryn' })
       .click();
     await expect.poll(() => editorText(page)).toContain('Hi Kathryn,');
   });

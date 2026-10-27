@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('landing page', () => {
+test.describe('landing page (AC-W.11)', () => {
   test('hero: one h1, the no-install link to /app, no canvas', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText(

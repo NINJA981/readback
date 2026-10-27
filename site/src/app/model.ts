@@ -76,8 +76,11 @@ async function pipe(
   stream: CompressionStream | DecompressionStream,
 ): Promise<Uint8Array> {
   const writer = stream.writable.getWriter();
-  void writer.write(data as unknown as BufferSource);
-  void writer.close();
+  // A corrupt payload rejects the read side below, which the caller handles; the write side
+  // rejects too, and must not surface as an unhandled rejection in the console.
+  const ignore = (): void => undefined;
+  writer.write(data as unknown as BufferSource).catch(ignore);
+  writer.close().catch(ignore);
   return new Uint8Array(await new Response(stream.readable).arrayBuffer());
 }
 

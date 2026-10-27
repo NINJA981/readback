@@ -1001,7 +1001,6 @@ export function App(): React.JSX.Element {
                     className="pill pill--button"
                     data-tone={pill.tone}
                     onClick={scrollToLedger}
-                    aria-label={`${pill.announcement} Show the list.`}
                   >
                     {pill.tone === 'covered' ? (
                       <Icon name="check" size={14} />
@@ -1019,6 +1018,8 @@ export function App(): React.JSX.Element {
                         {pill.slipLabel}
                       </span>
                     )}
+                    {/* The visible text stays first in the name (WCAG 2.5.3 label in name). */}
+                    <span className="sr-only">{`. ${pill.announcement} Show the list.`}</span>
                   </button>
                 )
               )}

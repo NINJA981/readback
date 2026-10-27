@@ -111,7 +111,7 @@ export function GuardCard(p: CardProps): React.JSX.Element {
           </button>
         )}
       </div>
-      <p className="gcard__hint t-caption subtle">
+      <p className="gcard__hint t-caption muted">
         <span className="keycap">↵</span> change <span className="keycap">I</span> ignore{' '}
         <span className="keycap">Esc</span> close
       </p>
@@ -159,7 +159,7 @@ export function SlipList({ flags, activeId, onOpen, onFix }: SlipListProps): Rea
                     <span className="sr-only"> should be </span>
                     <span className="mono-inline">{f.expected}</span>
                   </span>
-                  <span className="t-caption subtle">{f.message}</span>
+                  <span className="t-caption muted">{f.message}</span>
                 </span>
               </button>
               <button
@@ -226,7 +226,7 @@ export function AskLedger({
                 <span className="row__title row__title--clamp" title={a.text}>
                   {a.text}
                 </span>
-                <span className="t-caption subtle">
+                <span className="t-caption muted">
                   {a.state === 'open' && 'Open'}
                   {a.state === 'looks-answered' && 'Looks answered'}
                   {a.state === 'answered' && 'Answered'}

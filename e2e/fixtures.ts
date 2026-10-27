@@ -1,7 +1,7 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { chromium, test as base } from '@playwright/test';
+import { chromium, expect, test as base } from '@playwright/test';
 import type { BrowserContext, Page, Worker } from '@playwright/test';
 
 const EXTENSION = resolve(import.meta.dirname, '..', '.output', 'chrome-mv3');
@@ -49,6 +49,11 @@ export const test = base.extend<Fixtures>({
       const log: RequestLog = { urls: [] };
       context.on('request', (r) => log.urls.push(r.url()));
       await use(log);
+      // AC-G.2, suite-wide: whatever a test did, nothing it touched left this machine.
+      expect(
+        log.urls.filter((u) => !isLocalRequest(u)),
+        'requests that left this machine',
+      ).toEqual([]);
     },
     { auto: true },
   ],
@@ -65,7 +70,7 @@ export const test = base.extend<Fixtures>({
   },
 });
 
-export { expect } from '@playwright/test';
+export { expect };
 
 /** The slice of the extension API the tests read inside the service worker. */
 interface ChromeStorageArea {
@@ -103,5 +108,7 @@ export function highlightTexts(page: Page, name: string): Promise<string[]> {
 export function isLocalRequest(url: string): boolean {
   if (/^(?:chrome-extension|moz-extension|data|blob|about|chrome):/.test(url)) return true;
   // The Gmail fixture origin is fulfilled from disk by the test, never contacted.
-  return url.startsWith('https://mail.google.com/');
+  if (url.startsWith('https://mail.google.com/')) return true;
+  // The parity test serves the built site from a loopback server it started itself.
+  return /^http:\/\/(?:127\.0\.0\.1|localhost)[:/]/.test(url);
 }
