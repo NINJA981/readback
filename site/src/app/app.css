@@ -23,7 +23,7 @@
   top: 0;
   z-index: var(--z-sticky);
   padding-top: env(safe-area-inset-top);
-  background: color-mix(in oklch, var(--rb-bg) 92%, transparent);
+  background: color-mix(in srgb, var(--rb-bg) 92%, transparent);
   backdrop-filter: blur(12px) saturate(1.4);
   border-bottom: 1px solid var(--rb-border);
 }
@@ -490,13 +490,6 @@ input:disabled {
   overflow-wrap: anywhere;
 }
 
-.row__title--clamp {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .row__actions {
   display: flex;
   flex: none;
@@ -848,4 +841,209 @@ input:disabled {
 
 .panel--loading {
   min-height: 120px;
+}
+
+/* Command palette (Ctrl/Cmd+K): 640px, 20vh from the top, 48px input, 36px rows, e4. */
+.palette {
+  width: calc(100% - 2 * var(--sp-4));
+  max-width: 640px;
+  margin: 20vh auto auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--rb-radius-lg);
+  background: var(--rb-surface);
+  color: var(--rb-text);
+  box-shadow: var(--rb-e4);
+  overflow: hidden;
+}
+
+.palette::backdrop {
+  background: var(--rb-scrim);
+}
+
+.palette__input {
+  display: block;
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--sp-4);
+  border: 0;
+  border-bottom: 1px solid var(--rb-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--rb-text);
+  font-size: 16px;
+  font-weight: 420;
+  min-height: 48px;
+}
+
+.palette__input::placeholder {
+  color: var(--rb-text-muted);
+}
+
+.palette__input:focus-visible {
+  outline-offset: -2px;
+}
+
+.palette__list {
+  max-height: min(50vh, 360px);
+  padding: var(--sp-2);
+  overflow: auto;
+}
+
+.palette__row,
+.palette__empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--rb-radius-sm);
+  font-size: 14px;
+}
+
+.palette__row {
+  cursor: pointer;
+}
+
+.palette__row[data-active] {
+  background: var(--rb-surface-3);
+}
+
+.palette__empty {
+  color: var(--rb-text-muted);
+}
+
+.palette__keys {
+  display: inline-flex;
+  gap: var(--sp-1);
+}
+
+.topbar__kbd {
+  display: none;
+  gap: var(--sp-1);
+}
+
+@media (min-width: 768px) and (pointer: fine) {
+  .topbar__kbd {
+    display: inline-flex;
+  }
+}
+
+.slips-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1-5);
+}
+
+@media (pointer: coarse) {
+  .slips-hint {
+    display: none;
+  }
+}
+
+/* Native select, drawn to match the compact controls: same height, our chevron. */
+.select__control {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.select select {
+  appearance: none;
+  padding-right: 34px;
+  background: var(--rb-surface-2);
+  border-color: var(--rb-border);
+  cursor: pointer;
+}
+
+.select__control .ico {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  color: var(--rb-text-muted);
+  pointer-events: none;
+}
+
+@media (pointer: fine) and (min-width: 768px) {
+  .select select {
+    min-height: 32px;
+    font-size: 13px;
+    font-weight: 520;
+  }
+}
+
+/* Guard toggles in the playground header (DESIGN.md "Playground": header guard toggles).
+   One joined control, quiet like the sample picker: brass only on the mark. State is carried by
+   the mark's shape (filled or hollow), never by colour alone. */
+.guards {
+  display: inline-flex;
+  justify-self: start;
+  max-width: 100%;
+  margin-top: var(--sp-3);
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius-sm);
+  background: var(--rb-surface-2);
+  overflow: hidden;
+}
+
+.guards__seg {
+  gap: var(--sp-2);
+  padding: 0 var(--sp-3);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.guards__seg + .guards__seg {
+  border-left: 1px solid var(--rb-border);
+}
+
+.guards__seg:hover {
+  background: var(--rb-surface-3);
+}
+
+.guards__seg[aria-pressed='true'] {
+  color: var(--rb-text);
+}
+
+.guards__mark {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border: 1.5px solid currentColor;
+  border-radius: var(--rb-radius-full);
+}
+
+.guards__seg[aria-pressed='true'] .guards__mark {
+  border-color: var(--rb-brass);
+  background: var(--rb-brass);
+}
+
+.guards__seg:focus-visible {
+  outline-offset: -2px;
+}
+
+@media (min-width: 768px) and (pointer: fine) {
+  .guards__seg {
+    min-height: 32px;
+  }
+}
+
+@media (pointer: coarse) {
+  .empty__kbd {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .guards__seg[aria-pressed='true'] .guards__mark {
+    forced-color-adjust: none;
+    border-color: Highlight;
+    background: Highlight;
+  }
 }

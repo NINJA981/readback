@@ -182,7 +182,10 @@ export function mountMini(host: HTMLElement, eng: Eng, cfg: MiniConfig, reduced:
     renderText(eng, editor, draft, spans, false);
 
     const model = eng.pillModel(result);
-    pill.set({ tone: model.tone, text: model.label, slips: model.slipLabel }, false);
+    pill.set(
+      { tone: model.tone, text: model.label, slips: model.slipLabel, dotted: model.dotted },
+      false,
+    );
 
     cardSlot.replaceChildren();
     cardSlot.hidden = flag === undefined;

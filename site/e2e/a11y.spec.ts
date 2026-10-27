@@ -8,7 +8,12 @@ import type { Page } from '@playwright/test';
 import { SLIPS, forceTheme, press } from './helpers';
 
 async function violations(page: Page): Promise<string[]> {
-  const results = await new AxeBuilder({ page }).analyze();
+  // All WCAG 2.x A/AA rules including 2.2 target size, plus label-in-name (experimental, off by
+  // default), on top of axe's best-practice rules. See e2e/axe.ts in the extension suite.
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .options({ rules: { 'label-content-name-mismatch': { enabled: true } } })
+    .analyze();
   return results.violations.map(
     (v) => `${v.id} (${v.impact ?? '?'}): ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
   );

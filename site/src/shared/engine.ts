@@ -22,6 +22,7 @@ export {
   fixedLabel,
   hitTest,
   isCovered,
+  ledgerConfirmed,
   ledgerHeader,
   mirrorSegments,
   overflowLabel,

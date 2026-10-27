@@ -61,8 +61,11 @@ test.describe('web app flows', () => {
     await expect(slipRows(page)).toHaveCount(2);
     await expect(page.locator(SLIPS)).toContainText('Catherine');
     await expect(page.locator(SLIPS)).toContainText('$1,520');
-    // The ask pill counts the three asks and the two slips.
-    await expect(page.getByRole('button', { name: /3 asks covered, 2 slips/ })).toBeVisible();
+    // The ask pill counts the three asks and the two slips. The asks only look answered (the
+    // reply's wording matches them), so the pill says so instead of "covered" (AC-W.15).
+    await expect(
+      page.getByRole('button', { name: /3 of 3 asks look answered, not confirmed, 2 slips/ }),
+    ).toBeVisible();
 
     await press(firstFix(page));
     await expect(reply(page)).toHaveValue(/Hi Kathryn,/);
@@ -135,6 +138,73 @@ test.describe('web app flows', () => {
     await reply(page).fill('Hi Catherine, the $1,520 deposit');
     await expect(page.getByText('Add the thread above')).toBeVisible();
     await expect(slipRows(page)).toHaveCount(0);
+  });
+
+  test('AC-W.13: the command palette opens, filters, runs a command and says when nothing matches', async ({
+    page,
+  }) => {
+    await page.goto('/app/');
+    await press(page.getByRole('button', { name: 'Try a sample' }));
+    await expect(slipRows(page)).toHaveCount(2);
+    if (isPhone()) await press(page.getByRole('button', { name: 'Commands' }));
+    else await page.keyboard.press('ControlOrMeta+K');
+    const palette = page.getByRole('dialog', { name: 'Command palette' });
+    await expect(palette).toBeVisible();
+    const input = palette.getByRole('combobox', { name: 'Type a command' });
+    await expect(input).toBeFocused();
+    for (const label of ['Clear thread', 'Clear reply', 'Next slip', 'Open ledger']) {
+      await expect(palette.getByRole('option', { name: label, exact: true })).toBeVisible();
+    }
+    await expect(palette.getByRole('option', { name: /^Load sample: / })).toHaveCount(6);
+    await expect(palette.getByRole('option', { name: 'Export result as JSON' })).toBeVisible();
+    await input.fill('xyz');
+    await expect(palette).toContainText('No command matches “xyz”.');
+    await input.fill('names guard');
+    await page.keyboard.press('Enter');
+    await expect(palette).toBeHidden();
+    await expect(slipRows(page)).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Names', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  test('AC-W.14: the header guard toggles switch a guard off and on live', async ({ page }) => {
+    await page.goto('/app/');
+    await press(page.getByRole('button', { name: 'Try a sample' }));
+    await expect(slipRows(page)).toHaveCount(2);
+    const checks = page.getByRole('group', { name: 'Checks' });
+    const names = checks.getByRole('button', { name: 'Names', exact: true });
+    const numbers = checks.getByRole('button', { name: 'Numbers', exact: true });
+    await expect(names).toHaveAttribute('aria-pressed', 'true');
+    await press(names);
+    await expect(names).toHaveAttribute('aria-pressed', 'false');
+    await expect(slipRows(page)).toHaveCount(1);
+    await expect(page.locator(SLIPS)).not.toContainText('Catherine');
+    await press(numbers);
+    await expect(page.getByTestId('no-slips')).toBeVisible();
+    await press(names);
+    await press(numbers);
+    await expect(slipRows(page)).toHaveCount(2);
+  });
+
+  test('AC-W.15: an ask that only looks answered is never shown as covered', async ({ page }) => {
+    await page.goto('/app/');
+    await thread(page).fill(
+      ['Hi Sam,', '', 'Can you confirm the $2,480 retainer?', '', 'Thanks,', 'Priya Raman'].join(
+        '\n',
+      ),
+    );
+    await reply(page).fill('Hi Priya, yes, I confirm the $2,480 retainer.');
+    const pill = page.locator('.pill--button');
+    await expect(pill).toContainText('1 looks answered');
+    await expect(pill).toHaveAttribute('data-tone', 'open');
+    await expect(pill.locator('.pill__ring[data-dotted]')).toHaveCount(1);
+    await expect(pill).not.toContainText('All covered');
+    await expect(page.locator('#ledger')).not.toContainText('Everything asked is covered.');
+    await press(page.getByRole('button', { name: /^Confirm answered: / }));
+    await expect(pill).toHaveAttribute('data-tone', 'covered');
+    await expect(page.locator('#ledger')).toContainText('Everything asked is covered.');
   });
 
   test('a thread over 50,000 characters says so and waits instead of guessing', async ({

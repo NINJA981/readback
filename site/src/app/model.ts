@@ -71,9 +71,15 @@ const b64 = {
   },
 };
 
+/** A share link longer than this is refused before anything is decoded. */
+export const MAX_SHARE_HASH_CHARS = 200_000;
+/** Decompressed share payload cap: both texts at 50k characters, with room for JSON escaping. */
+const MAX_SHARE_BYTES = MAX_THREAD_CHARS * 8;
+
 async function pipe(
   data: Uint8Array,
   stream: CompressionStream | DecompressionStream,
+  maxBytes = Infinity,
 ): Promise<Uint8Array> {
   const writer = stream.writable.getWriter();
   // A corrupt payload rejects the read side below, which the caller handles; the write side
@@ -81,7 +87,29 @@ async function pipe(
   const ignore = (): void => undefined;
   writer.write(data as unknown as BufferSource).catch(ignore);
   writer.close().catch(ignore);
-  return new Uint8Array(await new Response(stream.readable).arrayBuffer());
+  // Read in pieces and stop at the cap: deflate reaches about 1000:1, so a short hostile link
+  // must not be allowed to inflate into hundreds of megabytes before the length is checked.
+  const reader = stream.readable.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = value as Uint8Array;
+    total += chunk.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel().catch(ignore);
+      throw new RangeError('share payload too large');
+    }
+    chunks.push(chunk);
+  }
+  const out = new Uint8Array(total);
+  let at = 0;
+  for (const c of chunks) {
+    out.set(c, at);
+    at += c.byteLength;
+  }
+  return out;
 }
 
 export const canShareLink = (): boolean =>
@@ -94,10 +122,15 @@ export async function encodeShare(d: Draft): Promise<string> {
 }
 
 export async function decodeShare(hash: string): Promise<Draft | null> {
+  if (hash.length > MAX_SHARE_HASH_CHARS) return null;
   const m = /^#t=([A-Za-z0-9_-]+)$/.exec(hash);
   if (!m?.[1] || !canShareLink()) return null;
   try {
-    const bytes = await pipe(b64.dec(m[1]), new DecompressionStream('deflate-raw'));
+    const bytes = await pipe(
+      b64.dec(m[1]),
+      new DecompressionStream('deflate-raw'),
+      MAX_SHARE_BYTES,
+    );
     const r = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
     const str = (v: unknown): string => (typeof v === 'string' ? v : '');
     return {

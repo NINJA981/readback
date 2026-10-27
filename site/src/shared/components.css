@@ -190,6 +190,10 @@
   border-radius: 50%;
 }
 
+.pill__ring[data-dotted] {
+  border-style: dotted;
+}
+
 .pill__slips {
   display: inline-flex;
   align-items: center;
@@ -198,6 +202,12 @@
   padding-left: var(--sp-2);
   border-left: 1px solid color-mix(in oklch, currentColor 30%, transparent);
   color: var(--rb-danger);
+}
+
+/* display:inline-flex above would override the UA [hidden] rule; keep the attribute honest. */
+.pill__slips[hidden],
+.pill__ring[hidden] {
+  display: none;
 }
 
 .pill__dot {
@@ -343,8 +353,7 @@
 
 .switch[aria-checked='true'],
 .switch[data-on] {
-  background: var(--rb-brass-soft);
-  border-color: var(--rb-brass);
+  background: var(--rb-surface-3);
 }
 
 .switch[aria-checked='true']::after,
@@ -362,4 +371,38 @@
   border: 0;
   background: none;
   padding: 0;
+}
+
+/* Forced colors (Windows High Contrast): state in shape and system colours, not our palette. */
+@media (forced-colors: active) {
+  .switch {
+    forced-color-adjust: none;
+    background: Canvas;
+    border-color: CanvasText;
+  }
+
+  .switch::after {
+    background: CanvasText;
+  }
+
+  .switch[aria-checked='true'],
+  .switch[data-on] {
+    border-color: Highlight;
+  }
+
+  .switch[aria-checked='true']::after,
+  .switch[data-on]::after {
+    background: Highlight;
+  }
+
+  .seg[aria-checked='true'] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  .btn--primary {
+    border: 1px solid ButtonText;
+  }
 }

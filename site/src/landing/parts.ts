@@ -105,7 +105,13 @@ export interface PillParts {
   el: HTMLElement;
   /** Shows a model. With `animate`, a changed count text fades in over 150 ms with a 2px blur. */
   set(
-    model: { tone: 'open' | 'covered' | 'hidden'; text: string; slips: string },
+    model: {
+      tone: 'open' | 'covered' | 'hidden';
+      text: string;
+      slips: string;
+      /** Nothing open, but some asks only look answered: the ring is dotted. */
+      dotted?: boolean;
+    },
     animate?: boolean,
   ): void;
 }
@@ -129,6 +135,7 @@ export function buildPill(): PillParts {
     set(model, animate = false) {
       el.dataset.tone = model.tone;
       ring.hidden = model.tone === 'covered';
+      ring.toggleAttribute('data-dotted', model.dotted === true);
       check.hidden = model.tone !== 'covered';
       if (model.text !== lastText) {
         text.textContent = model.text;

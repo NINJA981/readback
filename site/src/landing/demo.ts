@@ -22,10 +22,13 @@ import type { CardParts, Eng, FlagT, LineParts, PillParts, TextSpan } from './pa
 
 export const DEMO_MS = 10200;
 
+/** Autoplay starts at the first keyframe (the empty reply), so the card is open about 1.4 s in. */
+export const PLAY_FROM = 1000;
+
 /** Timeline, in ms from frame 0. */
 export const T = {
-  type1: [1400, 2330] as const,
-  open: [3300, 7200] as const,
+  type1: [1400, 1900] as const,
+  open: [2400, 7200] as const,
   click: [4900, 7800] as const,
   type2: [5300, 6700] as const,
   type3: [8100, 9500] as const,
@@ -350,11 +353,11 @@ export function mountHero(opts: HeroOptions): Hero {
 
   const pillModelAt = (
     t: number,
-  ): { tone: 'open' | 'covered' | 'hidden'; text: string; slips: string } => {
+  ): { tone: 'open' | 'covered' | 'hidden'; text: string; slips: string; dotted: boolean } => {
     const fixed = fixedLabelAt(t);
     const m = eng.pillModel(run(draftAt(t)));
-    if (fixed) return { tone: 'open', text: fixed, slips: '' };
-    return { tone: m.tone, text: m.label, slips: m.slipLabel };
+    if (fixed) return { tone: 'open', text: fixed, slips: '', dotted: false };
+    return { tone: m.tone, text: m.label, slips: m.slipLabel, dotted: m.dotted };
   };
 
   type Key = { t: number; x: number; y: number; o: number };
@@ -585,7 +588,7 @@ export function mountHero(opts: HeroOptions): Hero {
     resume() {
       if (playingFlag) return;
       if (cur >= DEMO_MS) {
-        hero.play(0);
+        hero.play(PLAY_FROM);
         return;
       }
       offset = cur;

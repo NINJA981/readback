@@ -30,7 +30,7 @@ UNICODES = (
 
 JOBS = [
     # name, source file, axis limits
-    ("hubot-sans", "hubot-sans/files/hubot-sans-latin-wdth-normal.woff2", {"wdth": (104, 112), "wght": (550, 700)}),
+    ("hubot-sans", "hubot-sans/files/hubot-sans-latin-wdth-normal.woff2", {"wdth": (104, 112), "wght": (600, 650)}),
     ("mona-sans", "mona-sans/files/mona-sans-latin-wdth-normal.woff2", {"wdth": 100, "wght": (400, 650)}),
     ("geist-mono", "geist-mono/files/geist-mono-latin-wght-normal.woff2", {"wght": (400, 600)}),
 ]

@@ -50,6 +50,7 @@ export function SettingsDialog(p: Props): React.JSX.Element {
       ref={ref}
       className="dialog"
       aria-labelledby="settings-h"
+      aria-modal="true"
       onClose={p.onClose}
       onClick={(e) => {
         if (e.target === ref.current) p.onClose();
@@ -108,13 +109,32 @@ export function SettingsDialog(p: Props): React.JSX.Element {
           <h3 className="t-h3" id="t-h">
             Theme
           </h3>
-          <div className="segmented" role="radiogroup" aria-labelledby="t-h">
+          <div
+            className="segmented"
+            role="radiogroup"
+            aria-labelledby="t-h"
+            onKeyDown={(e) => {
+              // One Tab stop for the group; arrows move the choice and the focus together.
+              const order = ['system', 'light', 'dark'] as const;
+              const i = order.indexOf(p.theme);
+              let next: number;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % order.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp')
+                next = (i + order.length - 1) % order.length;
+              else return;
+              e.preventDefault();
+              const target = order[next];
+              if (target) p.onTheme(target);
+              e.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]')[next]?.focus();
+            }}
+          >
             {(['system', 'light', 'dark'] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 role="radio"
                 aria-checked={p.theme === t}
+                tabIndex={p.theme === t ? 0 : -1}
                 className="seg"
                 onClick={() => {
                   p.onTheme(t);

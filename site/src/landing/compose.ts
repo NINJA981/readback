@@ -32,7 +32,12 @@ export function mountCompose(host: HTMLElement, eng: Eng): void {
   );
   const pill = buildPill();
   const model = eng.pillModel(result);
-  pill.set({ tone: model.tone, text: model.label, slips: model.slipLabel });
+  pill.set({
+    tone: model.tone,
+    text: model.label,
+    slips: model.slipLabel,
+    dotted: model.dotted,
+  });
   body.append(pill.el);
 
   const box = h(

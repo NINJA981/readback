@@ -109,13 +109,19 @@ function paintMeter(): void {
 }
 
 // ---- engine-backed parts -------------------------------------------------------
+/** Gives the browser a chance to paint and handle input between two chunks of start-up work. */
+const yieldToMain = (): Promise<void> =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, 0);
+  });
+
 const engineReady = (): Promise<typeof import('../shared/engine')> => import('../shared/engine');
 
 async function startHero(eng: typeof import('../shared/engine')): Promise<void> {
   const stage = document.getElementById('stage');
   const controls = document.getElementById('stage-controls');
   if (!stage || !controls) return;
-  const { mountHero, DEMO_MS, KEYFRAMES, setButton } = await import('./demo');
+  const { mountHero, DEMO_MS, KEYFRAMES, PLAY_FROM, setButton } = await import('./demo');
   await document.fonts.ready;
 
   const reducedMq = reducedMotionQuery();
@@ -181,7 +187,7 @@ async function startHero(eng: typeof import('../shared/engine')): Promise<void> 
       window.clearTimeout(stepTimer);
       stepNext();
     } else {
-      hero.play(0);
+      hero.play(PLAY_FROM);
     }
   };
 
@@ -268,6 +274,8 @@ async function startMinis(eng: typeof import('../shared/engine')): Promise<void>
     const slot = article.querySelector<HTMLElement>('[data-mini]');
     const cfg = PROOFS[article.dataset.proof ?? ''];
     if (!slot || !cfg) continue;
+    // One mini per task: each builds its own context and first check.
+    await yieldToMain();
     const mini = mountMini(slot, eng, cfg, reduced);
     if (reduced) continue;
     const io = new IntersectionObserver(
@@ -303,7 +311,9 @@ if (capture || captureT !== null) {
 } else {
   afterLoad(() => {
     void engineReady().then(async (eng) => {
+      await yieldToMain();
       await startHero(eng);
+      await yieldToMain();
       await startMinis(eng);
     });
   });

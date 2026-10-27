@@ -72,6 +72,8 @@ export default defineConfig({
     emptyOutDir: true,
     assetsInlineLimit: 0,
     cssCodeSplit: true,
+    // No modulepreload polyfill: it ships a `fetch(link.href)` and the page CSP says connect-src 'none'.
+    modulePreload: { polyfill: false },
     rollupOptions: {
       input: {
         main: resolve(here, 'index.html'),

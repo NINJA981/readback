@@ -11,7 +11,7 @@
 @font-face {
   font-family: 'Hubot Sans Variable';
   src: url('../fonts/hubot-sans.woff2') format('woff2');
-  font-weight: 550 700;
+  font-weight: 600 650;
   font-stretch: 104% 112%;
   font-display: swap;
 }
@@ -254,6 +254,7 @@ pre {
   font-weight: 650;
   line-height: 0.92;
   letter-spacing: -0.035em;
+  word-spacing: 0.05em;
   font-variation-settings: 'wdth' 112;
 }
 
@@ -263,6 +264,7 @@ pre {
   font-weight: 650;
   line-height: 1.05;
   letter-spacing: -0.025em;
+  word-spacing: 0.08em;
   font-variation-settings: 'wdth' 112;
 }
 
@@ -272,6 +274,7 @@ pre {
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.02em;
+  word-spacing: 0.08em;
   font-variation-settings: 'wdth' 106;
 }
 
@@ -281,6 +284,7 @@ pre {
   font-weight: 600;
   line-height: 1.27;
   letter-spacing: -0.015em;
+  word-spacing: 0.08em;
   font-variation-settings: 'wdth' 104;
 }
 

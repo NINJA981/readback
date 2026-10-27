@@ -29,6 +29,8 @@ import { Editor } from './Editor';
 import type { EditorHandle, Mark } from './Editor';
 import { Icon } from './Icon';
 import { AskLedger, GuardCard, SlipList } from './Panels';
+import { Palette } from './Palette';
+import type { Command } from './Palette';
 import { SettingsDialog } from './SettingsDialog';
 import {
   useInstall,
@@ -55,6 +57,16 @@ import type { Draft } from './model';
 
 type Eng = typeof Engine;
 type Settings = Engine.Settings;
+
+const GUARD_NAME = {
+  name: 'the names guard',
+  number: 'the numbers guard',
+  date: 'the dates guard',
+  asks: 'the asks list',
+} as const;
+
+/** The Apple command key on Apple platforms, Ctrl elsewhere. */
+const MOD_KEY = /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? '⌘' : 'Ctrl';
 
 // ---- persistence of settings (the extension's own keys and parsers) -----------------
 
@@ -213,6 +225,7 @@ export function App(): React.JSX.Element {
     return loadDraft();
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [threadOpen, setThreadOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   const [note, setNote] = useState<Note | null>(null);
@@ -236,6 +249,10 @@ export function App(): React.JSX.Element {
   const mainRef = useRef<HTMLDivElement>(null);
   const cancelGhost = useRef<(() => void) | null>(null);
   const toastId = useRef(0);
+  // Where keyboard focus was when a card was opened from the Slips list, so closing returns there.
+  const cardOpener = useRef<HTMLElement | null>(null);
+  const cardNow = useRef(card);
+  cardNow.current = card;
 
   // Debounce the thread: the context (harvest, dates) is rebuilt only when typing pauses.
   const [threadForContext, setThreadForContext] = useState(draft.thread);
@@ -572,6 +589,20 @@ export function App(): React.JSX.Element {
     };
   }, [card]);
 
+  // Ctrl/Cmd+K opens the command palette from anywhere, including inside a text box.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+    };
+  }, []);
+
   // J / K step through slips when no field has focus (DESIGN.md shortcut map).
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -584,7 +615,16 @@ export function App(): React.JSX.Element {
           t.isContentEditable)
       )
         return;
-      if (e.ctrlKey || e.metaKey || e.altKey || flags.length === 0) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'l') {
+        const el = document.getElementById('ledger');
+        if (!el) return;
+        e.preventDefault();
+        el.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+        el.focus({ preventScroll: true });
+        return;
+      }
+      if (flags.length === 0) return;
       if (e.key !== 'j' && e.key !== 'k') return;
       const i = flags.findIndex((f) => f.id === card?.id);
       const next = e.key === 'j' ? (i + 1) % flags.length : (i - 1 + flags.length) % flags.length;
@@ -595,7 +635,7 @@ export function App(): React.JSX.Element {
     return () => {
       document.removeEventListener('keydown', onKey);
     };
-  }, [flags, card]);
+  }, [flags, card, reduced]);
 
   // ---- marks ----------------------------------------------------------------------------
   const replyMarks: Mark[] = useMemo(() => {
@@ -671,11 +711,187 @@ export function App(): React.JSX.Element {
     setCard({ id, via });
   };
 
+  /** Closes the card. From the keyboard, focus goes back to the opener (the slip row) or the reply. */
+  const closeCard = (): void => {
+    const via = cardNow.current?.via;
+    setCard(null);
+    const opener = cardOpener.current;
+    cardOpener.current = null;
+    // After React has re-rendered: ignoring a slip removes its row, so the opener may be gone.
+    window.requestAnimationFrame(() => {
+      const back =
+        opener?.isConnected === true
+          ? opener
+          : via === 'list' || via === 'key'
+            ? (replyRef.current?.textarea ?? null)
+            : null;
+      back?.focus({ preventScroll: true });
+    });
+  };
+
+  const stepSlip = (dir: 1 | -1): void => {
+    if (flags.length === 0) {
+      say('No slips to step through.');
+      return;
+    }
+    const i = flags.findIndex((f) => f.id === card?.id);
+    const next = dir === 1 ? (i + 1) % flags.length : (i - 1 + flags.length) % flags.length;
+    const f = flags[next];
+    if (f) {
+      cardOpener.current = null;
+      setCard({ id: f.id, via: 'key' });
+    }
+  };
+
+  const copyShareLink = (): void => {
+    void encodeShare(draft).then(
+      (url) =>
+        navigator.clipboard.writeText(url).then(
+          () => {
+            say('Share link copied. It contains your text.');
+          },
+          () => {
+            say('Couldn’t copy the link. Your browser blocked the clipboard.');
+          },
+        ),
+      () => {
+        say('Couldn’t build the link.');
+      },
+    );
+  };
+
+  /** Saves the current check as a local file. Built in the page; nothing leaves the browser. */
+  const exportJson = (): void => {
+    if (!snap) {
+      say('Nothing to export yet. Paste a thread first.');
+      return;
+    }
+    const data = {
+      app: 'readback',
+      exportedAt: new Date().toISOString(),
+      thread: draft.thread,
+      reply: draft.reply,
+      slips: snap.result.flags.map((f) => ({
+        guard: f.guard,
+        found: f.found,
+        expected: f.expected,
+        message: f.message,
+        fixes: f.fixes.map((x) => x.replacement),
+      })),
+      asks: snap.result.asks.map((a) => ({ text: a.text, state: a.state })),
+    };
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+    );
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'readback-result.json';
+    a.click();
+    window.setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
+    say('Saved readback-result.json to your downloads.');
+  };
+
+  const clearThread = (): void => {
+    const prev = draft;
+    setDraftState((d) => ({ ...d, thread: '', sampleId: null, sender: '', sentOn: '' }));
+    setThreadOpen(true);
+    // The button that called this may remove itself; hand focus to the field that is now empty.
+    threadRef.current?.textarea?.focus({ preventScroll: true });
+    say('Thread cleared.', {
+      label: 'Undo',
+      run: () => {
+        setDraftState(prev);
+        setToast(null);
+      },
+    });
+  };
+
+  const clearReply = (): void => {
+    const prev = draft.reply;
+    setReply('');
+    setSwap(null);
+    setCard(null);
+    replyRef.current?.textarea?.focus({ preventScroll: true });
+    say('Reply cleared.', {
+      label: 'Undo',
+      run: () => {
+        setReply(prev);
+        setToast(null);
+      },
+    });
+  };
+
   const scrollToLedger = (): void => {
     const el = document.getElementById('ledger');
     el?.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
     el?.focus({ preventScroll: true });
   };
+
+  const commands: Command[] = [
+    ...SAMPLES.map((smp) => ({
+      id: `sample-${smp.id}`,
+      label: `Load sample: ${smp.title}`,
+      keywords: 'sample thread example',
+      run: () => {
+        loadSample(smp.id);
+      },
+    })),
+    { id: 'clear-thread', label: 'Clear thread', run: clearThread },
+    { id: 'clear-reply', label: 'Clear reply', run: clearReply },
+    {
+      id: 'next-slip',
+      label: 'Next slip',
+      keywords: 'slip squiggle flag',
+      hint: ['J'],
+      run: () => {
+        stepSlip(1);
+      },
+    },
+    {
+      id: 'prev-slip',
+      label: 'Previous slip',
+      keywords: 'slip squiggle flag',
+      hint: ['K'],
+      run: () => {
+        stepSlip(-1);
+      },
+    },
+    { id: 'ledger', label: 'Open ledger', keywords: 'asks list', hint: ['L'], run: scrollToLedger },
+    ...(['name', 'number', 'date', 'asks'] as const).map((key) => ({
+      id: `guard-${key}`,
+      label: `${settings.guards[key] ? 'Turn off' : 'Turn on'} ${GUARD_NAME[key]}`,
+      keywords: 'guard toggle check',
+      run: () => {
+        updateSettings(setGuard(settings, key, !settings.guards[key]));
+      },
+    })),
+    { id: 'share', label: 'Copy share link', keywords: 'url', run: copyShareLink },
+    {
+      id: 'export',
+      label: 'Export result as JSON',
+      keywords: 'download save file',
+      run: exportJson,
+    },
+    ...(['system', 'light', 'dark'] as const).map((t) => ({
+      id: `theme-${t}`,
+      label: `Theme: ${t === 'system' ? 'System' : t === 'light' ? 'Light' : 'Dark'}`,
+      keywords: 'appearance colour color',
+      run: () => {
+        updateSettings(setTheme(settings, t));
+        writeTheme(t);
+      },
+    })),
+    {
+      id: 'settings',
+      label: 'Open settings',
+      keywords: 'options preferences',
+      run: () => {
+        setSettingsOpen(true);
+      },
+    },
+  ];
 
   // ---- render ---------------------------------------------------------------------------
   const loading = engine.status === 'loading';
@@ -697,6 +913,20 @@ export function App(): React.JSX.Element {
                 <Icon name="wifi-off" size={14} /> Offline
               </span>
             )}
+            <button
+              type="button"
+              className="btn btn--ghost"
+              aria-keyshortcuts="Control+K Meta+K"
+              onClick={() => {
+                setPaletteOpen(true);
+              }}
+            >
+              Commands
+              <span className="topbar__kbd" aria-hidden="true">
+                <span className="keycap">{MOD_KEY}</span>
+                <span className="keycap">K</span>
+              </span>
+            </button>
             <button
               type="button"
               className="btn btn--ghost"
@@ -722,6 +952,29 @@ export function App(): React.JSX.Element {
           <p className="muted t-ui" id="privacy-line">
             Runs entirely in your browser. Nothing is uploaded.
           </p>
+          <div className="guards" role="group" aria-label="Checks">
+            {(
+              [
+                ['name', 'Names'],
+                ['number', 'Numbers'],
+                ['date', 'Dates'],
+                ['asks', 'Asks'],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                className="seg guards__seg"
+                aria-pressed={settings.guards[key]}
+                onClick={() => {
+                  updateSettings(setGuard(settings, key, !settings.guards[key]));
+                }}
+              >
+                <span className="guards__mark" aria-hidden="true" />
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {engine.status === 'error' && (
@@ -805,7 +1058,7 @@ export function App(): React.JSX.Element {
                   placeholder="Paste the message you're replying to."
                   collapsed={collapsed}
                   invalid={tooLong}
-                  describedBy={tooLong ? 'thread-error' : 'thread-meta'}
+                  describedBy={tooLong ? 'thread-error' : empty ? undefined : 'thread-meta'}
                   minRows={empty ? 7 : 4}
                   onFocus={() => {
                     setThreadOpen(true);
@@ -818,6 +1071,8 @@ export function App(): React.JSX.Element {
                   className="btn btn--ghost btn--block"
                   onClick={() => {
                     setThreadOpen(true);
+                    // The button removes itself; keep the keyboard where the thread is.
+                    threadRef.current?.textarea?.focus({ preventScroll: true });
                   }}
                 >
                   Show full thread
@@ -843,6 +1098,11 @@ export function App(): React.JSX.Element {
                   <p className="muted t-caption">
                     Loads an invented landlord thread and a reply with two slips in it. Or paste
                     your own above.
+                    <span className="empty__kbd">
+                      {' '}
+                      <span className="keycap">{MOD_KEY}</span> <span className="keycap">K</span>{' '}
+                      lists every command.
+                    </span>
                   </p>
                 </div>
               ) : (
@@ -860,51 +1120,33 @@ export function App(): React.JSX.Element {
               <div className="pane__tools">
                 <label className="select">
                   <span className="t-caption subtle">Sample</span>
-                  <select
-                    value={draft.sampleId ?? ''}
-                    onChange={(e) => {
-                      if (e.target.value) loadSample(e.target.value);
-                    }}
-                    aria-label="Load a sample thread"
-                  >
-                    <option value="">Choose a sample…</option>
-                    {SAMPLES.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.title}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="select__control">
+                    <select
+                      value={draft.sampleId ?? ''}
+                      onChange={(e) => {
+                        if (e.target.value) loadSample(e.target.value);
+                      }}
+                      aria-label="Load a sample thread"
+                    >
+                      <option value="">Choose a sample…</option>
+                      {SAMPLES.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.title}
+                        </option>
+                      ))}
+                    </select>
+                    <Icon name="chevron-down" />
+                  </span>
                 </label>
                 {hasThread && (
-                  <button
-                    type="button"
-                    className="btn btn--ghost"
-                    onClick={() => {
-                      const prev = draft;
-                      setDraftState((d) => ({
-                        ...d,
-                        thread: '',
-                        sampleId: null,
-                        sender: '',
-                        sentOn: '',
-                      }));
-                      setThreadOpen(true);
-                      say('Thread cleared.', {
-                        label: 'Undo',
-                        run: () => {
-                          setDraftState(prev);
-                          setToast(null);
-                        },
-                      });
-                    }}
-                  >
+                  <button type="button" className="btn btn--ghost" onClick={clearThread}>
                     Clear thread
                   </button>
                 )}
               </div>
 
               <details className="details">
-                <summary>Details (optional)</summary>
+                <summary>Sender and sent date (optional)</summary>
                 <div className="fields">
                   <label className="field">
                     <span className="t-label">Who it’s from</span>
@@ -1005,7 +1247,7 @@ export function App(): React.JSX.Element {
                     {pill.tone === 'covered' ? (
                       <Icon name="check" size={14} />
                     ) : (
-                      <span className="pill__ring" />
+                      <span className="pill__ring" data-dotted={pill.dotted ? '' : undefined} />
                     )}
                     {pill.label && (
                       <span className="pill__text" key={pill.label}>
@@ -1057,6 +1299,8 @@ export function App(): React.JSX.Element {
                   flags={flags}
                   activeId={card?.id ?? null}
                   onOpen={(id) => {
+                    cardOpener.current =
+                      document.activeElement instanceof HTMLElement ? document.activeElement : null;
                     setCard({ id, via: 'list' });
                     const f = flags.find((x) => x.id === id);
                     if (f && replyRef.current?.textarea) {
@@ -1113,7 +1357,7 @@ export function App(): React.JSX.Element {
           }}
           onIgnore={() => {
             session?.dispatch({ type: 'ignore-flag', id: activeFlag.id });
-            setCard(null);
+            closeCard();
             say(`Ignoring “${activeFlag.found}” in this thread.`, {
               label: 'Undo',
               run: () => {
@@ -1128,12 +1372,10 @@ export function App(): React.JSX.Element {
               const next = session.getSnapshot().ignore;
               updateIgnore(next);
             }
-            setCard(null);
+            closeCard();
             say(`Never flagging “${activeFlag.found}”. Change this in Settings.`);
           }}
-          onClose={() => {
-            setCard(null);
-          }}
+          onClose={closeCard}
         />
       )}
 
@@ -1156,6 +1398,14 @@ export function App(): React.JSX.Element {
           )}
         </div>
       )}
+
+      <Palette
+        open={paletteOpen}
+        commands={commands}
+        onClose={() => {
+          setPaletteOpen(false);
+        }}
+      />
 
       {eng && (
         <SettingsDialog
@@ -1180,22 +1430,7 @@ export function App(): React.JSX.Element {
           onRemoveIgnored={(kind, entry) => {
             updateIgnore(eng.removeIgnored(ignore, kind, entry));
           }}
-          onShare={() => {
-            void encodeShare(draft).then(
-              (url) =>
-                navigator.clipboard.writeText(url).then(
-                  () => {
-                    say('Share link copied. It contains your text.');
-                  },
-                  () => {
-                    say('Couldn’t copy the link. Your browser blocked the clipboard.');
-                  },
-                ),
-              () => {
-                say('Couldn’t build the link.');
-              },
-            );
-          }}
+          onShare={copyShareLink}
           onInstall={() => {
             void install.prompt();
           }}

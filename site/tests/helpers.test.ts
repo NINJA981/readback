@@ -3,6 +3,7 @@ import { cubicBezier as extBezier, springProgress } from '@/overlay/swap/frame';
 import { commonGlyphs } from '@/overlay/swap/plan';
 import {
   EMPTY_DRAFT,
+  MAX_SHARE_HASH_CHARS,
   MAX_THREAD_CHARS,
   clearDraftStorage,
   decodeShare,
@@ -123,6 +124,23 @@ describe('share link (explicit click only; the text lives in the hash fragment)'
     expect(await decodeShare('#t=')).toBeNull();
     expect(await decodeShare('#t=!!!')).toBeNull();
     expect(await decodeShare('#t=AAAA')).toBeNull();
+  });
+
+  it('refuses an over-long link and a payload that inflates past the cap', async () => {
+    vi.stubGlobal('location', location);
+    expect(await decodeShare(`#t=${'A'.repeat(MAX_SHARE_HASH_CHARS)}`)).toBeNull();
+    // 30 MB of zeros deflates to a few tens of KB: short enough to open, huge once inflated.
+    const bomb = new Blob([new Uint8Array(30_000_000)])
+      .stream()
+      .pipeThrough(new CompressionStream('deflate-raw'));
+    const packed = new Uint8Array(await new Response(bomb).arrayBuffer());
+    let bin = '';
+    for (const byte of packed) bin += String.fromCharCode(byte);
+    const hash = `#t=${btoa(bin).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '')}`;
+    expect(hash.length).toBeLessThan(MAX_SHARE_HASH_CHARS);
+    const t0 = performance.now();
+    expect(await decodeShare(hash)).toBeNull();
+    expect(performance.now() - t0).toBeLessThan(2000);
   });
 });
 

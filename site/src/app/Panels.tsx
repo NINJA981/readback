@@ -175,6 +175,12 @@ export function SlipList({ flags, activeId, onOpen, onFix }: SlipListProps): Rea
           ))}
         </ul>
       )}
+      {flags.length > 0 && (
+        <p className="t-caption subtle slips-hint">
+          <span className="keycap">J</span>
+          <span className="keycap">K</span> next and previous slip
+        </p>
+      )}
     </section>
   );
 }
@@ -200,12 +206,13 @@ export function AskLedger({
   const shown = asks.filter((a) => a.state !== 'dismissed');
   const dismissed = asks.filter((a) => a.state === 'dismissed');
   const header = eng.ledgerHeader(result);
+  const confirmed = eng.ledgerConfirmed(result);
   return (
     <section className="panel" id="ledger" aria-labelledby="asks-h" tabIndex={-1}>
       <h2 className="t-h3" id="asks-h">
         Asks in the last message
       </h2>
-      {header && <p className="t-ui success-text">{header}</p>}
+      {header && <p className={confirmed ? 't-ui success-text' : 't-ui muted'}>{header}</p>}
       {shown.length === 0 ? (
         <p className="muted t-caption">Readback only lists direct questions and requests.</p>
       ) : (
@@ -223,9 +230,7 @@ export function AskLedger({
                 )}
               </span>
               <span className="row__text">
-                <span className="row__title row__title--clamp" title={a.text}>
-                  {a.text}
-                </span>
+                <span className="row__title">{a.text}</span>
                 <span className="t-caption muted">
                   {a.state === 'open' && 'Open'}
                   {a.state === 'looks-answered' && 'Looks answered'}
