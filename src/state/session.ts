@@ -72,6 +72,8 @@ export interface ComposeSession {
   markFixed(replacement: string): void;
   /** Drops the fixed confirmation once it has expired; returns true if it changed. */
   expireFixed(): boolean;
+  /** Drops the fixed confirmation now (the user undid the fix). */
+  clearFixed(): void;
 }
 
 const EMPTY_RESULT: CheckResult = { asks: [], flags: [], truncatedAsks: 0, ms: 0 };
@@ -182,6 +184,13 @@ export function createComposeSession(options: SessionOptions): ComposeSession {
         ...s,
         fixed: { replacement, until: now() + FIXED_CONFIRMATION_MS },
       }));
+    },
+    clearFixed() {
+      const s = store.getSnapshot();
+      if (!s.fixed) return;
+      const rest = { ...s };
+      delete rest.fixed;
+      store.setState(rest);
     },
     expireFixed() {
       const s = store.getSnapshot();

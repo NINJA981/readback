@@ -150,6 +150,7 @@ function walk(dir: string): string[] {
 describe('no off-token values in the UI', () => {
   const files = [
     ...walk(join(ROOT, 'src', 'ui')),
+    ...walk(join(ROOT, 'src', 'overlay')),
     ...walk(join(ROOT, 'src', 'entrypoints')),
   ].filter((f) => /\.(tsx|ts|html)$/.test(f));
   const strip = (s: string): string => s.replace(/\/\*[\s\S]*?\*\/|(?<![:'"])\/\/.*$/gm, '');

@@ -94,3 +94,36 @@ export async function applyFixToField(options: {
   }
   return copy(clipboard, replacement);
 }
+
+/**
+ * Inserts text at the caret of a contenteditable (or at the end when the caret
+ * is elsewhere), through the editor's own input path, for "Answer inline".
+ */
+export async function insertIntoEditable(options: {
+  doc: Document;
+  element: HTMLElement;
+  text: string;
+  clipboard?: ClipboardLike;
+}): Promise<FixOutcome> {
+  const { doc, element, text, clipboard } = options;
+  const exec = doc as unknown as ExecDocument;
+  element.focus({ preventScroll: true });
+  const selection = exec.getSelection();
+  if (selection && canInsertText(exec)) {
+    const inside =
+      selection.rangeCount > 0 && element.contains(selection.getRangeAt(0).startContainer);
+    if (!inside) {
+      const end = doc.createRange();
+      end.selectNodeContents(element);
+      end.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(end);
+    }
+    try {
+      if (exec.execCommand?.('insertText', false, text)) return 'inserted';
+    } catch {
+      // fall through to the clipboard
+    }
+  }
+  return copy(clipboard, text);
+}

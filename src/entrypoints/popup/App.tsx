@@ -1,133 +1,164 @@
 /**
- * Popup placeholder (Stage 2): real status and real switches over the real
- * storage layer, with the visual polish left to the UI stage. 360 x 480.
+ * Popup entry (360 x 480): live data in, `PopupView` out. First paint is the
+ * shell from storage alone (no waiting on the tab); the status fills in when
+ * the active tab answers, with a one-line skeleton if that takes over 150 ms
+ * (DESIGN.md §Popup "Loading"). A recorded reading status is verified by
+ * pinging the tab, so a closed reply never shows as still being read.
  */
 import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
+import { parseSlips } from '../../messaging/protocol';
+import type { SlipSummary } from '../../messaging/protocol';
+import { GMAIL_URL, PLAYGROUND_URL } from '../../platform/links';
 import { extensionStorage } from '../../platform/runtime-storage';
-import {
-  GUARD_KEYS,
-  isSiteEnabled,
-  setGuard,
-  setSiteEnabled,
-  toOrigin,
-} from '../../state/settings';
-import type { Guard } from '../../state/settings';
-import { statusLine } from '../../state/status-text';
+import { diagnostics, hostOf } from '../../state/popup-state';
+import { setGuard, setSiteEnabled, toOrigin } from '../../state/settings';
 import type { TabStatus } from '../../storage/tab-status';
-import { GhostButton, Section, SwitchRow } from '../../ui/controls';
+import { PopupView } from '../../ui/PopupView';
+import type { PopupActions } from '../../ui/PopupView';
 import { updateSettings, useSettings } from '../../ui/stores';
 import { useTheme } from '../../ui/use-theme';
 
-const GUARD_LABELS: Record<Guard, string> = {
-  name: 'Names',
-  number: 'Numbers',
-  date: 'Dates',
-  asks: 'Ask pill',
-};
-
 interface ActiveTab {
+  id: number | undefined;
   url: string | undefined;
   status: TabStatus | undefined;
+  slips: SlipSummary[];
 }
 
-/** The active tab's URL and last reported status, read in parallel. */
+const SKELETON_DELAY_MS = 150;
+
+async function askTab(tabId: number): Promise<SlipSummary[] | undefined> {
+  try {
+    return parseSlips(await browser.tabs.sendMessage(tabId, { type: 'get-slips' }));
+  } catch {
+    return undefined; // no Readback script in that tab
+  }
+}
+
 async function loadActiveTab(): Promise<ActiveTab> {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (tab?.id === undefined) return { url: undefined, status: undefined };
-  const status = await extensionStorage().getTabStatus(tab.id);
-  return { url: tab.url, status };
+  if (tab?.id === undefined) return { id: undefined, url: undefined, status: undefined, slips: [] };
+  const stored = await extensionStorage().getTabStatus(tab.id);
+  // A reading status is only believed while the tab's script still answers; a
+  // reply that closed or a reloaded extension leaves a stale record behind.
+  const live = stored?.state === 'reading' || stored?.state === 'selection-context';
+  const slips = live ? await askTab(tab.id) : [];
+  const status = live && slips === undefined ? undefined : stored;
+  return { id: tab.id, url: tab.url, status, slips: slips ?? [] };
 }
 
-function useActiveTab(): ActiveTab | undefined {
-  const [state, setState] = useState<ActiveTab>();
+/** The active tab, plus whether a stale status is still being verified. */
+function useActiveTab(): { tab: ActiveTab | undefined; checking: boolean } {
+  const [tab, setTab] = useState<ActiveTab>();
+  const [checking, setChecking] = useState(false);
   useEffect(() => {
     let live = true;
+    const timer = setTimeout(() => {
+      if (live) setChecking(true);
+    }, SKELETON_DELAY_MS);
     loadActiveTab().then(
       (next) => {
-        if (live) setState(next);
+        if (!live) return;
+        setTab(next);
+        setChecking(false);
       },
       () => {
-        if (live) setState({ url: undefined, status: undefined });
+        if (!live) return;
+        setTab({ id: undefined, url: undefined, status: undefined, slips: [] });
+        setChecking(false);
       },
     );
     return () => {
       live = false;
+      clearTimeout(timer);
     };
   }, []);
-  return state;
+  return { tab, checking: checking && tab === undefined };
 }
 
 export function App() {
   const settings = useSettings();
-  const tab = useActiveTab();
+  const { tab, checking } = useActiveTab();
+  const [copied, setCopied] = useState(false);
   useTheme(settings.value.theme);
 
-  if (!settings.loaded || !tab) return <main className="h-[480px] w-[360px] bg-bg" />;
+  useEffect(() => {
+    // A mark the e2e budget test reads (SPEC AC-10.1: first paint <= 100 ms).
+    if (settings.loaded) performance.mark('readback-popup-ready');
+  }, [settings.loaded]);
 
-  const origin = tab.url ? toOrigin(tab.url) : undefined;
-  const siteOn = tab.url ? isSiteEnabled(settings.value, tab.url) : true;
-  const line = statusLine(tab.status);
+  if (!settings.loaded) return <main className="h-[480px] w-[360px] bg-bg" />;
+
+  const url = tab?.url;
+  const status = tab?.status;
+  const sendToTab = (type: 'open-ledger' | 'next-slip' | 'clear-selection'): void => {
+    const id = tab?.id;
+    if (id === undefined) return;
+    void browser.tabs.sendMessage(id, { type }).catch(() => undefined);
+    // Bring the tab forward, then get out of the way so the card has the page.
+    void browser.tabs.update(id, { active: true }).catch(() => undefined);
+    if (type !== 'clear-selection') window.close();
+  };
+
+  const actions: PopupActions = {
+    toggleSite(on) {
+      const origin = url ? toOrigin(url) : undefined;
+      if (origin) void updateSettings((s) => setSiteEnabled(s, origin, on));
+    },
+    toggleGuard(guard, on) {
+      void updateSettings((s) => setGuard(s, guard, on));
+    },
+    openOptions() {
+      void browser.runtime.openOptionsPage();
+      window.close();
+    },
+    openPlayground() {
+      if (PLAYGROUND_URL) void browser.tabs.create({ url: PLAYGROUND_URL });
+      window.close();
+    },
+    openGmail() {
+      void browser.tabs.create({ url: GMAIL_URL });
+      window.close();
+    },
+    openPrivacy() {
+      void browser.tabs.create({ url: `${browser.runtime.getURL('/options.html')}#privacy` });
+      window.close();
+    },
+    openLedger: () => {
+      sendToTab('open-ledger');
+    },
+    openSlip: () => {
+      sendToTab('next-slip');
+    },
+    clearContext: () => {
+      sendToTab('clear-selection');
+    },
+    copyDiagnostics() {
+      const text = diagnostics(status, browser.runtime.getManifest().version);
+      navigator.clipboard.writeText(text).then(
+        () => {
+          setCopied(true);
+          setTimeout(() => {
+            setCopied(false);
+          }, 2000);
+        },
+        () => undefined,
+      );
+    },
+  };
 
   return (
-    <main className="flex h-[480px] w-[360px] flex-col gap-3 bg-bg p-3 text-text">
-      <header className="flex items-center justify-between px-2">
-        <h1 className="text-h3 font-semibold">Readback</h1>
-        <GhostButton
-          onClick={() => {
-            void browser.runtime.openOptionsPage();
-          }}
-        >
-          Options
-        </GhostButton>
-      </header>
-
-      <p
-        role="status"
-        className={`rounded-md border border-border bg-surface px-3 py-2 text-ui ${
-          line.tone === 'problem'
-            ? 'text-danger'
-            : line.tone === 'active'
-              ? 'text-brass-text'
-              : 'text-text-muted'
-        }`}
-      >
-        {line.text}
-      </p>
-
-      <Section title="This site">
-        {origin ? (
-          <SwitchRow
-            label="Check replies here"
-            hint={origin.replace(/^https?:\/\//, '')}
-            checked={siteOn}
-            onChange={(on) => {
-              void updateSettings((s) => setSiteEnabled(s, origin, on));
-            }}
-          />
-        ) : (
-          <p className="px-2 text-caption text-text-subtle">
-            Open a page to switch Readback on or off for it.
-          </p>
-        )}
-      </Section>
-
-      <Section title="Checks">
-        {GUARD_KEYS.map((guard) => (
-          <SwitchRow
-            key={guard}
-            label={GUARD_LABELS[guard]}
-            checked={settings.value.guards[guard]}
-            onChange={(on) => {
-              void updateSettings((s) => setGuard(s, guard, on));
-            }}
-          />
-        ))}
-      </Section>
-
-      <p className="mt-auto px-2 text-caption text-text-subtle">
-        0 network requests. Everything runs on this device.
-      </p>
-    </main>
+    <PopupView
+      settings={settings.value}
+      host={hostOf(url)}
+      url={url}
+      status={status}
+      slips={tab?.slips ?? []}
+      checking={checking}
+      playground={PLAYGROUND_URL !== undefined}
+      diagnosticsCopied={copied}
+      actions={actions}
+    />
   );
 }

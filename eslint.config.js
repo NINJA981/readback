@@ -28,6 +28,8 @@ export default tseslint.config(
   {
     ignores: [
       '.output/**',
+      '.gallery/**',
+      'site/dist/**',
       '.wxt/**',
       'node_modules/**',
       'coverage/**',
@@ -54,7 +56,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.js'],
+    files: ['**/*.js', '**/*.mjs'],
     extends: [tseslint.configs.disableTypeChecked],
   },
   {

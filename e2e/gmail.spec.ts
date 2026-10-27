@@ -41,8 +41,10 @@ test.describe('Gmail fixture, real content script on its real match pattern', ()
     );
     expect(later).toBe(afterTyping);
 
-    // Readback adds no nodes and no attributes to Gmail's DOM; it only registers highlights.
-    expect(await page.locator('readback-overlay').count()).toBe(0);
+    // Readback adds no nodes or attributes inside Gmail's compose; it registers highlights.
+    // The one shadow host sits on <html>, never inside Gmail's compose.
+    expect(await page.locator(`${EDITOR} readback-overlay`).count()).toBe(0);
+    expect(await page.locator('readback-overlay').count()).toBe(1);
     expect(
       await page.evaluate(() => {
         const w = window as unknown as { __mutations: MutationRecord[] };

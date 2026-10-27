@@ -10,7 +10,7 @@ import type { SelectionController } from '../../../src/content/selection-control
 import { statusFrom } from '../../../src/content/status';
 import { createHighlightPainter } from '../../../src/dom/highlights';
 import { createComposeSession } from '../../../src/state/session';
-import { setSiteEnabled } from '../../../src/state/settings';
+import { DEFAULT_SETTINGS, setGuard, setSiteEnabled } from '../../../src/state/settings';
 import { statusLine } from '../../../src/state/status-text';
 import { createMemoryArea } from '../../../src/storage/area';
 import { createReadbackStorage } from '../../../src/storage/repository';
@@ -92,9 +92,31 @@ describe('Gmail controller', () => {
     expect(last).toMatchObject({ state: 'reading', asks: 3, slips: 2 });
     // Counts and enums only: nothing from the mail in the status.
     expect(JSON.stringify(last)).not.toMatch(/Kathryn|Catherine|deposit|1,250/);
-    // Readback added no node or attribute to Gmail's DOM.
-    expect(document.querySelector('readback-overlay')).toBeNull();
+    // Nothing inside Gmail's compose: the one overlay host sits on <html>, outside the editor.
     expect(editor.outerHTML).not.toMatch(/readback/i);
+    expect(editor.querySelector('readback-overlay')).toBeNull();
+    expect(document.querySelectorAll('readback-overlay')).toHaveLength(1);
+    expect(document.querySelector('readback-overlay')?.parentElement).toBe(
+      document.documentElement,
+    );
+  });
+
+  it('adds nothing at all to the page while there is nothing to draw', async () => {
+    load('inline-reply');
+    const t = setup();
+    // Asks off: no pill, and a draft with no slips has nothing to show either.
+    await t.storage.updateSettings(() => setGuard(DEFAULT_SETTINGS, 'asks', false));
+    gmail = await startGmailController({
+      doc: document,
+      storage: t.storage,
+      report: t.report,
+      painter: t.painter,
+      schedule: (run) => void queueMicrotask(run),
+    });
+    await tick();
+    const editor = findComposeEditors(document)[0]!;
+    type(editor, '<div>Thanks</div>');
+    expect(document.querySelector('readback-overlay')).toBeNull();
   });
 
   it('stays silent and reports the failed check when the layout is not recognised (AC-8.2)', async () => {

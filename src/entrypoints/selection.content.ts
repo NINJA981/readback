@@ -35,6 +35,8 @@ export default defineContentScript({
       if (!message) return undefined;
       if (message.type === 'use-selection') void controller.useSelection(message.text);
       else if (message.type === 'clear-selection') controller.clear();
+      else if (message.type === 'next-slip') controller.nextSlip();
+      else if (message.type === 'open-ledger') controller.openLedger();
       else if (message.type === 'get-slips') {
         const flags = controller.session()?.getSnapshot().result.flags ?? [];
         const reply: MessageReplies['get-slips'] = {

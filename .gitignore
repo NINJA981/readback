@@ -12,3 +12,4 @@ blob-report/
 .impeccable/config.local.json
 .env
 .env.*
+.gallery/

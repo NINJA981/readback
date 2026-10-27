@@ -17,6 +17,12 @@ import type { DraftTarget } from '../adapters/target';
 import { createHighlightPainter } from '../dom/highlights';
 import type { HighlightPainter } from '../dom/highlights';
 import { createContext } from '../engine/index';
+import { mountChip } from '../overlay/chip';
+import type { ChipHost } from '../overlay/chip';
+import { attachOverlay } from '../overlay/controller';
+import type { OverlayController } from '../overlay/controller';
+import { CONTEXT_ERROR, CONTEXT_ERROR_MS } from '../overlay/model';
+import { effectiveBackground, themeForBackground } from '../dom/geometry';
 import { createComposeSession } from '../state/session';
 import type { ComposeSession } from '../state/session';
 import type { ReadbackStorage } from '../storage/repository';
@@ -40,6 +46,8 @@ export interface SelectionController {
   useSelection(text: string): Promise<boolean>;
   clear(): void;
   session(): ComposeSession | undefined;
+  nextSlip(): void;
+  openLedger(): void;
   stop(): void;
 }
 
@@ -54,7 +62,10 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
   let words = 0;
   let binding: Binding | undefined;
   let host: OverlayHost | undefined;
-  let chip: HTMLElement | undefined;
+  let chips: ChipHost | undefined;
+  let overlay: OverlayController | undefined;
+  let chipField: HTMLElement | undefined;
+  let errorTimer: ReturnType<typeof setTimeout> | undefined;
   let stopped = false;
 
   const getHost = (): OverlayHost => (host ??= createOverlayHost(doc));
@@ -67,41 +78,66 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
     }
   };
 
-  const removeChip = (): void => {
-    chip?.remove();
-    chip = undefined;
-  };
+  const viewport = (): { width: number; height: number } => ({
+    width: doc.defaultView?.innerWidth ?? 1280,
+    height: doc.defaultView?.innerHeight ?? 800,
+  });
 
-  const placeChip = (field: HTMLElement): void => {
-    if (!chip) return;
-    const rect = field.getBoundingClientRect();
-    chip.style.left = `${Math.max(8, rect.left)}px`;
-    chip.style.top = `${rect.bottom + 6}px`;
-  };
+  const getChips = (): ChipHost => (chips ??= mountChip(doc, getHost().root));
 
-  const showChip = (field: HTMLElement): void => {
-    removeChip();
-    const el = doc.createElement('div');
-    el.className = 'rb-chip';
-    el.setAttribute('role', 'status');
-    const label = doc.createElement('span');
-    label.textContent = contextChipLabel(words);
-    const clearButton = doc.createElement('button');
-    clearButton.type = 'button';
-    clearButton.textContent = 'Clear';
-    clearButton.addEventListener('click', () => {
-      controller.clear();
+  /** The context chip, docked to the focused field or, without one, to the viewport. */
+  const renderChip = (): void => {
+    if (!context || stopped) return;
+    const field = chipField;
+    const rect = field?.getBoundingClientRect();
+    getHost().setTheme(field ? themeForBackground(effectiveBackground(field)) : 'dark');
+    getChips().show({
+      kind: 'context',
+      text: contextChipLabel(words),
+      field: rect
+        ? { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom }
+        : undefined,
+      viewport: viewport(),
+      theme: field ? themeForBackground(effectiveBackground(field)) : 'dark',
+      onClear: () => {
+        controller.clear();
+      },
     });
-    el.append(label, doc.createTextNode(' · '), clearButton);
-    getHost().root.append(el);
-    chip = el;
-    placeChip(field);
+  };
+
+  const hideChip = (): void => {
+    chipField = undefined;
+    chips?.hide();
+  };
+
+  /** "No text selected. Select the message first." for four seconds. */
+  const showError = (): void => {
+    if (errorTimer) clearTimeout(errorTimer);
+    const active = doc.activeElement;
+    const field = active ? editableHostOf(active) : undefined;
+    const rect = field?.getBoundingClientRect();
+    getChips().show({
+      kind: 'error',
+      text: CONTEXT_ERROR,
+      field: rect
+        ? { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom }
+        : undefined,
+      viewport: viewport(),
+      theme: field ? themeForBackground(effectiveBackground(field)) : 'dark',
+    });
+    errorTimer = setTimeout(() => {
+      errorTimer = undefined;
+      if (context) renderChip();
+      else chips?.hide();
+    }, CONTEXT_ERROR_MS);
   };
 
   const unbind = (): void => {
+    overlay?.destroy();
+    overlay = undefined;
     binding?.destroy();
     binding = undefined;
-    removeChip();
+    hideChip();
   };
 
   const attach = async (field: Element): Promise<void> => {
@@ -150,7 +186,13 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
         report(statusFrom(snap, 'selection-context', words));
       },
     });
-    showChip(field as HTMLElement);
+    try {
+      overlay = attachOverlay({ doc, host: h, binding });
+    } catch {
+      overlay = undefined; // squiggles still work without the cards
+    }
+    chipField = field as HTMLElement;
+    renderChip();
   };
 
   const onFocusIn = (event: FocusEvent): void => {
@@ -158,7 +200,7 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
     if (target) void attach(target);
   };
   const onReposition = (): void => {
-    if (binding) placeChip(binding.target.element);
+    if (chipField && context && !errorTimer) renderChip();
   };
   const onNavigate = (): void => {
     controller.clear();
@@ -174,7 +216,10 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
   const controller: SelectionController = {
     async useSelection(text) {
       const input = selectionContextInput(text);
-      if (!input) return false;
+      if (!input) {
+        showError();
+        return false;
+      }
       unbind();
       context = createContext(input);
       words = wordCount(input.message);
@@ -189,6 +234,7 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
       const active = doc.activeElement;
       const field = active ? editableHostOf(active) : undefined;
       if (field) await attach(field);
+      else renderChip();
       return true;
     },
     clear() {
@@ -198,6 +244,12 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
       report({ state: 'idle', asks: 0, open: 0, slips: 0, contextWords: 0, failedChecks: [] });
     },
     session: () => binding?.session,
+    nextSlip: () => {
+      overlay?.nextSlip();
+    },
+    openLedger: () => {
+      overlay?.openLedger();
+    },
     stop() {
       stopped = true;
       unbind();
@@ -207,6 +259,9 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
       view?.removeEventListener('resize', onReposition);
       view?.removeEventListener('popstate', onNavigate);
       view?.removeEventListener('hashchange', onNavigate);
+      if (errorTimer) clearTimeout(errorTimer);
+      chips?.destroy();
+      chips = undefined;
       host?.destroy();
       host = undefined;
     },

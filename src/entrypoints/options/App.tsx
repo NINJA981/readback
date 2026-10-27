@@ -1,180 +1,161 @@
 /**
- * Options placeholder (Stage 2): guards, theme, the ignore lists with removal,
- * and the data panel with Clear all, all wired to the real storage layer.
- * Layout and polish follow in the UI stage. Single column, max-width 720.
+ * Options entry: live storage in, `OptionsView` out, plus the page's keyboard
+ * layer (Ctrl/Cmd+K palette, Ctrl+Z to undo Clear all).
  */
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { browser } from 'wxt/browser';
 import { extensionStorage } from '../../platform/runtime-storage';
 import { removeIgnored } from '../../state/ignore';
-import type { IgnoreKind } from '../../state/ignore';
 import { GUARD_KEYS, THEMES, setGuard, setTheme } from '../../state/settings';
-import type { Guard } from '../../state/settings';
+import type { Settings, IgnoreList } from '../../engine/types';
 import type { StorageInventory } from '../../storage/repository';
-import { GhostButton, PrimaryButton, SecondaryButton, Section, SwitchRow } from '../../ui/controls';
+import { CommandPalette } from '../../ui/CommandPalette';
+import type { Command } from '../../ui/CommandPalette';
+import { OptionsView, SECTIONS } from '../../ui/OptionsView';
+import type { OptionsActions } from '../../ui/OptionsView';
 import { updateIgnore, updateSettings, useIgnore, useSettings } from '../../ui/stores';
 import { useTheme } from '../../ui/use-theme';
 
-const GUARD_LABELS: Record<Guard, { label: string; hint: string }> = {
-  name: { label: 'Names', hint: 'Underline a name that is a near-miss of one in the thread.' },
-  number: { label: 'Numbers', hint: 'Catch swapped digits in amounts and IDs.' },
-  date: { label: 'Dates', hint: 'Catch a weekday that does not match its date.' },
-  asks: { label: 'Ask pill', hint: 'Count the asks you have not covered yet.' },
-};
-
-function IgnoreList({ kind, title, empty }: { kind: IgnoreKind; title: string; empty: string }) {
-  const ignore = useIgnore();
-  const entries = ignore.value[kind];
-  return (
-    <Section title={title} as="h3">
-      {entries.length === 0 ? (
-        <p className="px-2 text-caption text-text-subtle">{empty}</p>
-      ) : (
-        <ul className="flex flex-col">
-          {entries.map((entry) => (
-            <li
-              key={entry}
-              className="flex items-center justify-between rounded-sm px-2 py-1 hover:bg-surface-3"
-            >
-              <span className="font-mono text-label">{entry}</span>
-              <GhostButton
-                aria-label={`Stop ignoring ${entry}`}
-                onClick={() => {
-                  void updateIgnore((l) => removeIgnored(l, kind, entry));
-                }}
-              >
-                Remove
-              </GhostButton>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Section>
-  );
-}
-
-function DataPanel() {
-  const [inventory, setInventory] = useState<StorageInventory>();
-  const [confirming, setConfirming] = useState(false);
-
-  const refresh = (): void => {
-    extensionStorage()
-      .inventory()
-      .then(setInventory, () => undefined);
-  };
-
-  return (
-    <Section title="What Readback stores">
-      <p className="px-2 text-caption text-text-muted">
-        Your settings and the words you chose to ignore, on this device. Per-reply choices live in
-        this browser session only and hold hashed ids, never message text. Readback makes no network
-        requests.
-      </p>
-      <div className="flex items-center gap-2 px-2">
-        <SecondaryButton onClick={refresh}>Show what is stored</SecondaryButton>
-        {confirming ? (
-          <>
-            <PrimaryButton
-              onClick={() => {
-                void extensionStorage()
-                  .clearAll()
-                  .then(() => {
-                    setConfirming(false);
-                    refresh();
-                  });
-              }}
-            >
-              Clear everything
-            </PrimaryButton>
-            <GhostButton
-              onClick={() => {
-                setConfirming(false);
-              }}
-            >
-              Cancel
-            </GhostButton>
-          </>
-        ) : (
-          <GhostButton
-            onClick={() => {
-              setConfirming(true);
-            }}
-          >
-            Clear all
-          </GhostButton>
-        )}
-      </div>
-      {inventory ? (
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 px-2 text-label text-text-muted tabular">
-          <dt>Settings saved</dt>
-          <dd>{inventory.settings ? 'yes' : 'no'}</dd>
-          <dt>Ignored names</dt>
-          <dd>{inventory.ignoredNames}</dd>
-          <dt>Ignored numbers</dt>
-          <dd>{inventory.ignoredNumbers}</dd>
-          <dt>Replies remembered this session</dt>
-          <dd>{inventory.threads}</dd>
-        </dl>
-      ) : null}
-    </Section>
-  );
-}
+const TOAST_MS = 6000;
+const GUARD_LABEL = {
+  name: 'names',
+  number: 'numbers',
+  date: 'dates',
+  asks: 'the ask pill',
+} as const;
 
 export function App() {
   const settings = useSettings();
+  const ignore = useIgnore();
+  const [inventory, setInventory] = useState<StorageInventory>();
+  const [cleared, setCleared] = useState<{ settings: Settings; ignore: IgnoreList }>();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useTheme(settings.value.theme);
+
+  const refreshInventory = useCallback((): void => {
+    extensionStorage()
+      .inventory()
+      .then(setInventory, () => undefined);
+  }, []);
+
+  useEffect(() => {
+    refreshInventory();
+  }, [refreshInventory, settings.value, ignore.value]);
+
+  const undoClear = useCallback((): void => {
+    if (!cleared) return;
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    const { settings: s, ignore: i } = cleared;
+    setCleared(undefined);
+    void updateSettings(() => s).then(() => updateIgnore(() => i));
+  }, [cleared]);
+
+  // Ctrl/Cmd+K opens the palette; Ctrl/Cmd+Z undoes Clear all while its toast shows.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      } else if (mod && !e.shiftKey && e.key.toLowerCase() === 'z' && cleared) {
+        e.preventDefault();
+        undoClear();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [cleared, undoClear]);
+
+  const actions: OptionsActions = useMemo(
+    () => ({
+      toggleGuard(guard, on) {
+        void updateSettings((s) => setGuard(s, guard, on));
+      },
+      setTheme(theme) {
+        void updateSettings((s) => setTheme(s, theme));
+      },
+      removeIgnored(kind, entry) {
+        void updateIgnore((l) => removeIgnored(l, kind, entry));
+      },
+      // The on-device model is not part of this build (ADR-0002), so these are no-ops.
+      toggleModel() {},
+      retryModel() {},
+      copyModelError() {},
+      clearAll() {
+        const storage = extensionStorage();
+        void Promise.all([storage.getSettings(), storage.getIgnore()]).then(
+          async ([s, i]) => {
+            await storage.clearAll();
+            setCleared({ settings: s, ignore: i });
+            refreshInventory();
+            if (toastTimer.current) clearTimeout(toastTimer.current);
+            toastTimer.current = setTimeout(() => {
+              setCleared(undefined);
+            }, TOAST_MS);
+          },
+          () => undefined,
+        );
+      },
+      undoClear,
+    }),
+    [refreshInventory, undoClear],
+  );
+
+  const commands: Command[] = useMemo(() => {
+    const goTo = (id: string) => (): void => {
+      window.location.hash = id;
+      document.getElementById(id)?.scrollIntoView();
+    };
+    return [
+      ...SECTIONS.map((s) => ({ id: `go-${s.id}`, label: `Go to ${s.label}`, run: goTo(s.id) })),
+      ...GUARD_KEYS.map((g) => ({
+        id: `toggle-${g}`,
+        label: `Toggle ${GUARD_LABEL[g]}`,
+        keywords: 'check guard switch',
+        run: () => {
+          void updateSettings((s) => setGuard(s, g, !s.guards[g]));
+        },
+      })),
+      ...THEMES.map((t) => ({
+        id: `theme-${t}`,
+        label: `Switch theme: ${t[0]?.toUpperCase()}${t.slice(1)}`,
+        keywords: 'appearance dark light system',
+        run: () => {
+          void updateSettings((s) => setTheme(s, t));
+        },
+      })),
+      {
+        id: 'clear',
+        label: 'Clear all stored data',
+        keywords: 'delete reset',
+        run: actions.clearAll,
+      },
+    ];
+  }, [actions.clearAll]);
+
   if (!settings.loaded) return <main className="min-h-screen bg-bg" />;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-[720px] flex-col gap-8 bg-bg px-4 py-8 text-text md:px-6 lg:px-8">
-      <h1 className="font-display text-h1 font-semibold">Readback options</h1>
-
-      <Section title="Checks">
-        {GUARD_KEYS.map((guard) => (
-          <SwitchRow
-            key={guard}
-            label={GUARD_LABELS[guard].label}
-            hint={GUARD_LABELS[guard].hint}
-            checked={settings.value.guards[guard]}
-            onChange={(on) => {
-              void updateSettings((s) => setGuard(s, guard, on));
-            }}
-          />
-        ))}
-      </Section>
-
-      <Section title="Appearance">
-        <div role="radiogroup" aria-label="Theme" className="flex gap-2 px-2">
-          {THEMES.map((theme) => (
-            <button
-              key={theme}
-              type="button"
-              role="radio"
-              aria-checked={settings.value.theme === theme}
-              onClick={() => {
-                void updateSettings((s) => setTheme(s, theme));
-              }}
-              className={`h-7 rounded-sm border px-3 text-label capitalize ${
-                settings.value.theme === theme
-                  ? 'border-brass bg-brass-soft text-brass-text'
-                  : 'border-border bg-surface-2 text-text-muted hover:bg-surface-3'
-              }`}
-            >
-              {theme}
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Never flag">
-        <IgnoreList
-          kind="names"
-          title="Names"
-          empty="No ignored names. “Never flag” on a slip adds one."
-        />
-        <IgnoreList kind="numbers" title="Numbers" empty="No ignored numbers." />
-      </Section>
-
-      <DataPanel />
-    </main>
+    <>
+      <OptionsView
+        settings={settings.value}
+        ignore={ignore.value}
+        model={{ kind: 'unavailable' }}
+        inventory={inventory}
+        hostPermissions={(browser.runtime.getManifest().host_permissions ?? []) as string[]}
+        clearedToast={cleared !== undefined}
+        actions={actions}
+      />
+      <CommandPalette
+        open={paletteOpen}
+        commands={commands}
+        onClose={() => {
+          setPaletteOpen(false);
+        }}
+      />
+    </>
   );
 }

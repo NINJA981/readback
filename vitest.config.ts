@@ -4,7 +4,7 @@ import { WxtVitest } from 'wxt/testing/vitest-plugin';
 export default defineConfig({
   plugins: [WxtVitest()],
   test: {
-    include: ['tests/**/*.test.ts'],
+    include: ['tests/**/*.test.{ts,tsx}'],
     environment: 'node',
     restoreMocks: true,
     coverage: {
@@ -15,6 +15,7 @@ export default defineConfig({
         'src/storage/**',
         'src/adapters/**',
         'src/messaging/**',
+        'src/overlay/**',
       ],
       thresholds: {
         'src/engine/**': { lines: 90 },

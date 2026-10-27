@@ -41,6 +41,8 @@
     0 12px 24px -8px oklch(0 0 0 / 0.55);
   --rb-e4: 0 0 0 1px oklch(1 0 0 / 0.06), 0 24px 48px -12px oklch(0 0 0 / 0.6);
   --rb-scrim: oklch(0.12 0.01 250 / 0.65);
+  /* The pill floats too, but is tiny: the ring and the first drop layer only. */
+  --rb-e-pill: 0 0 0 1px var(--rb-border), 0 12px 24px -8px oklch(0 0 0 / 0.55);
 
   /* Radius */
   --rb-radius-xs: 4px;
@@ -96,6 +98,7 @@
       0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 8px 16px -4px oklch(0.25 0.02 250 / 0.1),
       0 24px 48px -12px oklch(0.25 0.02 250 / 0.22);
     --rb-scrim: oklch(0.12 0.01 250 / 0.45);
+    --rb-e-pill: 0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 2px 4px -1px oklch(0.25 0.02 250 / 0.08);
     color-scheme: light;
   }
 }
@@ -128,5 +131,6 @@
     0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 8px 16px -4px oklch(0.25 0.02 250 / 0.1),
     0 24px 48px -12px oklch(0.25 0.02 250 / 0.22);
   --rb-scrim: oklch(0.12 0.01 250 / 0.45);
+  --rb-e-pill: 0 0 0 1px oklch(0.25 0.02 250 / 0.08), 0 2px 4px -1px oklch(0.25 0.02 250 / 0.08);
   color-scheme: light;
 }

@@ -4,7 +4,7 @@
  * the overlay and the tests never branch on the kind of field. Offsets are
  * the engine's UTF-16 offsets into `read()`.
  */
-import { applyFixToField, applyFixToRange } from '../dom/apply-fix';
+import { applyFixToField, applyFixToRange, insertIntoEditable } from '../dom/apply-fix';
 import type { ClipboardLike, FixOutcome } from '../dom/apply-fix';
 import type { RectLike } from '../dom/geometry';
 import { buildTextIndex } from '../dom/text-index';
@@ -24,6 +24,8 @@ export interface DraftTarget {
   caret(): number | undefined;
   /** Replaces a span through the field's own input path (undo-safe). */
   fix(span: Span, replacement: string, clipboard?: ClipboardLike): Promise<FixOutcome>;
+  /** Inserts text at the caret (end of the field if there is none), same input path. */
+  insert(text: string, clipboard?: ClipboardLike): Promise<FixOutcome>;
 }
 
 const toRects = (list: DOMRectList | DOMRect[]): RectLike[] =>
@@ -64,6 +66,8 @@ export function createContentEditableTarget(
         ...(clipboard ? { clipboard } : {}),
       });
     },
+    insert: (text, clipboard) =>
+      insertIntoEditable({ doc, element, text, ...(clipboard ? { clipboard } : {}) }),
   };
 }
 
@@ -94,6 +98,17 @@ export function createTextareaTarget(
         start: span.start,
         end: span.end,
         replacement,
+        ...(clipboard ? { clipboard } : {}),
+      });
+    },
+    insert(text, clipboard) {
+      const at = element.selectionStart;
+      return applyFixToField({
+        doc,
+        field: element,
+        start: at,
+        end: at,
+        replacement: text,
         ...(clipboard ? { clipboard } : {}),
       });
     },

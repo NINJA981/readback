@@ -30,6 +30,8 @@ export default defineContentScript({
 
     browser.runtime.onMessage.addListener((raw: unknown, _sender, sendResponse) => {
       const message = parseMessage(raw);
+      if (message?.type === 'next-slip') controller.nextSlip();
+      if (message?.type === 'open-ledger') controller.openLedger();
       if (message?.type !== 'get-slips') return undefined;
       const flags = controller.session()?.getSnapshot().result.flags ?? [];
       const reply: MessageReplies['get-slips'] = {

@@ -15,6 +15,8 @@ import { createContentEditableTarget } from '../adapters/target';
 import { createHighlightPainter } from '../dom/highlights';
 import type { HighlightPainter } from '../dom/highlights';
 import { createContext } from '../engine/index';
+import { attachOverlay } from '../overlay/controller';
+import type { OverlayController } from '../overlay/controller';
 import { createComposeSession } from '../state/session';
 import type { ComposeSession, SessionSnapshot } from '../state/session';
 import { isSiteEnabled } from '../state/settings';
@@ -22,6 +24,8 @@ import type { ReadbackStorage } from '../storage/repository';
 import type { TabStatus } from '../storage/tab-status';
 import { bindDraft } from './binding';
 import type { Binding } from './binding';
+import { createOverlayHost } from './overlay-host';
+import type { OverlayHost } from './overlay-host';
 import { statusFrom } from './status';
 
 export interface GmailControllerDeps {
@@ -37,6 +41,10 @@ export interface GmailControllerDeps {
 export interface GmailController {
   /** The session of the bound compose, if any (the popup's slip list reads it). */
   session(): ComposeSession | undefined;
+  /** Alt+Shift+J: open the next slip's card. */
+  nextSlip(): void;
+  /** Alt+Shift+L: open the ask ledger. */
+  openLedger(): void;
   stop(): void;
 }
 
@@ -54,6 +62,9 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
   const [initialSettings, ignore] = await Promise.all([storage.getSettings(), storage.getIgnore()]);
   let settings = initialSettings;
   let binding: Binding | undefined;
+  let overlay: OverlayController | undefined;
+  let overlayHost: OverlayHost | undefined;
+  let overlayFailed = false;
   let boundEditor: HTMLElement | undefined;
   let layoutFailure: TabStatus | undefined;
   let stopped = false;
@@ -78,6 +89,11 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
   });
 
   const unbind = (): void => {
+    overlay?.destroy();
+    overlay = undefined;
+    overlayHost?.destroy();
+    overlayHost = undefined;
+    overlayFailed = false;
     binding?.destroy();
     binding = undefined;
     boundEditor = undefined;
@@ -114,14 +130,35 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
     });
     const target = createContentEditableTarget(editor, { exclude: isNotDraft });
     boundEditor = editor;
+    // The overlay mounts the first time there is something to draw, so a reply
+    // with no asks and no slips adds nothing to the page (not even the host node).
+    let needsOverlay = false as boolean;
     binding = bindDraft({
       target,
       session,
       painter,
       onChange: (snap: SessionSnapshot) => {
         report(statusFrom(snap));
+        if (snap.pill.tone !== 'hidden') {
+          needsOverlay = true;
+          if (binding) mountOverlay(binding);
+        }
       },
     });
+    if (needsOverlay) mountOverlay(binding);
+  };
+
+  /** The overlay is optional: if it cannot mount, squiggles and the popup still work. */
+  const mountOverlay = (bound: Binding): void => {
+    if (overlay || overlayFailed) return;
+    try {
+      overlayHost = createOverlayHost(doc);
+      overlay = attachOverlay({ doc, host: overlayHost, binding: bound });
+    } catch {
+      overlayFailed = true;
+      overlayHost?.destroy();
+      overlayHost = undefined;
+    }
   };
 
   const scan = (): void => {
@@ -168,6 +205,12 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
 
   return {
     session: () => binding?.session,
+    nextSlip: () => {
+      overlay?.nextSlip();
+    },
+    openLedger: () => {
+      overlay?.openLedger();
+    },
     stop() {
       stopped = true;
       observer.disconnect();

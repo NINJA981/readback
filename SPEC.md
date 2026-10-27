@@ -321,3 +321,28 @@ Recorded from the playground's deterministic timeline (`?demo=signature`), captu
 | 8 | 9.2–10.0 s | Hold | A clean reply, no squiggles, green pill. A corner chip reads `0 network requests`. Last frame equals the poster. | `Readback. Spellcheck that read the thread.` |
 
 The 10 s cut shows two guard catches (name, number) and one supporting pill flip. That is one mechanism shown twice, plus the resolve. The date guard gets its own 4 s loop on the landing page (beat 3, proof 3).
+
+## 12. Web app (`site/`, route `/app`)
+
+Most people who see the LinkedIn post are on a phone, where extensions cannot run. The web app is F9 grown into a full, mobile-first, installable page: paste the thread you are replying to, type your reply, and the same engine underlines name, number and date slips with one-tap fixes while the ask pill updates live. The landing hero links to it with `Try it in your browser, no install`. Source in `site/src/app`; it imports the engine from `src/core` through the Vite alias `@` and re-implements none of it.
+
+**Behaviour**
+- Two text areas (the thread, the reply), a sample picker with the six F9 samples (each labelled `Sample thread`), a Slips list with a **Fix** button per slip, a guard card (fix, Ignore, Never flag), the asks ledger and the ask pill. Counts change at 0 ms while typing; the only authored motion is the swap-back after a fix, which is skipped under `prefers-reduced-motion`.
+- States: **empty** (a `Try a sample` button), **loading** (the checker chunk is loading), **error** (the checker failed to load, with a retry, and an error boundary around the app), **success** (`No slips against this thread.`), plus a thread-too-long state and a reply-without-thread hint.
+- Privacy line, always visible: `Runs entirely in your browser. Nothing is uploaded.` Pasted text lives in memory and `sessionStorage` only; settings and the ignore list live in `localStorage`. Nothing is put in a URL.
+- Layouts designed at 375 px first, then 768 px and 1440 px. Design tokens are the repo's `DESIGN.md` tokens, dark first with a light theme.
+- Installable PWA: `app/manifest.webmanifest` (standalone, 192, 512, maskable and monochrome icons) and `app/sw.js`, a service worker generated at build time whose precache list is the app page's real module graph. It handles same-origin GET only.
+
+**Acceptance criteria** (E = Playwright against the production build, `site/e2e`; U = vitest, `site/tests`; L = Lighthouse through the chrome-devtools MCP)
+- AC-W.1 (E) `/app/` shows the h1, the privacy line and a `Try a sample` button with no thread and no reply.
+- AC-W.2 (E) `Try a sample` fills both fields and the Slips list shows exactly the two slips of the sample (`Catherine` to `Kathryn`, `$1,520` to `$1,250`); each **Fix** edits the reply, and afterwards the list shows `No slips against this thread.`
+- AC-W.3 (E) With a sample thread loaded, `Hi Bob,` gives 0 slips and `Hi Catherine,` gives 1 (live, without a button press).
+- AC-W.4 (E) A reply typed with no thread shows `Add the thread above` and no slips.
+- AC-W.5 (U) For each of the six samples the real engine flags exactly the slips the sample's copy names, and stays quiet on its deliberate case.
+- AC-W.6 (E) Every request made by `/app/` and by `/` goes to the page's own origin. The page carries a CSP with `connect-src 'none'`, and a `fetch` to another origin is refused by the browser.
+- AC-W.7 (E) After one visit (service worker active), with the network switched off, a reload still renders the app, loads the checker and flags the sample's slips.
+- AC-W.8 (E) The manifest is `display: standalone` with 192 px, 512 px and maskable icons.
+- AC-W.9 (E) At 375 px and 768 px (touch) every button, link, select and text area has a hit area of at least 44 px by 44 px, and at 375, 768 and 1440 px the page has no horizontal scroll.
+- AC-W.10 (E) With `prefers-reduced-motion: reduce`, **Fix** applies the correction and the reply is repaired.
+- AC-W.11 (E) The landing page has one h1, a hero link to `/app`, no `<canvas>` (no WebGL by decision), no third-party request, a Play control instead of autoplay under reduced motion, and no horizontal scroll at 375 px.
+- AC-W.12 (L) Lighthouse on `/` and `/app/` (mobile and desktop): Accessibility 100 and Best practices 100; LCP at most 2.0 s and CLS 0 in a cold trace on the mobile profile (375 px, 4x CPU, Fast 4G); initial JS of the landing page at most 120 KB gz (bible 11.3). SEO and agentic-browsing score below 100 only because Lighthouse fetches `robots.txt` and `llms.txt` from inside the page, which the page's own CSP (`connect-src 'none'`, AC-W.6) blocks; with the CSP meta removed both pass at 100. The strict CSP is kept on purpose.

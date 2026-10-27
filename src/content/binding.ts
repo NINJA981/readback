@@ -24,6 +24,8 @@ export interface Binding {
   refresh(): void;
   /** Client rects of every current slip, for hover hit-testing. */
   slips(): SlipRects[];
+  /** The hovered or focused slip gets the active tint (DESIGN.md). Undefined clears it. */
+  setActive(flagId: string | undefined): void;
   destroy(): void;
 }
 
@@ -48,17 +50,24 @@ export function bindDraft(options: BindingOptions): Binding {
   const slipRects = (flag: Flag): RectLike[] =>
     mirror ? mirror.rectsFor(flag.id) : target.rectsFor(flag.draftSpan);
 
-  const paint = (snapshot: SessionSnapshot): void => {
+  let activeId: string | undefined;
+
+  const paint = (snapshot: SessionSnapshot, notify = true): void => {
     const flags = snapshot.result.flags;
     if (mirror) {
       mirror.update(flags.map((f) => ({ id: f.id, ...f.draftSpan })));
     } else {
-      const ranges = flags
-        .map((f) => target.rangeFor(f.draftSpan))
-        .filter((r): r is Range => r !== undefined);
-      painter.paint(ranges, undefined, themeForBackground(effectiveBackground(element)));
+      const ranges: Range[] = [];
+      let active: Range | undefined;
+      for (const f of flags) {
+        const range = target.rangeFor(f.draftSpan);
+        if (!range) continue;
+        ranges.push(range);
+        if (f.id === activeId) active = range;
+      }
+      painter.paint(ranges, active, themeForBackground(effectiveBackground(element)));
     }
-    onChange?.(snapshot);
+    if (notify) onChange?.(snapshot);
   };
 
   const unsubscribe = session.subscribe(() => {
@@ -88,6 +97,11 @@ export function bindDraft(options: BindingOptions): Binding {
     target,
     refresh,
     slips: () => session.getSnapshot().result.flags.map((f) => ({ id: f.id, rects: slipRects(f) })),
+    setActive(flagId) {
+      if (activeId === flagId) return;
+      activeId = flagId;
+      paint(session.getSnapshot(), false);
+    },
     destroy() {
       unsubscribe();
       element.removeEventListener('input', onInput);

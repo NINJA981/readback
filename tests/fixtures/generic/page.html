@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Generic page fixture</title>
+    <!--
+      Synthetic page for the generic "Use as Readback context" adapter. Served by the
+      e2e suite on a mail.google.com path (the only host the extension may inject into
+      without the context-menu gesture, which Playwright cannot click).
+    -->
+    <style>
+      body {
+        font:
+          16px/24px Arial,
+          Helvetica,
+          sans-serif;
+        margin: 32px;
+        color: #202124;
+      }
+      textarea {
+        display: block;
+        margin-top: 24px;
+        width: 520px;
+        height: 140px;
+        padding: 8px 10px;
+        font:
+          16px/24px Arial,
+          Helvetica,
+          sans-serif;
+        border: 1px solid #5f6368;
+      }
+    </style>
+  </head>
+  <body>
+    <p id="message">
+      Hi Sam,<br />Can you confirm the $1,250 deposit and send the signed lease back?<br />Thanks,<br />Kathryn
+    </p>
+    <textarea id="reply" aria-label="Reply"></textarea>
+  </body>
+</html>

@@ -16,3 +16,4 @@ tests/fixtures/pages/*.html
 tests/fixtures/gmail/*.expected.json
 tests/fixtures/threads/*.json
 tests/fixtures/gmail/generate.mjs
+.gallery/

@@ -109,5 +109,9 @@ describe('src/core is free of extension APIs', () => {
       version: 1,
     }).flags;
     expect(flags).toHaveLength(2);
-  });
+    // The pure parts of the overlay load too, with no DOM: the playground renders from these.
+    expect(core.planSwap('Catherine', 'Kathryn', 'name').kind).toBe('morph');
+    expect(typeof core.ledgerModel).toBe('function');
+    // First import compiles the whole graph; allow for a loaded machine.
+  }, 30_000);
 });

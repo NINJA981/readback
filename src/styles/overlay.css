@@ -1,13 +1,721 @@
 /*
- * Styles inside Readback's shadow root (the Gmail/page overlay). Placeholder
- * set for Stage 2: the context chip and the textarea mirror. The guard card,
- * ask pill and ledger arrive with the Stage 3 UI. Tokens come from tokens.css,
- * injected next to this file.
+ * Styles inside Readback's one shadow root (the Gmail/page overlay): ask pill,
+ * ledger, guard card with its readback line, the swap-back ghost, the context
+ * chip and the textarea mirror. Tokens come from tokens.css, injected next to
+ * this file; nothing here is an off-token value. The host page's CSS cannot
+ * reach in and ours cannot leak out.
+ *
+ * Fonts: @font-face is ignored inside shadow roots, so the faces are added
+ * through the FontFace API (src/overlay/fonts.ts). The family names here match.
  */
 
 :host {
   all: initial;
 }
+
+.rb-root {
+  --rb-card-bg: var(--rb-surface-2);
+  --rb-cite-bg: var(--rb-surface);
+  --rb-pop-in: 160ms var(--rb-ease-out);
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 0;
+  height: 0;
+  color: var(--rb-text);
+  font-family: var(--rb-font-ui);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 450;
+  letter-spacing: 0;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-align: left;
+  text-transform: none;
+}
+
+.rb-root[data-theme='light'] {
+  --rb-card-bg: var(--rb-surface);
+  --rb-cite-bg: var(--rb-bg);
+}
+
+.rb-root *,
+.rb-root *::before,
+.rb-root *::after {
+  box-sizing: border-box;
+}
+
+:where(.rb-root) :is(h3, p, figure, blockquote, ul) {
+  margin: 0;
+  padding: 0;
+}
+
+:where(.rb-root) ul {
+  list-style: none;
+}
+
+:where(.rb-root) button {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+:where(.rb-root) :focus-visible {
+  outline: 2px solid var(--rb-brass);
+  outline-offset: 2px;
+}
+
+.rb-root ::selection {
+  background: var(--rb-brass-soft);
+  color: var(--rb-text);
+}
+
+.rb-mono {
+  font-family: var(--rb-font-mono);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 450;
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-caption {
+  color: var(--rb-text-muted);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 450;
+  letter-spacing: 0.005em;
+}
+
+.rb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Keycap ---------- */
+
+.rb-keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: var(--rb-radius-xs);
+  background: var(--rb-surface-2);
+  color: var(--rb-text-muted);
+  box-shadow:
+    0 0 0 1px var(--rb-border),
+    inset 0 -1px 0 var(--rb-border);
+  font-family: var(--rb-font-ui);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 520;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Buttons ---------- */
+
+.rb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 28px;
+  padding: 6px 12px;
+  border-radius: var(--rb-radius-sm);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 520;
+  white-space: nowrap;
+  transition:
+    background-color var(--rb-dur-1) var(--rb-ease-out),
+    transform var(--rb-dur-1) var(--rb-ease-out);
+}
+
+.rb-btn:active {
+  transform: scale(0.97);
+}
+
+.rb-btn-primary {
+  background: var(--rb-brass);
+  color: var(--rb-on-brass);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rb-btn-primary:hover {
+  background: var(--rb-brass-hover);
+}
+
+.rb-btn-primary .rb-keycap {
+  background: color-mix(in oklch, var(--rb-on-brass) 14%, transparent);
+  color: var(--rb-on-brass);
+  box-shadow: none;
+}
+
+.rb-btn-secondary {
+  background: var(--rb-surface-3);
+  color: var(--rb-text);
+  box-shadow: 0 0 0 1px var(--rb-border);
+}
+
+.rb-btn-secondary:hover {
+  background: var(--rb-border);
+}
+
+.rb-btn-ghost {
+  padding: 6px 10px;
+  color: var(--rb-text-muted);
+}
+
+.rb-btn-ghost:hover {
+  background: var(--rb-surface-3);
+  color: var(--rb-text);
+}
+
+.rb-btn-icon {
+  padding: 6px;
+  width: 28px;
+}
+
+.rb-btn-sm {
+  height: 24px;
+  padding: 2px 10px;
+}
+
+.rb-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--rb-radius-xs);
+  color: var(--rb-text-muted);
+}
+
+.rb-icon-btn:hover {
+  background: var(--rb-border);
+  color: var(--rb-text);
+}
+
+/* ---------- Ask pill ---------- */
+
+.rb-dock {
+  position: fixed;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rb-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  border-radius: var(--rb-radius-full);
+  background: var(--rb-brass-soft);
+  color: var(--rb-brass-text);
+  box-shadow: var(--rb-e-pill);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 520;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition:
+    background-color var(--rb-dur-2) var(--rb-ease-out),
+    color var(--rb-dur-2) var(--rb-ease-out);
+}
+
+.rb-pill[data-tone='covered'] {
+  background: var(--rb-success-soft);
+  color: var(--rb-success);
+}
+
+.rb-pill-main,
+.rb-pill-slip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  border-radius: var(--rb-radius-full);
+}
+
+.rb-pill-main {
+  padding: 4px 10px 4px 8px;
+}
+
+.rb-pill-slip {
+  padding: 4px 10px 4px 8px;
+  color: var(--rb-text);
+}
+
+.rb-pill-slip:hover,
+.rb-pill-main:hover {
+  background: color-mix(in oklch, currentColor 10%, transparent);
+}
+
+.rb-pill-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+.rb-pill-label {
+  display: inline-block;
+  /* Reserved so "3 asks · 1 open" and "All covered" swap without a layout shift. */
+  min-width: 13ch;
+  text-align: left;
+  animation: rb-fade-in var(--rb-dur-2) var(--rb-ease-out) both;
+}
+
+.rb-pill-label[data-reserve='fixed'] {
+  min-width: 0;
+}
+
+.rb-pill-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--rb-border-strong);
+  opacity: 0.5;
+}
+
+.rb-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--rb-radius-full);
+  background: var(--rb-slip);
+}
+
+.rb-ring {
+  display: block;
+}
+
+.rb-check-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: rb-draw var(--rb-dur-2) var(--rb-ease-out) both;
+}
+
+.rb-roll {
+  display: inline-grid;
+  overflow: hidden;
+  height: 18px;
+  vertical-align: top;
+}
+
+.rb-roll > * {
+  grid-area: 1 / 1;
+}
+
+.rb-roll-out {
+  animation: rb-roll-out-up var(--rb-dur-2) var(--rb-ease-out) both;
+}
+
+.rb-roll-in {
+  animation: rb-roll-in-up var(--rb-dur-2) var(--rb-ease-out) both;
+}
+
+.rb-roll[data-dir='down'] .rb-roll-out {
+  animation-name: rb-roll-out-down;
+}
+
+.rb-roll[data-dir='down'] .rb-roll-in {
+  animation-name: rb-roll-in-down;
+}
+
+/* ---------- Ledger ---------- */
+
+.rb-ledger-pos {
+  position: fixed;
+  z-index: 15;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rb-ledger {
+  max-height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rb-border-strong) transparent;
+  padding: 8px;
+  border-radius: var(--rb-radius-lg);
+  background: var(--rb-card-bg);
+  box-shadow: var(--rb-e3);
+  transform-origin: 100% 100%;
+  animation: rb-pop-in var(--rb-pop-in) both;
+}
+
+.rb-ledger[data-state='closing'] {
+  animation: rb-pop-out 120ms var(--rb-ease-out) both;
+  pointer-events: none;
+}
+
+.rb-ledger-h {
+  padding: 4px 8px 2px;
+  color: var(--rb-text-muted);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 520;
+}
+
+.rb-ledger-title {
+  padding: 0 8px 4px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 450;
+}
+
+.rb-ledger-ok {
+  color: var(--rb-success);
+}
+
+.rb-ledger-empty {
+  padding: 4px 8px 8px;
+}
+
+.rb-ledger-note {
+  padding: 2px 8px 4px;
+}
+
+.rb-ledger-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  padding: 6px 8px 0;
+}
+
+.rb-restore {
+  margin: 4px 0 0 4px;
+  gap: 6px;
+}
+
+.rb-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.rb-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 6px 8px;
+  border-radius: var(--rb-radius-sm);
+}
+
+.rb-row:hover,
+.rb-row:focus-within {
+  background: var(--rb-surface-3);
+}
+
+.rb-row-icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--rb-brass-text);
+}
+
+.rb-row-icon[data-state='answered'] {
+  color: var(--rb-success);
+}
+
+.rb-row-icon[data-state='slip'] {
+  color: var(--rb-danger);
+}
+
+.rb-row-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.rb-row[data-state='answered'] .rb-row-text,
+.rb-row[data-state='looks-answered'] .rb-row-text {
+  color: var(--rb-text-muted);
+}
+
+.rb-row-link {
+  display: block;
+  height: 20px;
+}
+
+.rb-strike {
+  color: var(--rb-text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.rb-row-actions {
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  display: inline-flex;
+  gap: 2px;
+  padding-left: 6px;
+  border-radius: var(--rb-radius-sm);
+  background: var(--rb-surface-3);
+  opacity: 0;
+}
+
+/* A soft left edge, so the ask text fades under the actions instead of being cut. */
+.rb-row-actions:not(.rb-row-actions-always)::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(to right, transparent, var(--rb-surface-3));
+  pointer-events: none;
+}
+
+.rb-row:hover .rb-row-actions,
+.rb-row:focus-within .rb-row-actions,
+.rb-row-actions-always {
+  opacity: 1;
+}
+
+/* Slip rows keep their Fix button in the layout; it is the row's main action. */
+.rb-row-actions-always {
+  position: static;
+  padding-left: 0;
+  background: none;
+}
+
+@media (hover: none) {
+  .rb-row-actions {
+    opacity: 1;
+  }
+}
+
+/* ---------- Guard card ---------- */
+
+.rb-card {
+  position: fixed;
+  z-index: 20;
+  left: 0;
+  top: 0;
+  width: 320px;
+  padding: 12px;
+  border-radius: var(--rb-radius-lg);
+  background: var(--rb-card-bg);
+  box-shadow: var(--rb-e3);
+  transform-origin: var(--rb-origin, 0 0);
+  animation: rb-pop-in var(--rb-pop-in) both;
+}
+
+.rb-card[data-state='closing'] {
+  animation: rb-pop-out 120ms var(--rb-ease-out) both;
+  pointer-events: none;
+}
+
+.rb-line {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.rb-line-path {
+  fill: none;
+  stroke: var(--rb-brass);
+  stroke-width: 1px;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: rb-draw var(--rb-dur-line) var(--rb-ease-in-out) both;
+}
+
+.rb-line-dot {
+  fill: var(--rb-brass);
+}
+
+.rb-line-dot-end {
+  animation: rb-fade-in 100ms var(--rb-ease-out) 180ms both;
+}
+
+.rb-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.rb-card-icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 4px;
+  color: var(--rb-danger);
+}
+
+.rb-card-msg {
+  flex: 1;
+  min-width: 0;
+  color: var(--rb-text);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-cite {
+  margin: 8px 0 0;
+}
+
+.rb-cite-line {
+  padding: 8px 10px 10px 28px;
+  border-radius: var(--rb-radius-sm);
+  background: var(--rb-cite-bg);
+  color: var(--rb-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.rb-cite-token {
+  padding: 0 2px;
+  margin: 0 -2px;
+  border-radius: var(--rb-radius-xs);
+  background: var(--rb-brass-soft);
+  color: var(--rb-text);
+}
+
+.rb-cite .rb-caption {
+  padding: 4px 0 0 28px;
+}
+
+.rb-card-notice {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--rb-radius-sm);
+  background: var(--rb-danger-soft);
+  color: var(--rb-danger);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 520;
+}
+
+.rb-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.rb-card-esc {
+  flex: none;
+  margin-top: 2px;
+}
+
+.rb-menu {
+  margin-top: 4px;
+  padding: 4px;
+  border-radius: var(--rb-radius-sm);
+  background: var(--rb-cite-bg);
+}
+
+.rb-menu-item {
+  display: block;
+  width: 100%;
+  height: 28px;
+  padding: 4px 8px;
+  border-radius: var(--rb-radius-xs);
+  color: var(--rb-text);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 520;
+  text-align: left;
+}
+
+.rb-menu-item:hover {
+  background: var(--rb-surface-3);
+}
+
+/* ---------- Swap-back ghost ---------- */
+
+.rb-ghost {
+  position: fixed;
+  z-index: 30;
+  pointer-events: none;
+  white-space: pre;
+  font-synthesis: none;
+}
+
+.rb-ghost-glyph {
+  position: absolute;
+  top: 0;
+  white-space: pre;
+  will-change: transform, opacity, filter;
+}
+
+.rb-ghost-column {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ---------- Context chip (generic adapter) ---------- */
+
+.rb-chip {
+  position: fixed;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+  padding: 2px 8px;
+  border-radius: var(--rb-radius-xs);
+  background: var(--rb-surface-2);
+  color: var(--rb-text-muted);
+  box-shadow: var(--rb-e3);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 450;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+}
+
+.rb-root[data-theme='light'] .rb-chip {
+  background: var(--rb-surface);
+}
+
+.rb-chip[data-kind='error'] {
+  background: var(--rb-danger-soft);
+  color: var(--rb-danger);
+}
+
+.rb-chip-clear {
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--rb-radius-xs);
+  color: var(--rb-brass-text);
+  font-weight: 520;
+}
+
+.rb-chip-clear:hover {
+  background: var(--rb-brass-soft);
+}
+
+/* ---------- Textarea mirror (squiggles over a textarea) ---------- */
 
 [data-readback-mirror] {
   box-sizing: border-box;
@@ -19,34 +727,113 @@
   text-decoration-skip-ink: none;
 }
 
-.rb-chip {
-  position: fixed;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 22px;
-  padding: 2px 8px;
-  border-radius: var(--rb-radius-xs);
-  background: var(--rb-surface-2);
-  color: var(--rb-text-muted);
-  box-shadow: var(--rb-e3);
-  font-family: var(--rb-font-ui);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 450;
-  letter-spacing: 0.005em;
-  white-space: nowrap;
+/* ---------- Motion ---------- */
+
+@keyframes rb-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.rb-chip button {
-  all: unset;
-  cursor: pointer;
-  color: var(--rb-brass-text);
-  font-weight: 520;
-  border-radius: var(--rb-radius-xs);
+@keyframes rb-pop-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
 }
 
-.rb-chip button:focus-visible {
-  outline: 2px solid var(--rb-brass);
-  outline-offset: 2px;
+@keyframes rb-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes rb-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes rb-roll-out-up {
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes rb-roll-in-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes rb-roll-out-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes rb-roll-in-down {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+/* Reduced motion: no scale, no line draw, no roll. The card fades for 150 ms. */
+@media (prefers-reduced-motion: reduce) {
+  .rb-card,
+  .rb-ledger {
+    animation: rb-fade-plain var(--rb-dur-2) linear both;
+  }
+
+  .rb-card[data-state='closing'],
+  .rb-ledger[data-state='closing'] {
+    animation: none;
+    opacity: 0;
+  }
+
+  .rb-line-path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .rb-line-dot-end,
+  .rb-pill-label,
+  .rb-check-draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .rb-btn:active {
+    transform: none;
+  }
+
+  .rb-ghost {
+    display: none;
+  }
+}
+
+@keyframes rb-fade-plain {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

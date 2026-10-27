@@ -123,3 +123,33 @@ export { draftIndexOf, findComposeEditors } from '../adapters/gmail/compose';
 export { readGmailThread } from '../adapters/gmail/thread';
 export type { CheckId, GmailRead, SelfTest } from '../adapters/gmail/thread';
 export { GMAIL_ORIGIN } from '../adapters/gmail/selectors';
+
+// overlay: the pure parts of the product UI (wording, hover intent, swap-back
+// choreography). The React components live in src/overlay/ui and are
+// props-driven; import them from there (they need React, so they are not part
+// of this Node-safe entry).
+export {
+  CONTEXT_ERROR,
+  CONTEXT_ERROR_MS,
+  cardModel,
+  citationParts,
+  fixNotice,
+  ledgerModel,
+} from '../overlay/model';
+export type { AskRow, CardModel, CitationParts, LedgerModel, SlipRow } from '../overlay/model';
+export { DWELL_MS, GRACE_MS, createHoverIntent } from '../overlay/hover';
+export type { HoverIntent, Timers } from '../overlay/hover';
+export {
+  ARRIVE_DELAY_MS,
+  MORPH_MS,
+  ROLL_MS,
+  cubicBezier,
+  springProgress,
+  swapDuration,
+  swapFrame,
+} from '../overlay/swap/frame';
+export type { GlyphFrame, SwapGeometry } from '../overlay/swap/frame';
+export { canRoll, commonGlyphs, planSwap } from '../overlay/swap/plan';
+export type { SwapGlyph, SwapPlan } from '../overlay/swap/plan';
+export { createSwapGhost } from '../overlay/swap/ghost';
+export type { SwapGhost, SwapGhostOptions } from '../overlay/swap/ghost';

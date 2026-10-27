@@ -6,10 +6,15 @@ import { defineConfig } from 'wxt';
 // after a user gesture (the "Use as Readback context" menu item).
 export default defineConfig({
   srcDir: 'src',
+  // The e2e build (--mode e2e) lands in the same folder as production, so tools find one output.
+  outDirTemplate: '{{browser}}-mv{{manifestVersion}}',
   imports: false,
   modules: ['@wxt-dev/module-react'],
-  vite: () => ({
+  vite: ({ mode }) => ({
     plugins: [tailwindcss()],
+    // `pnpm test:e2e` builds with --mode e2e: the overlay's shadow root is then open, so
+    // Playwright can reach the real card, pill and ledger. Production builds keep it closed.
+    define: { __RB_OPEN_SHADOW__: JSON.stringify(mode === 'e2e') },
   }),
   manifest: ({ browser }) => ({
     name: 'Readback',
