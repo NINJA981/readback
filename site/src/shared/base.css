@@ -1,0 +1,353 @@
+/*
+ * Shared foundation for the landing page and the web app.
+ * Colours, radii, shadows and motion come from the repo's tokens.css
+ * (DESIGN.md as CSS variables); this file adds only fonts, the spacing scale
+ * and the type scale from DESIGN.md, plus the reset.
+ */
+@import '@/styles/tokens.css';
+
+/* Fonts: Fontsource variable faces, axis-limited and Latin-subset by
+   scripts/subset-fonts.py. No network fonts. */
+@font-face {
+  font-family: 'Hubot Sans Variable';
+  src: url('../fonts/hubot-sans.woff2') format('woff2');
+  font-weight: 550 700;
+  font-stretch: 104% 112%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Mona Sans Variable';
+  src: url('../fonts/mona-sans.woff2') format('woff2');
+  font-weight: 400 650;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono Variable';
+  src: url('../fonts/geist-mono.woff2') format('woff2');
+  font-weight: 400 600;
+  font-display: swap;
+}
+
+/* Metric-matched fallbacks (size-adjust and overrides measured against the
+   subset faces), so the swap does not move anything: CLS 0. */
+@font-face {
+  font-family: 'Hubot Fallback';
+  src: local('Arial'), local('Helvetica Neue'), local('Helvetica');
+  size-adjust: 118.7%;
+  ascent-override: 91.8%;
+  descent-override: 27%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Mona Fallback';
+  src: local('Arial'), local('Helvetica Neue'), local('Helvetica');
+  size-adjust: 105.8%;
+  ascent-override: 103%;
+  descent-override: 30.3%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Geist Fallback';
+  src: local('Consolas'), local('Menlo'), local('Courier New');
+  size-adjust: 100%;
+  ascent-override: 100.5%;
+  descent-override: 29.5%;
+  line-gap-override: 0%;
+}
+
+:root {
+  --font-display: 'Hubot Sans Variable', 'Hubot Fallback', system-ui, sans-serif;
+  --font-ui: 'Mona Sans Variable', 'Mona Fallback', system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Geist Fallback', ui-monospace, monospace;
+
+  /* Spacing: DESIGN.md, 4px base. */
+  --sp-0-5: 2px;
+  --sp-1: 4px;
+  --sp-1-5: 6px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-24: 96px;
+  --sp-32: 128px;
+
+  /* Page gutters (bible 8.1): 16 / 24 / 32 at 375 / 768 / 1440. */
+  --gutter: 16px;
+
+  /* Z-index (bible 5.4, plus the overlay values from DESIGN.md Layout). */
+  --z-sticky: 10;
+  --z-overlay: 30;
+  --z-modal: 40;
+  --z-toast: 60;
+
+  --ease-scene: cubic-bezier(0.65, 0.05, 0, 1);
+  --ease-out-soft: cubic-bezier(0.25, 1, 0.5, 1);
+
+  color-scheme: dark light;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 72px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rb-border-strong) transparent;
+  background: var(--rb-bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--rb-bg);
+  color: var(--rb-text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 420;
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+dl,
+dd,
+figure,
+blockquote,
+pre {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg,
+picture {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: var(--rb-brass-text);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:hover {
+  color: var(--rb-brass-hover);
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum' 1;
+  font-variant-ligatures: none;
+}
+
+::selection {
+  background: var(--rb-brass-soft);
+  color: var(--rb-text);
+}
+
+/* Focus ring: keyboard focus only, 2px brass, offset 2px (DESIGN.md Buttons). */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--rb-brass);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ico {
+  flex: none;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Type scale (DESIGN.md Typography). Hubot appears in at most three places per screen. */
+.t-hero {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 2rem + 6vw, 7.5rem);
+  font-weight: 650;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  font-variation-settings: 'wdth' 112;
+}
+
+.t-display {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 24px + 2.2vw, 44px);
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-variation-settings: 'wdth' 112;
+}
+
+.t-h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'wdth' 106;
+}
+
+.t-h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.27;
+  letter-spacing: -0.015em;
+  font-variation-settings: 'wdth' 104;
+}
+
+.t-h3 {
+  font-size: 17px;
+  font-weight: 550;
+  line-height: 1.41;
+  letter-spacing: -0.01em;
+}
+
+.t-lead {
+  font-size: 17px;
+  font-weight: 420;
+  line-height: 1.53;
+  letter-spacing: -0.01em;
+}
+
+.t-body {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.t-ui {
+  font-size: 14px;
+  font-weight: 450;
+  line-height: 1.43;
+  letter-spacing: 0;
+}
+
+.t-label {
+  font-size: 13px;
+  font-weight: 520;
+  line-height: 1.38;
+  letter-spacing: 0;
+}
+
+.t-caption {
+  font-size: 12px;
+  font-weight: 450;
+  line-height: 1.33;
+  letter-spacing: 0.005em;
+}
+
+.t-mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.38;
+  letter-spacing: 0;
+}
+
+.muted {
+  color: var(--rb-text-muted);
+}
+
+.subtle {
+  color: var(--rb-text-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: opacity, color, background-color, border-color !important;
+    transition-duration: 150ms !important;
+    scroll-behavior: auto !important;
+  }
+}

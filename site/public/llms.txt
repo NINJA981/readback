@@ -1,0 +1,8 @@
+# Readback
+
+> Spellcheck that read the thread. Readback underlines near-miss names, numbers and dates in a reply by checking them against the message being answered. It runs on the device, makes no network requests and is open source (MIT).
+
+## Pages
+
+- [Landing page](./): what it does, how it works, privacy proof, install steps.
+- [Web app](./app/): paste a thread and a reply and watch the guards work in the browser, offline after the first load.

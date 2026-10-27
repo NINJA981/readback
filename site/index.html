@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Readback: spellcheck that read the thread</title>
+    <meta
+      name="description"
+      content="Readback underlines the slips your spellchecker can't see: her name misspelled, her amount with two digits swapped, a Thursday that's really a Tuesday. It checks your reply against the message you're answering, runs in your browser and sends nothing."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0b0f13" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f9fa" media="(prefers-color-scheme: light)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Readback: spellcheck that read the thread" />
+    <meta
+      property="og:description"
+      content="Underlines near-miss names, amounts and dates in your reply by checking them against the message you're answering. On your device, zero network requests, open source."
+    />
+    <meta property="og:image" content="og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link
+      rel="preload"
+      as="image"
+      type="image/avif"
+      href="posters/hero-wide-dark.avif"
+      media="(min-width: 768px) and (prefers-color-scheme: dark)"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      type="image/avif"
+      href="posters/hero-wide-light.avif"
+      media="(min-width: 768px) and (prefers-color-scheme: light)"
+      fetchpriority="high"
+    />
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('readback:settings') || '{}');
+        if (s && (s.theme === 'light' || s.theme === 'dark')) {
+          document.documentElement.dataset.theme = s.theme;
+        }
+      } catch (e) {}
+    </script>
+    <link rel="stylesheet" href="./src/landing/landing.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="wordmark" href="./" aria-label="Readback, home">Readback</a>
+        <nav class="bar__nav" aria-label="Primary">
+          <a href="#how">How it works</a>
+          <a href="#privacy">Privacy</a>
+          <a href="#install">Install</a>
+          <a href="app/">Web app</a>
+        </nav>
+        <button
+          class="btn btn--ghost btn--icon"
+          id="theme-toggle"
+          type="button"
+          aria-label="Theme: System. Switch to Light"
+        ></button>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- Beat 1: the hook. The poster is server HTML and the LCP element. -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="wrap">
+          <h1 class="t-hero hero__title" id="hero-title">Spellcheck that read the thread.</h1>
+
+          <div class="hero__grid">
+            <div class="hero__copy">
+              <p class="t-lead">
+                Readback underlines the slips your spellchecker can't see: her name spelled wrong,
+                her amount with two digits swapped, a Thursday that's really a Tuesday. Every
+                squiggle shows the line in her email it was checked against. It runs in your browser
+                and sends nothing.
+              </p>
+              <div class="cta-row">
+                <a class="btn btn--primary" href="app/">Try it in your browser, no install</a>
+                <a class="btn btn--secondary" href="#install">Install from source</a>
+                <a class="textlink" href="#install-firefox">Firefox build</a>
+              </div>
+              <p class="t-caption subtle hero__meta">
+                Made for Gmail on the web. On any other site, select the message and choose “Use as
+                Readback context”. Free and open source.
+              </p>
+            </div>
+
+            <div class="hero__demo">
+              <div class="stage" id="stage" data-state="poster">
+                <picture class="stage__poster">
+                  <source
+                    media="(max-width: 767px) and (prefers-color-scheme: light)"
+                    srcset="posters/hero-narrow-light.avif"
+                    type="image/avif"
+                  />
+                  <source
+                    media="(max-width: 767px)"
+                    srcset="posters/hero-narrow-dark.avif"
+                    type="image/avif"
+                  />
+                  <source
+                    media="(prefers-color-scheme: light)"
+                    srcset="posters/hero-wide-light.avif"
+                    type="image/avif"
+                  />
+                  <img
+                    src="posters/hero-wide-dark.avif"
+                    width="680"
+                    height="560"
+                    fetchpriority="high"
+                    decoding="async"
+                    alt="Sample thread. Kathryn's message asks Sam to confirm a $1,250 deposit, drop off keys on Thursday the 12th and send the lease back. Sam's reply starts “Hi Catherine,” with a red squiggle under Catherine. A card reads “Signs as Kathryn”, cites her signature, and a thin brass line joins the squiggle to Kathryn in the signature."
+                  />
+                </picture>
+              </div>
+              <div class="stage__controls" id="stage-controls" hidden>
+                <button class="btn btn--secondary" type="button" id="demo-toggle">
+                  <span data-icon></span><span data-label>Play the demo</span>
+                </button>
+                <button class="btn btn--secondary" type="button" id="demo-replay">
+                  <span data-icon></span>Replay
+                </button>
+              </div>
+              <noscript>
+                <p class="t-caption subtle">
+                  The demo needs JavaScript. The picture above is a still from it, and the web app
+                  works without extra setup once it has loaded.
+                </p>
+              </noscript>
+              <div class="sr-only" id="demo-transcript">
+                <p>Sample thread transcript.</p>
+                <ol>
+                  <li>
+                    Kathryn writes: can you confirm the $1,250 deposit, drop off the keys on
+                    Thursday the 12th, and send the signed lease back? She signs Kathryn.
+                  </li>
+                  <li>Sam starts a reply, “Hi Catherine,”. Readback underlines Catherine.</li>
+                  <li>
+                    The card says Signs as Kathryn and cites her signature. One click changes the
+                    name to Kathryn.
+                  </li>
+                  <li>
+                    Sam types “The $1,520 deposit is confirmed”. Readback underlines $1,520 and says
+                    the thread has $1,250, digits swapped. One click fixes it.
+                  </li>
+                  <li>Sam finishes the reply. The pill reads All covered.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Beat 2: the real overlay, quiet. -->
+      <section class="band" id="quiet" aria-labelledby="quiet-title">
+        <div class="wrap split">
+          <div class="split__copy">
+            <h2 class="t-display" id="quiet-title">It sits in the reply box and stays quiet.</h2>
+            <p class="t-lead muted prose">
+              Most replies get nothing from Readback: no banner, no score, no rewrite. When a name,
+              number or date in your draft nearly matches one in her message, it underlines it.
+              Hover to see why, click to fix. Ctrl+Z undoes it like any other edit.
+            </p>
+            <dl class="facts" aria-label="What Readback does to the page">
+              <div>
+                <dt>Changes to the mail page</dt>
+                <dd>None</dd>
+              </div>
+              <div>
+                <dt>Blocks Send</dt>
+                <dd>Never</dd>
+              </div>
+              <div>
+                <dt>Network requests</dt>
+                <dd>0</dd>
+              </div>
+            </dl>
+          </div>
+          <figure class="split__demo">
+            <div class="compose-slot" id="compose-demo" aria-hidden="true"></div>
+            <figcaption class="t-caption subtle">
+              Sample thread. A live reproduction of the overlay built from the same engine, not a
+              screenshot of a mail site.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- Beat 3: three proofs, one per guard. -->
+      <section class="proofs" aria-label="The three guards">
+        <article class="proof wrap split" id="proof-names" data-proof="names">
+          <div class="split__copy">
+            <h2 class="t-display">Names, checked against her signature.</h2>
+            <p class="t-lead muted prose">
+              Readback reads the names in her signature and your To field, and catches the
+              near-misses: Catherine for Kathryn, John for Jon, Stephen for Steven.
+            </p>
+            <p class="never">
+              <strong>Never fires.</strong> Write to Bob when the thread says Kathryn, and nothing
+              happens. A different person isn't a typo.
+            </p>
+          </div>
+          <figure class="split__demo">
+            <div class="mini-slot" data-mini aria-label="Interactive example"></div>
+          </figure>
+        </article>
+
+        <article class="proof wrap split split--flip" id="proof-numbers" data-proof="numbers">
+          <div class="split__copy">
+            <h2 class="t-display">Amounts and order numbers, digit by digit.</h2>
+            <p class="t-lead muted prose">
+              Swapped digits against the amounts and IDs in her message are flagged. Order numbers
+              are flagged for a single wrong digit too.
+            </p>
+            <p class="never">
+              <strong>Never fires.</strong> Counter-offer $1,200 and Readback stays quiet. It flags
+              transpositions, not negotiations.
+            </p>
+          </div>
+          <figure class="split__demo">
+            <div class="mini-slot" data-mini aria-label="Interactive example"></div>
+          </figure>
+        </article>
+
+        <article class="proof wrap split" id="proof-dates" data-proof="dates">
+          <div class="split__copy">
+            <h2 class="t-display">Dates that don't match the calendar, or her message.</h2>
+            <p class="t-lead muted prose">
+              A weekday and date that disagree, or a near-miss of the day she proposed. And a small
+              pill counts what she asked that you haven't answered yet, so you don't need to reread.
+            </p>
+            <p class="never">
+              <strong>Never fires.</strong> Propose a different day entirely and Readback assumes
+              you meant it.
+            </p>
+          </div>
+          <figure class="split__demo">
+            <div class="mini-slot" data-mini aria-label="Interactive example"></div>
+          </figure>
+        </article>
+      </section>
+
+      <!-- Beat 4: how it works. -->
+      <section class="band" id="how" aria-labelledby="how-title">
+        <div class="wrap">
+          <h2 class="t-display" id="how-title">How it works, without a server.</h2>
+          <p class="t-lead muted prose how__lead">
+            The thread is the dictionary. Readback compares your draft only with the message you're
+            answering, never with English in general.
+          </p>
+
+          <div class="compare" role="table" aria-label="Three comparisons Readback makes">
+            <div class="compare__head" role="row">
+              <span role="columnheader">In her message</span>
+              <span role="columnheader">The rule</span>
+              <span role="columnheader">In your draft</span>
+              <span role="columnheader">Result</span>
+            </div>
+            <div class="compare__row" role="row" data-verdict="flag">
+              <span role="cell" class="mono">Kathryn</span>
+              <span role="cell" class="rule"
+                >A near-miss of a name she uses: one letter off, or a known variant</span
+              >
+              <span role="cell" class="mono slip">Catherine</span>
+              <span role="cell" class="verdict">Squiggle, with the signature as the citation</span>
+            </div>
+            <div class="compare__row" role="row" data-verdict="flag">
+              <span role="cell" class="mono">$1,250</span>
+              <span role="cell" class="rule">The same digits in a different order</span>
+              <span role="cell" class="mono slip">$1,520</span>
+              <span role="cell" class="verdict">Squiggle, with her line as the citation</span>
+            </div>
+            <div class="compare__row" role="row" data-verdict="quiet">
+              <span role="cell" class="mono">Thursday the 12th</span>
+              <span role="cell" class="rule"
+                >A different day altogether is a new proposal, not a slip</span
+              >
+              <span role="cell" class="mono">Monday the 23rd</span>
+              <span role="cell" class="verdict">Nothing</span>
+            </div>
+          </div>
+
+          <ul class="how__points">
+            <li>
+              <h3 class="t-h3">Why not flag every unknown word</h3>
+              <p class="muted">
+                A grammar-style checker flags every word it doesn't know. On real replies that is a
+                wall of red. Readback only flags near-misses of something in the thread.
+              </p>
+              <p class="measure">
+                <span class="measure__n tnum">0 of 48</span>
+                <span class="measure__l"
+                  >deliberate look-alike cases flagged in our test corpus. The corpus was written by
+                  the engine's author in one sitting, so treat it as a regression net, not a
+                  benchmark.</span
+                >
+              </p>
+            </li>
+            <li>
+              <h3 class="t-h3">The mail page is never edited</h3>
+              <p class="muted">
+                Squiggles are drawn with the browser's CSS Custom Highlight API, so the page's own
+                text and layout are untouched. Fixes go through the editor's normal undo.
+              </p>
+              <p class="measure">
+                <span class="measure__n tnum">4 to 9 ms</span>
+                <span class="measure__l"
+                  >engine time at the 95th percentile for a 2,000-word thread plus a 500-word draft.
+                  The budget is 16 ms. Three batches in the last run: 4.2, 8.5 and 9.0 ms on a busy
+                  laptop, gated in the test suite.</span
+                >
+              </p>
+            </li>
+            <li>
+              <h3 class="t-h3">It goes quiet instead of guessing</h3>
+              <p class="muted">
+                If Gmail changes its layout, Readback stays silent and the select-as-context path
+                still works anywhere. The optional on-device model only adds “looks answered”. Every
+                guard works without it.
+              </p>
+              <p class="measure">
+                <span class="measure__n">TypeScript</span>
+                <span class="measure__l"
+                  >WXT for Chrome and Firefox, chrono-node for dates, MIT licensed. No server to
+                  run.</span
+                >
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Privacy proof. -->
+      <section class="band" id="privacy" aria-labelledby="privacy-title">
+        <div class="wrap">
+          <h2 class="t-display" id="privacy-title">There is no server to send it to.</h2>
+          <p class="t-lead muted prose how__lead">
+            Open DevTools, go to the Network tab, and write a reply in Gmail. Readback adds zero
+            requests. The only host permission is the mail site itself.
+          </p>
+
+          <div class="proof-grid">
+            <div class="panel" id="meter" aria-live="polite">
+              <h3 class="t-h3">This page, measured in your browser just now</h3>
+              <dl class="meter">
+                <div>
+                  <dt>Files this page loaded</dt>
+                  <dd id="meter-total" class="tnum">…</dd>
+                </div>
+                <div>
+                  <dt>From another origin</dt>
+                  <dd id="meter-third" class="tnum">…</dd>
+                </div>
+                <div>
+                  <dt>Cookies set</dt>
+                  <dd id="meter-cookies" class="tnum">…</dd>
+                </div>
+              </dl>
+              <p class="t-caption subtle" id="meter-note">
+                Read from the browser's own resource timeline when you opened the page. This page's
+                Content-Security-Policy also sets <code>connect-src 'none'</code>, so its scripts
+                cannot open a connection at all.
+              </p>
+            </div>
+
+            <div class="panel">
+              <h3 class="t-h3">What the extension may do</h3>
+              <pre
+                class="code"
+                tabindex="0"
+                aria-label="Manifest permissions"
+              ><code>permissions:      storage, contextMenus,
+                  activeTab, scripting
+host_permissions: https://mail.google.com/*
+extension CSP:    script-src 'self' 'wasm-unsafe-eval'
+                  object-src 'self'</code></pre>
+              <p class="t-caption subtle">
+                From <code>wxt.config.ts</code>. No remote origin appears in the policy, and a lint
+                rule fails the build on <code>fetch</code>, <code>XMLHttpRequest</code>,
+                <code>WebSocket</code> and <code>sendBeacon</code>.
+              </p>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="stores">
+              <caption class="t-h3">
+                What Readback stores, and where
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Data</th>
+                  <th scope="col">Where</th>
+                  <th scope="col">Lifetime</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Thread text and your draft</td>
+                  <td>Memory of the page only</td>
+                  <td>Until the reply box closes. Never written to storage, never logged.</td>
+                </tr>
+                <tr>
+                  <td>Settings and the words you chose to ignore</td>
+                  <td><code>chrome.storage.local</code></td>
+                  <td>Until you clear them</td>
+                </tr>
+                <tr>
+                  <td>Which asks you dismissed</td>
+                  <td><code>chrome.storage.session</code>, as hashed ids</td>
+                  <td>The browser session</td>
+                </tr>
+                <tr>
+                  <td>The web app's text boxes</td>
+                  <td>Page memory and <code>sessionStorage</code></td>
+                  <td>The tab. A share link exists only if you click Copy share link.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Beat 5: install. -->
+      <section class="band" id="install" aria-labelledby="install-title">
+        <div class="wrap split split--top">
+          <div class="split__copy">
+            <h2 class="t-display" id="install-title">Add it to your browser.</h2>
+            <p class="t-lead muted prose">
+              Pre-release: there is no store listing yet, so you install it from source in about two
+              minutes. Or skip all of it and use the <a href="app/">web app</a> on any device.
+            </p>
+            <dl class="platforms">
+              <div>
+                <dt>Chrome</dt>
+                <dd>The primary build, Chrome 121 or later.</dd>
+              </div>
+              <div>
+                <dt>Firefox</dt>
+                <dd>140 or later. The build compiles; it hasn't been run in Firefox yet.</dd>
+              </div>
+              <div>
+                <dt>Edge</dt>
+                <dd>Same package as Chrome, untested.</dd>
+              </div>
+              <div>
+                <dt>Where it reads</dt>
+                <dd>Gmail on the web. Any other text box through “Use as Readback context”.</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="split__demo steps">
+            <div class="step">
+              <h3 class="t-h3">Build it</h3>
+              <div class="cmd">
+                <pre
+                  class="code"
+                  tabindex="0"
+                ><code id="cmd-build">git clone &lt;repository-url&gt; readback
+cd readback
+pnpm install
+pnpm build</code></pre>
+                <button class="btn btn--secondary btn--compact" type="button" data-copy="cmd-build">
+                  <span data-icon></span><span data-label>Copy</span>
+                </button>
+              </div>
+              <p class="t-caption subtle">
+                Needs Node 24 and pnpm. The repository link goes here once the project is published.
+              </p>
+            </div>
+            <div class="step" id="install-chrome">
+              <h3 class="t-h3">Chrome and Edge</h3>
+              <ol class="olist">
+                <li>Open <code>chrome://extensions</code> and turn on Developer mode.</li>
+                <li>Choose Load unpacked and pick <code>.output/chrome-mv3</code>.</li>
+                <li>Open a reply in Gmail and type a name that nearly matches the sender's.</li>
+              </ol>
+            </div>
+            <div class="step" id="install-firefox">
+              <h3 class="t-h3">Firefox</h3>
+              <div class="cmd">
+                <pre
+                  class="code"
+                  tabindex="0"
+                ><code id="cmd-firefox">pnpm build:firefox</code></pre>
+                <button
+                  class="btn btn--secondary btn--compact"
+                  type="button"
+                  data-copy="cmd-firefox"
+                >
+                  <span data-icon></span><span data-label>Copy</span>
+                </button>
+              </div>
+              <ol class="olist">
+                <li>Open <code>about:debugging#/runtime/this-firefox</code>.</li>
+                <li>
+                  Choose Load Temporary Add-on and pick
+                  <code>.output/firefox-mv3/manifest.json</code>.
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Open-source call to action. -->
+      <section class="band band--last" id="source" aria-labelledby="source-title">
+        <div class="wrap split split--top">
+          <div class="split__copy">
+            <h2 class="t-display" id="source-title">Open source, MIT licensed.</h2>
+            <p class="t-lead muted prose">
+              The engine is plain TypeScript with one dependency, chrono-node. There is no server,
+              account or telemetry to remove, so reading the code takes an afternoon. The web app on
+              this site imports the same engine as the extension.
+            </p>
+            <div class="cta-row">
+              <a class="btn btn--secondary" href="app/">Open the web app</a>
+              <a class="btn btn--secondary" id="source-link" href="#install" data-repo
+                >Get the source</a
+              >
+            </div>
+          </div>
+          <div class="split__demo">
+            <h3 class="t-h3">Where help is wanted</h3>
+            <ul class="wanted">
+              <li>
+                <strong>Real Gmail snapshots.</strong>
+                <span class="muted"
+                  >The adapter was built against synthetic fixtures. Sanitised captures of today's
+                  reply box would let us retune its selectors.</span
+                >
+              </li>
+              <li>
+                <strong>A run in Firefox 140 or later.</strong>
+                <span class="muted"
+                  >Whether wavy underlines render in Firefox's highlight API is unknown.</span
+                >
+              </li>
+              <li>
+                <strong>False positives.</strong>
+                <span class="muted"
+                  >Short names like Tim and Tom are the known risk. A report with the thread and the
+                  draft is the most useful issue you can file.</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer__bar">
+        <nav aria-label="Footer">
+          <ul class="footer__links">
+            <li><a href="app/">Web app</a></li>
+            <li><a href="#source" id="footer-source">Source</a></li>
+            <li><a href="#privacy">Privacy</a></li>
+            <li><a href="#source">License</a></li>
+          </ul>
+        </nav>
+        <p class="t-caption subtle">
+          “Readback” is a working name; trademark not yet checked. Every example on this page is a
+          synthetic sample thread.
+        </p>
+      </div>
+    </footer>
+
+    <script type="module" src="./src/landing/main.ts"></script>
+  </body>
+</html>

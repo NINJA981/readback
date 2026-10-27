@@ -1,0 +1,43 @@
+{
+  "name": "readback-site",
+  "description": "Readback landing page and phone-friendly web app (static Vite build). Imports the real engine from ../src/core.",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "assets": "node scripts/build-assets.mjs",
+    "format": "prettier --config ../.prettierrc.json --write .",
+    "format:check": "prettier --config ../.prettierrc.json --check ."
+  },
+  "dependencies": {
+    "@fontsource-variable/geist-mono": "5.3.0",
+    "@fontsource-variable/hubot-sans": "5.3.0",
+    "@fontsource-variable/mona-sans": "5.3.0",
+    "chrono-node": "2.10.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "lucide-static": "1.62.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}

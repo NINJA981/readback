@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <title>Readback web app: check your reply against the thread</title>
+    <meta
+      name="description"
+      content="Paste the message you're replying to, type your reply, and Readback underlines near-miss names, numbers and dates. Runs entirely in your browser. Nothing is uploaded."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0b0f13" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f9fa" media="(prefers-color-scheme: light)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Readback" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('readback:settings') || '{}');
+        if (s && (s.theme === 'light' || s.theme === 'dark')) {
+          document.documentElement.dataset.theme = s.theme;
+        }
+      } catch (e) {}
+    </script>
+    <link rel="stylesheet" href="../src/app/app.css" />
+  </head>
+  <body>
+    <div id="root">
+      <!-- First paint: the same header and title the app renders, so nothing moves when it mounts. -->
+      <div class="app">
+        <header class="topbar">
+          <div class="topbar__in">
+            <a class="topbar__back" href="../" aria-label="Readback, back to the site">
+              <svg
+                class="ico"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="m12 19-7-7 7-7" />
+                <path d="M19 12H5" />
+              </svg>
+              <span class="wordmark">Readback</span>
+            </a>
+          </div>
+        </header>
+        <main class="main">
+          <div class="intro">
+            <h1 class="t-h1">Try Readback in your browser</h1>
+            <p class="muted t-ui">Runs entirely in your browser. Nothing is uploaded.</p>
+          </div>
+        </main>
+      </div>
+    </div>
+    <noscript>
+      <p class="noscript">Readback’s web app needs JavaScript to run the checker on your device.</p>
+    </noscript>
+    <script type="module" src="../src/app/main.tsx"></script>
+  </body>
+</html>
