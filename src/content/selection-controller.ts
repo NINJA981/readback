@@ -31,7 +31,7 @@ import { bindDraft } from './binding';
 import type { Binding } from './binding';
 import { createOverlayHost } from './overlay-host';
 import type { OverlayHost } from './overlay-host';
-import { statusFrom } from './status';
+import { createStatusReporter, statusFrom } from './status';
 
 export interface SelectionControllerDeps {
   doc: Document;
@@ -70,13 +70,7 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
 
   const getHost = (): OverlayHost => (host ??= createOverlayHost(doc));
 
-  const report = (status: Omit<TabStatus, 'updatedAt'>): void => {
-    try {
-      deps.report({ ...status, updatedAt: now() });
-    } catch {
-      // A stale popup status is acceptable.
-    }
-  };
+  const report = createStatusReporter((status) => deps.report(status), now);
 
   const viewport = (): { width: number; height: number } => ({
     width: doc.defaultView?.innerWidth ?? 1280,

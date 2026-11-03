@@ -1,6 +1,6 @@
 /**
- * Runtime message protocol between the background, content scripts, the
- * popup and the model host. Every message crossing a context boundary is
+ * Runtime message protocol between the background, content scripts and the
+ * popup. Every message crossing a context boundary is
  * validated with `parseMessage` before use: a content script runs next to a
  * hostile page, so nothing is trusted by shape alone.
  */
@@ -9,9 +9,6 @@ import type { TabStatus } from '../storage/tab-status';
 
 /** Longest selection accepted as context (about 10,000 words). */
 export const MAX_SELECTION_CHARS = 60_000;
-/** Most texts one embed request may carry, and the longest text. */
-export const MAX_EMBED_TEXTS = 64;
-export const MAX_EMBED_CHARS = 2_000;
 
 export type ReadbackMessage =
   /** background → tab: Alt+Shift+J */
@@ -25,9 +22,7 @@ export type ReadbackMessage =
   /** popup → tab: slip wording for the status rows (kept out of storage) */
   | { type: 'get-slips' }
   /** content → background: status for the popup (counts only) */
-  | { type: 'tab-status'; status: TabStatus }
-  /** content/options → model host */
-  | { type: 'embed'; texts: string[] };
+  | { type: 'tab-status'; status: TabStatus };
 
 export type MessageType = ReadbackMessage['type'];
 
@@ -40,7 +35,6 @@ export interface SlipSummary {
 /** Replies, keyed by request type. */
 export interface MessageReplies {
   'get-slips': { slips: SlipSummary[] };
-  embed: { vectors: number[][] } | { error: string };
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
@@ -64,17 +58,6 @@ export function parseMessage(raw: unknown): ReadbackMessage | undefined {
     case 'tab-status': {
       const status = parseTabStatus(raw.status);
       return status ? { type: 'tab-status', status } : undefined;
-    }
-    case 'embed': {
-      if (
-        !Array.isArray(raw.texts) ||
-        raw.texts.length === 0 ||
-        raw.texts.length > MAX_EMBED_TEXTS
-      ) {
-        return undefined;
-      }
-      if (!raw.texts.every((t): t is string => typeof t === 'string')) return undefined;
-      return { type: 'embed', texts: raw.texts.map((t) => t.slice(0, MAX_EMBED_CHARS)) };
     }
     default:
       return undefined;

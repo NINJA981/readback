@@ -7,7 +7,7 @@
 import { applyFixToField, applyFixToRange, insertIntoEditable } from '../dom/apply-fix';
 import type { ClipboardLike, FixOutcome } from '../dom/apply-fix';
 import type { RectLike } from '../dom/geometry';
-import { buildTextIndex } from '../dom/text-index';
+import { buildTextIndex, normaliseText } from '../dom/text-index';
 import type { TextIndex, TextIndexOptions } from '../dom/text-index';
 import type { Span } from '../engine/types';
 
@@ -22,6 +22,8 @@ export interface DraftTarget {
   rectsFor(span: Span): RectLike[];
   /** Caret offset in the last `read()` text, if the caret is inside the field. */
   caret(): number | undefined;
+  /** Puts a collapsed caret at an offset of the last `read()` text. */
+  placeCaret(offset: number): void;
   /** Replaces a span through the field's own input path (undo-safe). */
   fix(span: Span, replacement: string, clipboard?: ClipboardLike): Promise<FixOutcome>;
   /** Inserts text at the caret (end of the field if there is none), same input path. */
@@ -56,15 +58,23 @@ export function createContentEditableTarget(
       if (!element.contains(range.startContainer)) return undefined;
       return index.fromPosition(range.startContainer, range.startOffset);
     },
+    placeCaret(offset) {
+      const range = index.toRange({ start: offset, end: offset });
+      const sel = doc.getSelection();
+      if (!range || !sel) return;
+      sel.removeAllRanges();
+      sel.addRange(range);
+    },
     async fix(span, replacement, clipboard) {
       const range = index.toRange(span);
       if (!range) return 'failed';
       // The editor may have changed since the last read (a re-render, autosave, a script that
       // sent no input event). Replace only the text the engine flagged, never whatever sits there now.
+      // The index stores no-break spaces and tabs as plain spaces, so compare on the same footing.
       if (
         !range.startContainer.isConnected ||
         !range.endContainer.isConnected ||
-        range.toString() !== index.text.slice(span.start, span.end)
+        normaliseText(range.toString()) !== index.text.slice(span.start, span.end)
       ) {
         return 'failed';
       }
@@ -103,6 +113,10 @@ export function createTextareaTarget(
     caret() {
       if (doc.activeElement !== element) return undefined;
       return element.selectionStart === element.selectionEnd ? element.selectionStart : undefined;
+    },
+    placeCaret(offset) {
+      const at = Math.max(0, Math.min(offset, element.value.length));
+      element.setSelectionRange(at, at);
     },
     async fix(span, replacement, clipboard) {
       // Same guard as the contenteditable target: the text under the span must still be what was flagged.

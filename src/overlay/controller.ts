@@ -15,6 +15,7 @@ import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import type { Binding } from '../content/binding';
 import type { OverlayHost } from '../content/overlay-host';
+import { caretAfterFix } from '../dom/apply-fix';
 import type { ClipboardLike } from '../dom/apply-fix';
 import { effectiveBackground, hitTest, themeForBackground } from '../dom/geometry';
 import type { RectLike } from '../dom/geometry';
@@ -293,12 +294,18 @@ export function attachOverlay(deps: OverlayControllerDeps): OverlayController {
     const fix = flag?.fixes[index];
     if (!flag || !fix) return;
     const fromKeyboard = ui.getSnapshot().card?.via === 'keyboard';
+    // A click on a card leaves the user's caret where they were writing; put it back there after
+    // the fix (shifted by the length change when it sat after the slip).
+    const caretBefore = fromKeyboard ? undefined : target.caret();
     editor.focus({ preventScroll: true });
     const outcome = await target.fix(flag.draftSpan, fix.replacement, clipboard);
     if (destroyed) return;
     if (outcome === 'inserted') {
       closeCard(false);
       binding.refresh();
+      if (caretBefore !== undefined) {
+        target.placeCaret(caretAfterFix(caretBefore, flag.draftSpan, fix.replacement));
+      }
       session.markFixed(fix.replacement);
       fixedFlagId = flag.id;
       if (fixedTimer !== undefined) timers.clear(fixedTimer);

@@ -8,6 +8,21 @@
 
 export type FixOutcome = 'inserted' | 'copied' | 'failed';
 
+/**
+ * Where a caret that sat at `caret` belongs after `span` is replaced: unchanged
+ * before the slip, shifted by the length change after it, and at the end of the
+ * replacement when it was inside the slip.
+ */
+export function caretAfterFix(
+  caret: number,
+  span: { start: number; end: number },
+  replacement: string,
+): number {
+  if (caret <= span.start) return caret;
+  if (caret >= span.end) return caret + replacement.length - (span.end - span.start);
+  return span.start + replacement.length;
+}
+
 export interface ClipboardLike {
   writeText(text: string): Promise<void>;
 }

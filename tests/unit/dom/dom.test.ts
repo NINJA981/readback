@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest';
-import { applyFixToField, applyFixToRange } from '../../../src/dom/apply-fix';
+import { applyFixToField, applyFixToRange, caretAfterFix } from '../../../src/dom/apply-fix';
 import {
   CARD_OFFSET,
   VIEWPORT_INSET,
@@ -328,5 +328,17 @@ describe('geometry', () => {
     const span = outer.querySelector('span');
     expect(themeForBackground(effectiveBackground(span))).toBe('dark');
     expect(effectiveBackground(null)).toBe('rgb(255, 255, 255)');
+  });
+});
+
+describe('caret after a fix', () => {
+  const span = { start: 3, end: 12 }; // "Catherine" in "Hi Catherine, ..."
+  it('stays put before the slip, shifts after it, and lands after the replacement inside it', () => {
+    expect(caretAfterFix(0, span, 'Kathryn')).toBe(0);
+    expect(caretAfterFix(3, span, 'Kathryn')).toBe(3);
+    expect(caretAfterFix(40, span, 'Kathryn')).toBe(38);
+    expect(caretAfterFix(12, span, 'Kathryn')).toBe(10);
+    expect(caretAfterFix(7, span, 'Kathryn')).toBe(10);
+    expect(caretAfterFix(40, { start: 4, end: 10 }, '$1,250.00')).toBe(43);
   });
 });

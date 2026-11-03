@@ -5,8 +5,11 @@
  * behave the same.
  *
  * - contenteditable: CSS Custom Highlight API ranges (host DOM never changed).
- * - textarea: a mirror in Readback's own shadow root.
- * One passive `input` listener on the field; nothing else is attached to it.
+ * - textarea: a mirror in Readback's own shadow root, re-placed when the field
+ *   or the page scrolls or resizes.
+ * One passive `input` listener on the field. Input is coalesced to at most one
+ * check per animation frame (the first runs at once), and the word still being
+ * typed at the caret is not flagged until typing pauses or the word ends.
  */
 import { createTextareaMirror } from '../adapters/generic/textarea-mirror';
 import type { TextareaMirror } from '../adapters/generic/textarea-mirror';
@@ -38,6 +41,9 @@ export interface BindingOptions {
   /** Called after each repaint with the new snapshot. */
   onChange?: (snapshot: SessionSnapshot) => void;
 }
+
+/** After this long without input, the word at the caret is checked too. */
+export const TYPING_PAUSE_MS = 600;
 
 export function bindDraft(options: BindingOptions): Binding {
   const { target, session, painter, mirrorHost, onChange } = options;
@@ -74,22 +80,66 @@ export function bindDraft(options: BindingOptions): Binding {
     paint(session.getSnapshot());
   });
 
-  const refresh = (): void => {
+  const view = element.ownerDocument.defaultView;
+  const nextFrame = (run: () => void): number =>
+    view?.requestAnimationFrame ? view.requestAnimationFrame(run) : Number(setTimeout(run, 16));
+  const cancelFrame = (id: number): void => {
+    if (view?.cancelAnimationFrame) view.cancelAnimationFrame(id);
+    else clearTimeout(id);
+  };
+
+  /** Re-reads the field. `typing` holds back a flag on the word at the caret. */
+  const check = (typing: boolean): void => {
     const before = session.getSnapshot();
     const text = target.read();
-    session.setDraft(text);
+    session.setDraft(text, typing ? target.caret() : undefined);
     // Same text can still need a repaint (settings changed, field re-rendered).
     if (session.getSnapshot() === before) paint(before);
   };
+  const refresh = (): void => {
+    check(false);
+  };
 
+  let inputFrame = 0;
+  let inputDirty = false;
+  let pauseTimer: ReturnType<typeof setTimeout> | undefined;
   const onInput = (): void => {
-    refresh();
+    if (pauseTimer !== undefined) clearTimeout(pauseTimer);
+    pauseTimer = setTimeout(() => {
+      pauseTimer = undefined;
+      check(false);
+    }, TYPING_PAUSE_MS);
+    if (inputFrame) {
+      inputDirty = true;
+      return;
+    }
+    check(true);
+    inputFrame = nextFrame(() => {
+      inputFrame = 0;
+      if (!inputDirty) return;
+      inputDirty = false;
+      check(true);
+    });
   };
-  const onScroll = (): void => {
-    mirror?.sync();
+
+  // The mirror is position: fixed, so it follows the field on any scroll or resize.
+  let syncFrame = 0;
+  const syncMirror = (): void => {
+    if (!mirror || syncFrame) return;
+    syncFrame = nextFrame(() => {
+      syncFrame = 0;
+      mirror.sync();
+    });
   };
+  const resizeObserver =
+    mirror && typeof ResizeObserver === 'function' ? new ResizeObserver(syncMirror) : undefined;
   element.addEventListener('input', onInput, { passive: true });
-  if (mirror) element.addEventListener('scroll', onScroll, { passive: true });
+  if (mirror) {
+    element.addEventListener('scroll', syncMirror, { passive: true });
+    view?.addEventListener('scroll', syncMirror, { passive: true, capture: true });
+    view?.addEventListener('resize', syncMirror, { passive: true });
+    resizeObserver?.observe(element);
+  }
   refresh();
 
   return {
@@ -104,8 +154,14 @@ export function bindDraft(options: BindingOptions): Binding {
     },
     destroy() {
       unsubscribe();
+      if (pauseTimer !== undefined) clearTimeout(pauseTimer);
+      if (inputFrame) cancelFrame(inputFrame);
+      if (syncFrame) cancelFrame(syncFrame);
       element.removeEventListener('input', onInput);
-      element.removeEventListener('scroll', onScroll);
+      element.removeEventListener('scroll', syncMirror);
+      view?.removeEventListener('scroll', syncMirror, { capture: true });
+      view?.removeEventListener('resize', syncMirror);
+      resizeObserver?.disconnect();
       painter.clear();
       mirror?.destroy();
     },

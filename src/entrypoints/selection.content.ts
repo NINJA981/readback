@@ -7,7 +7,7 @@ import { browser } from 'wxt/browser';
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { createSelectionController } from '../content/selection-controller';
 import { parseMessage } from '../messaging/protocol';
-import type { MessageReplies } from '../messaging/protocol';
+import { slipsReply } from '../content/status';
 import { extensionStorage } from '../platform/runtime-storage';
 
 export default defineContentScript({
@@ -38,11 +38,7 @@ export default defineContentScript({
       else if (message.type === 'next-slip') controller.nextSlip();
       else if (message.type === 'open-ledger') controller.openLedger();
       else if (message.type === 'get-slips') {
-        const flags = controller.session()?.getSnapshot().result.flags ?? [];
-        const reply: MessageReplies['get-slips'] = {
-          slips: flags.map((f) => ({ found: f.found, expected: f.expected, message: f.message })),
-        };
-        sendResponse(reply);
+        sendResponse(slipsReply(controller.session()));
       }
       return undefined;
     });

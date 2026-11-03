@@ -8,7 +8,7 @@ import { defineContentScript } from 'wxt/utils/define-content-script';
 import { startGmailController } from '../content/gmail-controller';
 import { GMAIL_ORIGIN } from '../adapters/gmail/selectors';
 import { parseMessage } from '../messaging/protocol';
-import type { MessageReplies } from '../messaging/protocol';
+import { slipsReply } from '../content/status';
 import { extensionStorage } from '../platform/runtime-storage';
 import '../styles/highlights.css';
 
@@ -33,11 +33,7 @@ export default defineContentScript({
       if (message?.type === 'next-slip') controller.nextSlip();
       if (message?.type === 'open-ledger') controller.openLedger();
       if (message?.type !== 'get-slips') return undefined;
-      const flags = controller.session()?.getSnapshot().result.flags ?? [];
-      const reply: MessageReplies['get-slips'] = {
-        slips: flags.map((f) => ({ found: f.found, expected: f.expected, message: f.message })),
-      };
-      sendResponse(reply);
+      sendResponse(slipsReply(controller.session()));
       return undefined;
     });
   },

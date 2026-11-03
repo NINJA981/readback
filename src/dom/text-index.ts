@@ -92,7 +92,9 @@ export interface TextIndexOptions {
   exclude?: (el: Element) => boolean;
 }
 
-const normalise = (data: string): string => data.replace(/[\t\r\n\u00a0\u202f]/g, ' ');
+/** Tabs, CR/LF and no-break spaces as the index stores them: plain spaces of the same length. */
+export const normaliseText = (data: string): string => data.replace(/[\t\r\n\u00a0\u202f]/g, ' ');
+const normalise = normaliseText;
 const isFormatting = (data: string): boolean => /^[ \t\r\n]*$/.test(data) && /[\r\n]/.test(data);
 
 export function buildTextIndex(root: Element, options: TextIndexOptions = {}): TextIndex {

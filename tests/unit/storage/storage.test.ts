@@ -1,10 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  MAX_EMBED_CHARS,
-  MAX_SELECTION_CHARS,
-  parseMessage,
-  parseSlips,
-} from '../../../src/messaging/protocol';
+import { MAX_SELECTION_CHARS, parseMessage, parseSlips } from '../../../src/messaging/protocol';
 import { createWebArea } from '../../../src/platform/web-storage';
 import type { StorageEventLike, WebStorageLike } from '../../../src/platform/web-storage';
 import { createMemoryArea } from '../../../src/storage/area';
@@ -243,14 +238,8 @@ describe('message protocol', () => {
     expect(long?.type === 'use-selection' && long.text.length).toBe(MAX_SELECTION_CHARS);
   });
 
-  it('validates embed requests and tab statuses', () => {
-    expect(parseMessage({ type: 'embed', texts: [] })).toBeUndefined();
-    expect(parseMessage({ type: 'embed', texts: ['a', 2] })).toBeUndefined();
-    expect(
-      parseMessage({ type: 'embed', texts: Array.from({ length: 65 }, () => 'a') }),
-    ).toBeUndefined();
-    const ok = parseMessage({ type: 'embed', texts: ['x'.repeat(MAX_EMBED_CHARS + 1)] });
-    expect(ok?.type === 'embed' && ok.texts[0]?.length).toBe(MAX_EMBED_CHARS);
+  it('rejects message types it does not know, and validates tab statuses', () => {
+    expect(parseMessage({ type: 'embed', texts: ['a'] })).toBeUndefined();
     expect(
       parseMessage({ type: 'tab-status', status: { state: 'idle', updatedAt: 3 } }),
     ).toMatchObject({

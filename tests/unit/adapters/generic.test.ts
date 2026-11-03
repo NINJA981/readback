@@ -227,4 +227,51 @@ describe('draft targets', () => {
     root.replaceChildren(document.createTextNode('Hi Catherine'));
     await expect(ce.fix({ start: 3, end: 12 }, 'Kathryn')).resolves.toBe('failed');
   });
+
+  it('accepts a fix over a span with a no-break space (pasted dates and amounts)', async () => {
+    const root = document.createElement('div');
+    root.contentEditable = 'true';
+    root.textContent = 'See you Thursday the 10th.';
+    document.body.append(root);
+    const ce = createContentEditableTarget(root);
+    const text = ce.read();
+    const start = text.indexOf('Thursday');
+    const end = start + 'Thursday the 10th'.length;
+    expect(text.slice(start, end)).toBe('Thursday the 10th');
+    const written: string[] = [];
+    // happy-dom has no execCommand, so a fix that passes the stale-text guard ends up copied.
+    await expect(
+      ce.fix({ start, end }, 'Thursday the 12th', {
+        writeText: async (t) => {
+          written.push(t);
+        },
+      }),
+    ).resolves.toBe('copied');
+    expect(written).toEqual(['Thursday the 12th']);
+  });
+});
+
+describe('caret placement', () => {
+  it('puts a collapsed caret at an offset in a contenteditable and a textarea', () => {
+    const root = document.createElement('div');
+    root.contentEditable = 'true';
+    root.innerHTML = '<div>Hi Kathryn,</div><div>The deposit is confirmed.</div>';
+    document.body.append(root);
+    const ce = createContentEditableTarget(root);
+    ce.read();
+    root.focus();
+    ce.placeCaret(16);
+    expect(ce.caret()).toBe(16);
+
+    const field = document.createElement('textarea');
+    field.value = 'Hi Kathryn, the deposit is confirmed.';
+    document.body.append(field);
+    const ta = createTextareaTarget(field, () => []);
+    ta.read();
+    field.focus();
+    ta.placeCaret(20);
+    expect(ta.caret()).toBe(20);
+    ta.placeCaret(500);
+    expect(ta.caret()).toBe(field.value.length);
+  });
 });

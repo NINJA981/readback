@@ -6,8 +6,8 @@
  * `GmailControllerDeps`, so the controller runs in tests and e2e without the
  * extension runtime.
  *
- * Only the first reply compose is bound at a time; binding every open compose
- * at once is a Stage 3 item (HANDOFF.md).
+ * One compose is bound at a time: the first open compose that is a reply or a
+ * forward (a new-message compose earlier in the page is skipped).
  */
 import { findComposeEditors, isNotDraft } from '../adapters/gmail/compose';
 import { readGmailThread } from '../adapters/gmail/thread';
@@ -26,7 +26,7 @@ import { bindDraft } from './binding';
 import type { Binding } from './binding';
 import { createOverlayHost } from './overlay-host';
 import type { OverlayHost } from './overlay-host';
-import { statusFrom } from './status';
+import { createStatusReporter, statusFrom } from './status';
 
 export interface GmailControllerDeps {
   doc: Document;
@@ -66,19 +66,12 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
   let overlayHost: OverlayHost | undefined;
   let overlayFailed = false;
   let boundEditor: HTMLElement | undefined;
-  let layoutFailure: TabStatus | undefined;
   let stopped = false;
   let pending = false;
   let scanQueued = false;
 
   const origin = doc.location.origin;
-  const report = (status: Omit<TabStatus, 'updatedAt'>): void => {
-    try {
-      deps.report({ ...status, updatedAt: now() });
-    } catch {
-      // The popup simply shows a stale status.
-    }
-  };
+  const report = createStatusReporter((status) => deps.report(status), now);
   const idle = (state: TabStatus['state']): Omit<TabStatus, 'updatedAt'> => ({
     state,
     asks: 0,
@@ -100,19 +93,15 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
     boundEditor = undefined;
   };
 
-  const bind = async (editor: HTMLElement): Promise<void> => {
-    const read = readGmailThread(doc, editor);
+  const bind = async (
+    editor: HTMLElement,
+    read: ReturnType<typeof readGmailThread>,
+  ): Promise<void> => {
     if (read.status === 'not-a-reply') return;
     if (read.status === 'layout-unrecognised') {
-      layoutFailure = {
-        ...idle('layout-unrecognised'),
-        failedChecks: read.selfTest.failed,
-        updatedAt: now(),
-      };
-      report(layoutFailure);
+      report({ ...idle('layout-unrecognised'), failedChecks: read.selfTest.failed });
       return;
     }
-    layoutFailure = undefined;
     const context = createContext(read.input);
     const threadState = await storage.getThreadState(context.threadKey);
     // The compose may have closed while the state loaded.
@@ -172,13 +161,22 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
     }
     if (boundEditor && !boundEditor.isConnected) unbind();
     if (binding || pending) return;
-    const [editor] = findComposeEditors(doc);
-    if (!editor) {
-      if (!layoutFailure) report(idle('idle'));
+    // Bind the first compose that is a reply; a new-message compose is skipped, not a dead end.
+    let editor: HTMLElement | undefined;
+    let read: ReturnType<typeof readGmailThread> | undefined;
+    for (const candidate of findComposeEditors(doc)) {
+      const attempt = readGmailThread(doc, candidate);
+      if (attempt.status === 'not-a-reply') continue;
+      editor = candidate;
+      read = attempt;
+      break;
+    }
+    if (!editor || !read) {
+      report(idle('idle'));
       return;
     }
     pending = true;
-    void bind(editor).finally(() => {
+    void bind(editor, read).finally(() => {
       pending = false;
     });
   };

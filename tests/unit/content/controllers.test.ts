@@ -371,3 +371,46 @@ describe('status mapping', () => {
     expect(statusFrom(session.getSnapshot())).toMatchObject({ asks: 2, open: 2 });
   });
 });
+
+describe('Gmail controller: quiet on a busy page, and the right compose', () => {
+  it('sends a status only when it changes, however often the page mutates', async () => {
+    load('new-message');
+    const t = setup();
+    gmail = await startGmailController({
+      doc: document,
+      storage: t.storage,
+      report: t.report,
+      painter: t.painter,
+      schedule: (r) => void queueMicrotask(r),
+    });
+    await tick();
+    // Gmail re-renders all the time; each mutation queues a scan.
+    for (let i = 0; i < 20; i += 1) {
+      document.body.append(document.createElement('div'));
+      await tick(2);
+    }
+    expect(t.reports.map((r) => r.state)).toEqual(['idle']);
+  });
+
+  it('binds the reply even when a new-message compose comes first in the page', async () => {
+    const fresh = readFileSync(join(GMAIL, 'new-message.html'), 'utf8');
+    const dialog = /<div role="dialog"[\s\S]*?<\/div>\s*<\/div>/.exec(fresh)?.[0] ?? '';
+    expect(dialog).toContain('g_editable');
+    load('inline-reply');
+    document.body.insertAdjacentHTML('afterbegin', dialog);
+    const t = setup();
+    gmail = await startGmailController({
+      doc: document,
+      storage: t.storage,
+      report: t.report,
+      painter: t.painter,
+      schedule: (r) => void queueMicrotask(r),
+    });
+    await tick();
+    const editors = findComposeEditors(document);
+    expect(editors.length).toBe(2);
+    expect(gmail.session()).toBeDefined();
+    type(editors[1]!, '<div>Hi Catherine,</div>');
+    expect(t.registry.get('readback-slip')?.ranges.map((r) => r.toString())).toEqual(['Catherine']);
+  });
+});

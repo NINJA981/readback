@@ -1,4 +1,5 @@
-import type { SessionSnapshot } from '../state/session';
+import type { MessageReplies } from '../messaging/protocol';
+import type { ComposeSession, SessionSnapshot } from '../state/session';
 import { isCovered } from '../state/summary';
 import type { TabStatus } from '../storage/tab-status';
 
@@ -20,5 +21,36 @@ export function statusFrom(
     slips: snapshot.result.flags.length,
     contextWords,
     failedChecks: [],
+  };
+}
+
+/**
+ * Sends a status to the popup only when it differs from the last one sent.
+ * The mail page mutates constantly, so the controllers re-derive their status
+ * many times a second; each send is a runtime message and a storage write in
+ * the background, so an unchanged status is dropped here.
+ */
+export function createStatusReporter(
+  send: (status: TabStatus) => void,
+  now: () => number,
+): (status: Omit<TabStatus, 'updatedAt'>) => void {
+  let last: string | undefined;
+  return (status) => {
+    const key = JSON.stringify({ ...status, updatedAt: 0 });
+    if (key === last) return;
+    last = key;
+    try {
+      send({ ...status, updatedAt: now() });
+    } catch {
+      // The popup simply shows a stale status.
+    }
+  };
+}
+
+/** The popup's slip rows for a bound compose (wording only; never stored). */
+export function slipsReply(session: ComposeSession | undefined): MessageReplies['get-slips'] {
+  const flags = session?.getSnapshot().result.flags ?? [];
+  return {
+    slips: flags.map((f) => ({ found: f.found, expected: f.expected, message: f.message })),
   };
 }

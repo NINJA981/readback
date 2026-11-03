@@ -37,6 +37,29 @@ export interface SessionSnapshot {
   threadState: ThreadState;
   /** Transient "Fixed: Kathryn · Undo Ctrl+Z", with its expiry time. */
   fixed?: { replacement: string; until: number };
+  /**
+   * End offset of the word the caret is still typing. A flag ending exactly
+   * there is held back, so "Catheri" on the way to "Catherine" never flashes a
+   * squiggle. The host clears it (setDraft without a caret) once typing pauses.
+   */
+  typingAt?: number;
+}
+
+const WORD_CHAR = /[\p{L}\p{N}]/u;
+
+/** The caret offset when it sits right after a letter or digit with no word character after it. */
+export function wordInProgressAt(text: string, caret: number | undefined): number | undefined {
+  if (caret === undefined || caret <= 0 || caret > text.length) return undefined;
+  if (!WORD_CHAR.test(text[caret - 1] ?? '')) return undefined;
+  if (WORD_CHAR.test(text[caret] ?? '')) return undefined;
+  return caret;
+}
+
+/** Drops the flags that end at the word still being typed; counts and pill follow. */
+function holdBackWordInProgress(result: CheckResult, typingAt: number | undefined): CheckResult {
+  if (typingAt === undefined) return result;
+  const flags = result.flags.filter((f) => f.draftSpan.end !== typingAt);
+  return flags.length === result.flags.length ? result : { ...result, flags };
 }
 
 /** Persistence hooks. Failures are swallowed: Readback fails silent (ADR-0001). */
@@ -60,8 +83,11 @@ export interface SessionOptions {
 export interface ComposeSession {
   getSnapshot(): SessionSnapshot;
   subscribe(listener: () => void): () => void;
-  /** Runs the engine on new draft text. Same text twice is a no-op. */
-  setDraft(text: string): SessionSnapshot;
+  /**
+   * Runs the engine on new draft text. Same text and caret twice is a no-op.
+   * With `caret`, a flag on the word still being typed at the caret is held back.
+   */
+  setDraft(text: string, caret?: number): SessionSnapshot;
   setSettings(settings: Settings): void;
   setIgnore(list: IgnoreList): void;
   setThreadState(state: ThreadState): void;
@@ -129,13 +155,9 @@ export function createComposeSession(options: SessionOptions): ComposeSession {
   ): void => {
     store.setState((s) => {
       const next = { ...s, ...patch };
-      const result = run(
-        next.context,
-        next.draft,
-        next.version,
-        next.settings,
-        next.ignore,
-        next.threadState,
+      const result = holdBackWordInProgress(
+        run(next.context, next.draft, next.version, next.settings, next.ignore, next.threadState),
+        next.typingAt,
       );
       return { ...next, result, pill: pillModel(result) };
     });
@@ -144,12 +166,25 @@ export function createComposeSession(options: SessionOptions): ComposeSession {
   return {
     getSnapshot: () => store.getSnapshot(),
     subscribe: (listener) => store.subscribe(listener),
-    setDraft(text) {
+    setDraft(text, caret) {
       const s = store.getSnapshot();
-      if (text === s.draft) return s;
+      const typingAt = wordInProgressAt(text, caret);
+      if (text === s.draft && typingAt === s.typingAt) return s;
       const version = s.version + 1;
-      const result = run(s.context, text, version, s.settings, s.ignore, s.threadState);
-      store.setState({ ...s, draft: text, version, result, pill: pillModel(result) });
+      const result = holdBackWordInProgress(
+        run(s.context, text, version, s.settings, s.ignore, s.threadState),
+        typingAt,
+      );
+      const next: SessionSnapshot = {
+        ...s,
+        draft: text,
+        version,
+        result,
+        pill: pillModel(result),
+      };
+      if (typingAt === undefined) delete next.typingAt;
+      else next.typingAt = typingAt;
+      store.setState(next);
       return store.getSnapshot();
     },
     setSettings(next) {
