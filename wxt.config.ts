@@ -12,6 +12,22 @@ export default defineConfig({
     ? '{{browser}}-mv{{manifestVersion}}-e2e'
     : '{{browser}}-mv{{manifestVersion}}',
   imports: false,
+  // The sources zip (AMO asks for one because the build is bundled) holds what the extension
+  // build needs, not the site, the docs and screenshots, or the test suites.
+  zip: {
+    excludeSources: [
+      'docs/**',
+      'site/**',
+      'gallery/**',
+      'e2e/**',
+      'tests/**',
+      'coverage/**',
+      'test-results/**',
+      '.gallery/**',
+      '.impeccable/**',
+      '.github/**',
+    ],
+  },
   modules: ['@wxt-dev/module-react'],
   vite: ({ mode }) => ({
     plugins: [tailwindcss()],
