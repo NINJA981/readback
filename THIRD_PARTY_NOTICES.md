@@ -2,11 +2,11 @@
 
 Readback bundles subsets of three typefaces. Subsets are in `src/assets/fonts/` (extension) and `site/src/fonts/` (site), made from the Fontsource 5.3.0 packages by `scripts/subset-*-fonts.py` and `site/scripts/subset-fonts.py`. All three are licensed under the SIL Open Font License 1.1, reproduced in full below.
 
-| Typeface | Copyright |
-|---|---|
-| Mona Sans | Copyright 2022 The Mona Sans Project Authors (https://github.com/github/mona-sans), with Reserved Font Name "Mona" |
+| Typeface   | Copyright                                                                                                             |
+| ---------- | --------------------------------------------------------------------------------------------------------------------- |
+| Mona Sans  | Copyright 2022 The Mona Sans Project Authors (https://github.com/github/mona-sans), with Reserved Font Name "Mona"    |
 | Hubot Sans | Copyright 2021 The Hubot Sans Project Authors (https://github.com/github/hubot-sans), with Reserved Font Name "Hubot" |
-| Geist Mono | Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font) |
+| Geist Mono | Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)                                       |
 
 Runtime JavaScript dependencies (React, react-dom, chrono-node) are MIT licensed; their notices ship inside the bundled files where the bundler keeps them, and in each package's `LICENSE` in `node_modules`.
 

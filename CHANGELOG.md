@@ -18,6 +18,10 @@ First public version. Pre-release: not in any browser store yet.
   amounts and different kinds of number stay quiet.
 - **Date guard.** Flags a weekday that does not match its date (`Thursday the 10th` when the 10th
   is a Tuesday) and a near-miss of a date the thread proposed.
+- Quoted text in the reply (`>` lines, "On ... wrote:" lines, text under an "Original Message"
+  header) is not checked. A capital at the start of a sentence counts as a name only in address
+  position ("Kathyrn, thanks"), as a possessive, or as a known variant. The word still being typed
+  is not flagged until it ends or typing pauses.
 - **Guard card.** Each squiggle cites the thread line it was checked against and fixes the slip in
   one click; Ctrl+Z undoes the fix in the editor's own history.
 - **Ask pill and ledger.** Counts the direct questions and requests in the latest message that

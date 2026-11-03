@@ -1,134 +1,143 @@
 # HANDOFF: Readback
 
-**Current stage:** Stage 3a re-run (product UI polish) on top of QA fix round 1 (stage 4 test pass and QA round 1 findings). The extension (stage 3a), the site (landing and `/app`, stage 3b) and the test pass (stage 4) are all in. Next: QA round 2 (design re-score, state sheet, Lighthouse by hand), real Gmail snapshots, the model host.
-**Last updated:** 2026-10-28
+**State:** release candidate 0.1.0 on branch `release/linkedin` (not merged, not pushed).
+**Last updated:** 2026-11-04
 
-Readback is "spellcheck that has read the thread you're replying to": a browser extension (WXT, Chrome MV3 first, Firefox MV3 build too) whose guards underline near-miss names, numbers and dates in a reply by checking them against the message being answered, plus an ask pill. Scope authority is `_studio/picks.json`, `SPEC.md` and `DESIGN.md`.
+Readback is "spellcheck that has read the thread you're replying to": a browser extension (WXT,
+Chrome MV3, Firefox MV3 build) whose guards underline near-miss names, numbers and dates in a reply
+by checking them against the message being answered, plus an ask pill. The product spec is
+`SPEC.md`, the visual system `DESIGN.md`, the architecture `docs/adr/`, the tests `docs/TESTING.md`.
 
-## What is done
+## What is built
 
-| Area                                                 | State                                                                                                                                                                                                                                                                  |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Engine, state, storage, DOM, adapters, content layer | Stage 2, unchanged in behaviour. See `docs/adr/0002-flat-layout-and-core-entry.md`.                                                                                                                                                                                    |
-| **Overlay** (`src/overlay`)                          | React 19 in one shadow root per page: ask pill, ledger, guard card with the readback line, swap-back ghost, context chip. Props-driven components in `src/overlay/ui`; the DOM side (hover, keyboard, docking, fix, focus return) is `src/overlay/controller.ts`.      |
-| Signature moment                                     | Swap-back: M3 letter morph and M5 digit roll, a pure function of time (`src/overlay/swap/frame.ts`), played by a ghost in the shadow root (`ghost.ts`). The pill's last-ask flip (roll 1 to 0, colour cross, check draw) is its quiet echo.                            |
-| Keyboard                                             | Alt+Shift+J (next slip, focus on the fix), Alt+Shift+L (ledger), Enter, Shift+Enter, I, Esc, Tab loop inside cards and the ledger, focus returns to the caret at the end of the slip.                                                                                  |
-| **Popup** (`src/ui/PopupView.tsx`)                   | 360 x 480. Screens: reading, selection context, layout not recognised (with Copy diagnostics), off for this site, mail page with no reply, any other page, and the skeleton. A function of its props, so the gallery renders every state.                              |
-| **Options** (`src/ui/OptionsView.tsx`)               | Checks with examples in mono, ignored words (remove), looks-answered model panel (all five states), appearance, your data (inventory, Clear all with a 6 s Undo / Ctrl+Z toast), shortcuts, "check the network". In-page nav from 1024 px. Ctrl/Cmd+K command palette. |
-| Fonts in the overlay                                 | Two subset faces (Mona Sans 420 to 650, Geist Mono 450; 21 KB and 5 KB, `scripts/subset-overlay-fonts.py`) embedded as bytes and added through `FontFace`, because `@font-face` is ignored in shadow roots. No request, no `web_accessible_resources`.                 |
-| Screenshot gallery                                   | `gallery/` renders the real components in every state; `scripts/screenshots.mjs` writes `docs/screenshots/` (gallery plus the live extension on the Gmail fixtures, 375 / 768 / 1440 px, light and dark).                                                              |
-| Core entry                                           | `src/core/index.ts` now also exports the pure overlay parts (card and ledger wording, hover intent, swap-back plan and frame function, the ghost). React components are not in core; the site imports them from `src/overlay/ui`.                                      |
+| Area                           | State                                                                                                                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Engine (`src/engine`)          | Name, number and date guards, ask extraction, lexical "looks answered". Pure TypeScript, one dependency (chrono-node).                                                       |
+| Adapters                       | Gmail (selector chains + self-test, built on synthetic fixtures) and generic "Use as Readback context" (any textarea or contenteditable).                                    |
+| Overlay (`src/overlay`)        | Pill, guard card with the readback line, ledger, swap-back ghost, context chip, in one shadow root.                                                                          |
+| Popup, options (`src/ui`)      | Every state designed and rendered in `gallery/`. The "looks answered" model panel says "Not included in this build".                                                         |
+| Site (`site/`)                 | Landing page and `/app` web app (same engine), PWA, offline, CSP `connect-src 'none'`.                                                                                       |
+| Launch assets (`docs/launch/`) | Store screenshots, social preview, demo GIF, phone shot, zips, `LAUNCH.md`. Regenerate with `node scripts/launch-assets.mjs` after `pnpm build` and `pnpm --dir site build`. |
+| Packaging                      | README, CONTRIBUTING, CODE_OF_CONDUCT (Contributor Covenant 2.1), SECURITY, CHANGELOG, THIRD_PARTY_NOTICES, `.github` (CI, Pages, issue and PR templates).                   |
 
 ## How to run
 
 ```
-pnpm install
-pnpm dev                 # WXT dev, Chrome
-pnpm build               # .output/chrome-mv3 (production: the overlay's shadow root is closed)
-pnpm build:firefox       # .output/firefox-mv3
-pnpm test                # vitest
-pnpm test:e2e            # scripts/build-e2e.mjs (open shadow root, React production build, same folder), then Playwright
-pnpm lint                # eslint (network ban included) + prettier --check
-pnpm typecheck
-node scripts/screenshots.mjs [filter]   # needs a build; writes docs/screenshots/
-WXT_PLAYGROUND_URL=https://... pnpm build   # enables the popup's "Open the playground" link
+pnpm install && pnpm --dir site install
+pnpm lint && pnpm typecheck && pnpm --dir site typecheck
+pnpm test                         # unit + corpus gates
+pnpm build && node scripts/check-size.mjs
+pnpm build:firefox
+pnpm --dir site build             # also needed by e2e/parity.spec.ts
+pnpm test:e2e                     # e2e build (open shadow root) in .output/chrome-mv3-e2e
+pnpm --dir site test:e2e
+pnpm zip && pnpm zip:firefox
+node scripts/launch-assets.mjs    # docs/launch/ from the real builds (needs ffmpeg)
+node scripts/screenshots.mjs [filter]   # docs/screenshots/ gallery and live captures
 ```
 
-`pnpm test:e2e` leaves the open-shadow e2e build in `.output/chrome-mv3`. Run `pnpm build` again before loading the extension for real.
+On this machine every heavy command runs through the studio RAM gate, vitest with
+`--maxWorkers=1 --no-file-parallelism`, Playwright with one worker.
 
-## Decisions made in this stage (read these)
+## Release pass (2026-11-04, branch release/linkedin)
 
-- **Counts never animate while typing.** DESIGN.md says both "never animate a keystroke" (P8) and, in the demo script, that the pill "rolls to 2 open" while typing. The P8 rule wins: counts change at 0 ms. The only count motion is the last-ask flip (roll, colour, check), which is the pill's one authored moment.
-- **No NumberFlow, no Motion runtime in Gmail.** The spring is the closed-form critically damped curve fitted to Motion's `spring({ visualDuration: .18, bounce: 0 })` (w = 29.09), and the cubic-bezier is ours; `tests/unit/overlay/swap.test.ts` compares both against Motion at every 10 ms. Motion is a devDependency for that test only. This keeps the Gmail content script at about 146 KB gzipped (budget 150).
-- **Neutral copy.** The engine says "Signs as Kathryn" (ADR-0002), not "She signs". The ledger says "No asks in the last message."
-- **The overlay host is created lazily** (the first time the pill has something to show), sits on `<html>`, and is never inside Gmail's compose. A reply with asks off and no slips adds nothing to the page.
-- **Esc is captured at the document while a card or the ledger is open**, so Gmail does not treat it as its own command. Listeners other than the field's `pointermove`/`pointerleave` exist only while something is open.
-- **Ignore has no keycap** (it would not fit the 296 px card row); `I` still works and is set as `aria-keyshortcuts`. Esc sits at the top right of the card.
-- **Playground link.** There is no hosted playground URL yet, so `src/platform/links.ts` reads `WXT_PLAYGROUND_URL` at build time. Without it the empty popup offers "Open Gmail" instead of a link that goes nowhere.
-- **Model panel is honest.** The MiniLM host does not exist, so the real panel shows "Not included in this build" with the switch disabled. The loading, ready, error and off states are built and rendered in the gallery, but no code path produces them yet.
-- **shadcn registries were not used.** The project has no `components.json` and no `@motion-primitives` / `@animate-ui` / `@magicui` registry configured (`mcp__shadcn__search_items_in_registries` returns NOT_CONFIGURED), and the overlay lives in a shadow root where Tailwind utilities do not reach. The primitives (keycap, switch, buttons, palette, roll, pill) are written by hand against the DESIGN.md tokens.
+- **Build defect:** `.gitignore` had `coverage/`, which also ignored `src/engine/coverage/`, so a
+  fresh clone could not build the engine. Anchored to `/coverage/`; the three files are committed.
+- **Code review fixes** (with tests in `tests/unit/content/binding.test.ts`,
+  `tests/unit/content/controllers.test.ts`, `tests/unit/engine/false-positives.test.ts`,
+  `tests/unit/adapters/generic.test.ts`, `tests/unit/dom/dom.test.ts` and six new corpus cases):
+  - Status reports are sent only when they change (they were sent, and written to storage by the
+    background, on every DOM mutation of an idle Gmail page).
+  - The textarea mirror re-places itself on page scroll, window resize and field resize.
+  - Name guard: a sentence-initial capital fires only in address position (`Kathyrn, thanks`);
+    wider common-word list (Pay, Mine, Job, Wait...).
+  - A flag on the word still being typed at the caret is held back until the word ends or typing
+    pauses for 600 ms; input is coalesced to one check per frame.
+  - IDs: no one-digit-substitution flags for short IDs or labels with real neighbours (room,
+    flight, ticket...), and no comparison across different labels.
+  - Dates written without a year take the closest year (a past "Tuesday, October 6" is no longer
+    read as next year's).
+  - One-click fix works over spans with no-break spaces; a fix from a click restores the caret.
+  - Quoted lines and "On ... wrote:" blocks in the draft are not checked (generic adapter).
+  - The first reply compose on the page is bound, even after a new-message compose.
+  - Dead `embed` message removed; duplicated get-slips reply shared.
+- **Docs:** README rewritten (accuracy with method, privacy, permissions, limitations); docs made
+  self-contained; "near-zero false positives" and "enforced in CI" claims corrected; wording now
+  matches the engine ("Signs as Kathryn").
+- **UI:** ledger is 320 px (the card's width) and slip rows wrap instead of cutting the
+  correction. Extension icons added (16/32/48/128). Landing has the real repository URL and the
+  real-mail false-alarm rate next to the corpus number.
+- **Hygiene:** QA-round screenshots removed from the tree; fixture page titles no longer name a
+  real mail product; OFL notices for the bundled fonts.
 
-## Verified versus unverified
+## Verified
 
-See the results block at the bottom of this file for the numbers of the last run.
+See "Results of the last run" at the bottom for the commands and numbers.
 
-**Verified in a real browser (Playwright, real content script on the synthetic Gmail fixtures):** hover dwell opens the card; Alt+Shift+J path (the same message the background sends) focuses the fix; Tab loop; Esc returns the caret; Enter, Shift+Enter, I; fix then Ctrl+Z round trip with the flag following; the ghost plays and removes itself, reduced motion skips it; the host-refused state (copied) leaves the text unchanged; Never flag writes the ignore list; pill flip with no box shift; ledger open, dismiss (count updates at once, persisted as hashed ids), Restore; page footprint (one host on `<html>`, `document.styleSheets` and the editor font unchanged); overlay font loads from embedded bytes; the generic adapter on a plain page (chip, textarea mirror within 2 px of the measured token, hover card, Clear, 4 s error chip); popup and options axe-clean in both themes.
+## Not verified, not done
 
-**Not verified:**
+- **Live Gmail.** All Gmail behaviour is verified only on synthetic, Gmail-shaped fixtures. Needs a
+  human with a Gmail account: load the build, reply to a thread, check the squiggle, card, fix and
+  undo, then capture sanitised fixtures.
+- **Firefox.** Built, never run.
+- **Context-menu click and key chords** are driven by sending the same messages the browser would.
+- **AC-5.4** (frame-exact swap-back timeline) and **AC-7.3** (model timing; no model host) are not
+  automated. **AC-W.12** (Lighthouse) was run by hand once, before the QA-round fixes.
+- **Real phones and an installed PWA.**
+- **Iframes:** "Use as Readback context" injects into the top frame only; a reply box inside an
+  iframe is not reached.
+- **English only:** names, greetings and dates assume English. In languages that capitalise nouns
+  (German) the name guard can fire on ordinary nouns.
+- **Only one compose is bound at a time** (the first reply or forward on the page).
+- **Design re-score:** the independent design critic scored 8.3 of 10 before the QA-round-1 fixes;
+  no second independent score was taken.
+- **Store listings, hosting, trademark check of "Readback":** none done.
 
-- **Live Gmail.** Still synthetic fixtures. Selector chains, the card's placement against Gmail's real compose chrome, and `execCommand('insertText')` against Gmail's real editor are unverified.
-- **Firefox.** Built, never run. `::highlight` wavy underline, `activeElement` in shadow roots and `FontFace` from bytes are untested there.
-- **The real context-menu click** (Playwright cannot click a browser menu): the e2e drives the same two steps the background does (inject `selection.js`, send `use-selection`).
-- **Alt+Shift+J / L as key chords.** Playwright cannot fire browser commands, so the e2e sends the message the background sends on those commands. The manifest wiring of the three commands is checked only by reading the built manifest.
-- **The textarea swap-back ghost.** In a textarea the fix is instant (no ghost); there is no per-glyph geometry for a mirrored field. Contenteditable fixes play the ghost, except when the corrected word wraps across lines.
-- **Visual capture AC-5.4 and AC-9.2** (frame-exact swap-back in the playground capture) belong to the site; the frame function they need is exported from `src/core`.
-- **Model (AC-7.3):** not started.
-- **Popup against a live Gmail tab.** The popup, opened as a tab in e2e, is its own active tab, so the reading state is verified through the gallery with fixture props, not against a live reply.
+## Decisions for the owner
 
-## Stage 3a closing pass (this session)
+1. **History.** All commits on `main` are authored by a personal name and Gmail address and carry
+   `Co-Authored-By` trailers. Rewriting history is your call; this branch did not touch it. Commits
+   on `release/linkedin` are authored by NINJA981 with no trailers.
+2. **Repository URL.** README, landing, CONTRIBUTING and the issue templates assume
+   `https://github.com/NINJA981/readback`. Change them together if it differs.
+3. **Hosting the web app.** `.github/workflows/pages.yml` publishes `site/dist` to GitHub Pages
+   (Settings > Pages > Source: GitHub Actions). README links
+   `https://ninja981.github.io/readback/app/`; it 404s until Pages is enabled. Then build the
+   extension with `WXT_PLAYGROUND_URL=https://ninja981.github.io/readback/app/` so the popup links
+   to it.
+4. **Release.** Create tag `v0.1.0` and attach `docs/launch/readback-0.1.0-chrome.zip` and
+   `readback-0.1.0-firefox.zip` (and the sources zip AMO asks for).
+5. **Conduct and security contact.** Both route to GitHub private vulnerability reporting. Enable
+   it (Settings > Code security) or add an email.
+6. **Font subsets and Reserved Font Names.** Mona Sans and Hubot Sans carry RFNs under the OFL; the
+   bundled files are subsets. Decide whether to rename the subset families or rely on the common
+   reading that web subsetting is acceptable.
+7. **Accuracy harness.** The real-mail evaluation scripts are not in this repository (they fetch
+   public corpora). Publishing them would let others reproduce the numbers.
 
-- `e2e/pages.spec.ts` had been zeroed on disk (NUL bytes) by the earlier interrupted session; it is rewritten for the current popup and options (first paint budget, Ctrl+K palette, Clear all with a working Ctrl+Z Undo, ignored-words Remove, a switched-off site).
-- The e2e build used React's dev JSX (`jsxDEV`) because `--mode e2e` is not production, which made the popup budget measure dev checks. `scripts/build-e2e.mjs` now builds with `NODE_ENV=production`. The popup budget (AC-10.1, <= 100 ms) is read from the quietest of six loads because this CPU is shared and a single load varies from 50 to 280 ms.
-- Ledger rows: the ask text now fades under the hover actions instead of being cut (`overlay.css`).
-- ESLint ignores `site/dist` and treats `.mjs` as untyped JS. (Superseded in Stage 4: repo-wide `pnpm lint` and `pnpm typecheck` pass.)
+## Accuracy re-run on this release's engine
 
-## Stage 3a re-run (2026-10-28, product UI polish pass)
+The real-mail evaluation (4,104 public reply pairs; harness outside this repo) was re-run on the
+release engine and joined with the original hand labels; the one new squiggle was labelled by hand
+(a false date: "Monday and Tuesday, June 18 and 19"). Results are in README "Accuracy". In short:
+2.12 squiggles and 1.76 false alarms per 100 replies (was 2.41 and 1.97), precision unchanged at
+12%, seeded recall lower (names 71 to 90%, dates 68 to 76%, IDs 95%) because quoted text in the
+reply is no longer checked and sentence-initial edit-distance names need address position. One
+real misspelling at a sentence start ("Virgina ...") is now missed. Revisit the sentence-start
+rule with more labelled data.
 
-A restarted session re-ran stage 3a on top of the stage 4 and QA round 1 work. The uncommitted QA-fix-round-1 changes outside `site/` were left in the tree by an interrupted session; they were checked (green, coherent with the SPEC/DESIGN edits for the "looks answered" pill) and are committed with this stage. `site/` was not touched and is not in this commit.
+## Results of the last run
 
-Fixed in this pass, each seen in the screenshots first:
+2026-11-04, every command through the studio RAM gate (`_studio/bin/heavy.sh`), one worker:
 
-- **Pill: counts animated on every keystroke.** The label was keyed by its text, so each count change while typing remounted it with the 150 ms blur fade, against DESIGN.md P8 ("never animate a keystroke"). It now remounts only when its mode changes (into and out of the six-second `Fixed:` line, and after the last-ask roll).
-- **Pill: dead space after the count.** The 15ch reservation in a proportional face left about 20 px of empty brass before the divider. The pill now stacks every count label it can show for that many asks invisibly in one grid cell (`reservedLabels` in `src/overlay/ui/Pill.tsx`, `aria-hidden`, `visibility: hidden`), so it is exactly as wide as its widest state. AC-6.5's no-shift e2e still passes.
-- **Popup: the layout-error state ran 8 px past its block**, so `Copy diagnostics` sat on the Checks hairline. The block is now `gap-1` and `shrink-0` and fits its 132 px.
-- **Options: three left edges** (headings at 0, text at 8, the data table's text at 12). Headings, the header and the table text now share the 8 px text edge; row hover fills and boxes bleed to 0.
-- **Ghost buttons** used 10 px padding, so `Options` in the popup footer sat 2 px right of every other text edge; now 8 px.
-- Lint: `scripts/check-size.mjs` (new) used `console` without the CLI-script exemption. The AC matrix in `docs/TESTING.md` was stale (the new `e2e/gallery-a11y.spec.ts`); regenerated. `e2e/pages.spec.ts` still looked for the old `Stop ignoring` label after the label-in-name fix renamed it `Remove X from ignored words`.
-
-Screenshots: `node scripts/screenshots.mjs` rewrote `docs/screenshots/` (gallery states plus the live extension on the Gmail fixtures at 375 / 768 / 1440, light and dark, the real popup and options). My own read of the DESIGN_BIBLE section 9 rubric for the extension surfaces after these fixes is about 9 (identity 9, type 9, colour 9, layout 9, hierarchy 9, components 9, states and a11y 9, motion 9, system states 9, platform fit 9). That is a self-assessment by the builder, not an independent critic's score, and it was judged on synthetic Gmail fixtures, not live Gmail.
-
-Green at the end of this pass: `pnpm lint`, `pnpm typecheck`, `pnpm test` (23 files, 419 tests), `pnpm test:e2e` (51), `pnpm build`, `pnpm build:firefox`, `node scripts/check-size.mjs` (gmail.js 143.7 KB gz). The site's own suites were not run here (another agent owns `site/`).
-
-Still not done here: the shadcn MCP server failed to connect in this session (connection timeout), so no registry primitives were pulled; the hand-written primitives stand, as recorded above.
-
-## Stage 4 test pass (this session)
-
-How it is tested lives in `docs/TESTING.md`: layers, how to run everything, what is not tested, and a generated matrix of every SPEC acceptance criterion with the tests that name it. `tests/unit/spec-traceability.test.ts` fails when a criterion has no test of the kind it asks for, when a test names an id the spec does not have, or when the matrix is stale (`UPDATE_MATRIX=1 pnpm vitest run tests/unit/spec-traceability.test.ts` rewrites it). It proves every criterion has an owner, not that the owner is good.
-
-Added: `tests/unit/parity.test.ts` and `e2e/parity.spec.ts` (web app and extension give the same slips, messages, fixes, asks and repaired reply on the six sample threads), `e2e/a11y-overlay.spec.ts` (axe on pill, card, ledger and chip, light and dark host), `e2e/gmail-fixtures.spec.ts`, `tests/unit/overlay/ui.test.tsx`, and for the site `smoke`, `flows` (sample, paste, offline, network purity, 375 x 812 touch and 1440 x 900), `pwa`, `a11y` and `capture` specs plus `site/tests/helpers.test.ts`. The extension e2e fixture now fails any test that made a request leaving the machine (AC-G.2, suite wide).
-
-Real bugs found and fixed (minimal changes):
-
-- Web app: the status pill's `aria-label` replaced its visible text, so the accessible name did not start with it (WCAG 2.5.3). The announcement is now a `sr-only` span after the visible text (`site/src/app/App.tsx`).
-- Web app: `subtle` caption text on the guard card, slip rows and ask rows failed axe colour contrast; they use `muted` (`site/src/app/Panels.tsx`).
-- Landing: the scrollable "what Readback stores" table region had no name or focus stop (axe `scrollable-region-focusable`); it is now a labelled, focusable region (`site/index.html`).
-- Web app: a corrupt share payload surfaced an unhandled promise rejection in the console from the write side of the compression stream; both sides are now handled (`site/src/app/model.ts`).
-- Overlay ledger: a slip row's button was named "Change X to Y" while its visible text said Fix, which failed label-in-name; it is now "Fix: change X to Y" (`src/overlay/ui/Ledger.tsx`).
-- Test-only flakes, not product bugs: the service worker test read `state` before activation finished (now waits for `activated`); the AC-9.2 pixel test saw 1 or 2 channel differences in about one run in six from GPU raster and LCD text (the capture spec now launches Chromium with `--disable-gpu --disable-lcd-text --force-color-profile=srgb`, 20 of 20 identical in isolation).
-
-Green at the end of this stage: `pnpm lint`, `pnpm typecheck`, `pnpm --dir site typecheck`, `pnpm test` (23 files, 410 tests), `pnpm --dir site test` (21), `pnpm test:e2e` (48), `pnpm --dir site test:e2e` (95, both the desktop and phone projects), `pnpm build`, `pnpm build:firefox`, `pnpm --dir site build`. The repo-wide lint and typecheck failures noted in the 3a section are gone.
-
-Not covered, and said so in `docs/TESTING.md`: live Gmail, Firefox runtime, the real context-menu click and key chords, real phones and an installed PWA, AC-5.4 (frame-exact swap-back timeline), AC-7.3 (no model host yet) and AC-W.12 (Lighthouse, run by hand). The web app has no file upload, so there is no upload flow; paste is covered.
-
-## Known issues and open risks
-
-- Everything from Stage 2 still applies: short-name near-misses (Tim/Tom) can false-positive, only the first reply compose is bound, dependency pins a few patches behind, TypeScript 6.0.3, no trademark check of "Readback".
-- Popup and options fonts are now subset (`scripts/subset-ui-fonts.py`: Mona 30.2 KB, Hubot 23.6 KB, Geist Mono 7.5 KB) and `pnpm size` (`scripts/check-size.mjs`) gates the 40 KB per-face and 150 KB per-content-script budgets.
-- The Gmail content script is about 144 KB gzipped (143.7 KB at the stage 3a re-run): React and react-dom are about 60 KB, the two embedded faces about 27 KB as base64. That is inside the 150 KB budget with almost no room. Anything added there needs a matching cut.
-- `pnpm typecheck` and `pnpm lint` also walk `site/`; a type error there fails the whole command.
-- The ledger's row actions overlay the ask text on hover/focus with a flat tint; a soft fade on the left edge would read better.
-- Wide card content: a very long cited line is windowed to about 44 characters either side of the token, snapped to word boundaries.
-- `gallery/` is not part of the extension package and is excluded from lint and prettier via ignore files; it has its own type-checked sources under the root tsconfig.
-
-## QA round 1: design critic (read-only, no code changed)
-
-Score 8.3 of 10 on the DESIGN_BIBLE section 9 rubric, so the gate (average 9 or more, no criterion under 8, no hard fail) is not met. No hard fail was found: axe reported 0 violations on the landing page and `/app` in both themes, CLS was 0.0002, there was no horizontal scroll at 375, 768 or 1440, focus rings are visible, reduced motion is honoured, and there is no canvas or 3D. Fresh screenshots of every surface (landing, `/app`, real popup and options, the Gmail overlay on fixtures, the gallery states, signature-moment frames) are in `docs/screenshots/qa-r1/`.
-
-Fix list for the next stage (full detail is in the critic's report):
-
-- `site/src/shared/components.css`: `.pill__slips { display: inline-flex }` overrides the `hidden` attribute, so a pill with 0 slips (hero at rest, "All covered", "Fixed") shows a divider and a bare red dot. Add `.pill__slips[hidden] { display: none }`.
-- `site/src/landing/landing.css:52` and `site/src/app/app.css:26`: `color-mix(in oklch, var(--rb-bg) 92%, transparent)` loses the hue, so the sticky header renders #120D0F against a #0B0F13 page. Mix in srgb or use relative colour syntax.
-- `/app` has no command palette, no guard toggles in the header and no visible shortcut hints, which DESIGN.md specifies for the playground.
-- The app's green "Everything asked is covered." and the "All covered" pill appear for asks that are only "looks answered" (one of them is the $1,250 ask against a reply that says $1,520). DESIGN.md says a guess is never shown as a fact.
-- `landing.css:1006` `font-size: 0.92em` gives 11.04 px and 12.88 px code, off the type scale.
-- Landing display headings have collapsed word spaces; at 375 px the CSP and `git clone` code blocks are clipped.
+| Command                                                      | Result                                                                  |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `pnpm lint` (ESLint with the network ban, Prettier)          | clean                                                                   |
+| `pnpm typecheck`, `pnpm --dir site typecheck`                | clean                                                                   |
+| `vitest run --maxWorkers=1 --no-file-parallelism`            | 25 files, 445 tests passed                                              |
+| corpus gates (part of the above)                             | 0 flags on 53 deliberate cases, 34/34 slips, asks 1.0 / 1.0 on 64       |
+| `pnpm --dir site exec vitest run`                            | 22 passed                                                               |
+| `pnpm test:e2e` (extension, `--workers=1`)                   | 51 passed                                                               |
+| `pnpm --dir site test:e2e` (desktop and phone)               | 101 passed                                                              |
+| `pnpm zip`, `pnpm zip:firefox`, `node scripts/check-size.mjs` | built; gmail.js 144.8 KB gz of 150; zips in `docs/launch/`              |
+| `gitleaks detect --no-banner`                                | no leaks (all commits)                                                  |

@@ -22,16 +22,16 @@ pnpm --dir site install # the landing page and the web app
 
 ## Layout
 
-| Path                     | What it is                                                                                                                                         |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/engine/`            | The checker. Pure TypeScript, no DOM, one dependency (chrono-node). Guards in `guards/`, ask extraction in `asks/`, copy in `cite.ts`.             |
-| `src/core/index.ts`      | The one entry the extension and the web app share.                                                                                                 |
-| `src/adapters/`          | Reading the thread and the reply box: `gmail/` (selector chains with a self-test) and `generic/` (any text box, through the context menu).         |
-| `src/overlay/`           | Pill, guard card, ledger and the swap-back ghost, in one shadow root per page. `ui/` is props-only React; `controller.ts` is the DOM side.          |
-| `src/ui/`, `entrypoints` | Popup, options, background and content scripts (WXT).                                                                                              |
-| `site/`                  | Landing page and `/app`, a static Vite build that imports the same engine.                                                                         |
-| `gallery/`               | Renders every component state for screenshots and the accessibility suite.                                                                        |
-| `tests/`                 | Unit tests, the corpus gates (`tests/corpus`) and fixtures. `e2e/` runs the built extension in Chromium.                                          |
+| Path                     | What it is                                                                                                                                           |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/engine/`            | The checker. Pure TypeScript, no DOM, one dependency (chrono-node). Guards in `guards/`, ask extraction in `asks/`, copy in `cite.ts`.               |
+| `src/core/index.ts`      | The one entry the extension and the web app share.                                                                                                   |
+| `src/adapters/`          | Reading the thread and the reply box: `gmail/` (selector chains with a self-test) and `generic/` (any text box, through the context menu).           |
+| `src/overlay/`           | Pill, guard card, ledger and the swap-back ghost, in one shadow root per page. `ui/` is props-only React; `controller.ts` is the DOM side.           |
+| `src/ui/`, `entrypoints` | Popup, options, background and content scripts (WXT).                                                                                                |
+| `site/`                  | Landing page and `/app`, a static Vite build that imports the same engine.                                                                           |
+| `gallery/`               | Renders every component state for screenshots and the accessibility suite.                                                                           |
+| `tests/`                 | Unit tests, the corpus gates (`tests/corpus`) and fixtures. `e2e/` runs the built extension in Chromium.                                             |
 | `.impeccable/`           | `design.json`, the machine-readable sidecar of `DESIGN.md` (tokens and component specs) used by the design tooling. Edit it together with DESIGN.md. |
 
 The architecture and its reasons are in `docs/adr/`. The product spec, with every acceptance
