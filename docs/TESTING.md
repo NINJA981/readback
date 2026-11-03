@@ -44,7 +44,7 @@ pnpm build && pnpm build:firefox   # production builds
 <!-- matrix:start -->
 | Criterion | Kind | What it says | Covered by |
 | --- | --- | --- | --- |
-| AC-1.1 | U | Thread signed `Kathryn`, draft `Hi Catherine,` → 1 flag, rule `variant`, message `She signs Kathryn`, fix `... | `tests/unit/engine/acceptance.test.ts` |
+| AC-1.1 | U | Thread signed `Kathryn`, draft `Hi Catherine,` → 1 flag, rule `variant`, message `Signs as Kathryn`, fix `K... | `tests/unit/engine/acceptance.test.ts` |
 | AC-1.2 | U | To chip `Jon Reyes`, draft `Thanks John` → 1 flag, rule `edit-distance`. | `tests/unit/engine/acceptance.test.ts` |
 | AC-1.3 | U | Thread names `Kathryn`, draft mentions `Bob` → 0 flags. | `tests/unit/engine/acceptance.test.ts` |
 | AC-1.4 | U | Thread contains both `Catherine` and `Kathryn` → `Catherine` in the draft is not flagged. | `tests/unit/engine/acceptance.test.ts` |
@@ -103,6 +103,9 @@ pnpm build && pnpm build:firefox   # production builds
 | AC-W.10 | E | With `prefers-reduced-motion: reduce`, **Fix** applies the correction and the reply is repaired. | `site/e2e/flows.spec.ts` |
 | AC-W.11 | E | The landing page has one h1, a hero link to `/app`, no `<canvas>` (no WebGL by decision), no third-party re... | `site/e2e/landing.spec.ts` |
 | AC-W.12 | L | Lighthouse on `/` and `/app/` (mobile and desktop): Accessibility 100 and Best practices 100; LCP at most 2... | **Not automated.** Lighthouse and cold performance traces run through the chrome-devtools MCP by hand; the results are recorded in site/HANDOFF.md. |
+| AC-W.13 | E | Ctrl/Cmd+K (or the header's **Commands** button on touch) opens the command palette with focus in its input... | `site/e2e/flows.spec.ts` |
+| AC-W.14 | E | The playground header has a `Checks` group of four toggle buttons (Names, Numbers, Dates, Asks) with `aria-... | `site/e2e/flows.spec.ts` |
+| AC-W.15 | E | An ask that only looks answered is never shown as a fact: the pill shows `1 looks answered` with a dotted r... | `site/e2e/flows.spec.ts` |
 <!-- matrix:end -->
 
 ## Known flaky or machine-sensitive tests

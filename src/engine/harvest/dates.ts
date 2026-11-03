@@ -77,6 +77,35 @@ export function referenceDate(iso: string | undefined, fallback: Date): Date {
   return new Date(Date.UTC(fallback.getFullYear(), fallback.getMonth(), fallback.getDate(), 12));
 }
 
+const DAY_MS = 86_400_000;
+
+/**
+ * The year of a date written without one. chrono's forwardDate pushes a day
+ * that has passed into next year, which is right for "see you on 6 October"
+ * and wrong for "thanks for Tuesday, October 6" a month later. So: among last,
+ * this and next year, take the one closest to the reference date, and when a
+ * weekday is written, the closest one within six months whose weekday agrees.
+ */
+function likeliestYear(
+  day: number,
+  month: number,
+  parsed: number,
+  weekday: number | undefined,
+  ref: Date,
+): number {
+  const candidates = [parsed - 1, parsed, parsed + 1]
+    .map((y) => ({ y, at: Date.UTC(y, month - 1, day, 12) }))
+    .map((c) => ({ ...c, away: Math.abs(c.at - ref.getTime()) }))
+    .sort((a, b) => a.away - b.away);
+  if (weekday !== undefined) {
+    const agreeing = candidates.find(
+      (c) => c.away <= 183 * DAY_MS && new Date(c.at).getUTCDay() === weekday,
+    );
+    if (agreeing) return agreeing.y;
+  }
+  return candidates[0]?.y ?? parsed;
+}
+
 export function extractDates(text: string, ref: Date): DateMention[] {
   const out: DateMention[] = [];
   const localRef = new Date(ref.getUTCFullYear(), ref.getUTCMonth(), ref.getUTCDate(), 12);
@@ -87,9 +116,12 @@ export function extractDates(text: string, ref: Date): DateMention[] {
     if (NUMERIC_DATE_RE.test(r.text)) continue;
     const day = s.get('day');
     const month = s.get('month');
-    const year = s.get('year');
-    if (day === null || month === null || year === null) continue;
+    const parsedYear = s.get('year');
+    if (day === null || month === null || parsedYear === null) continue;
     const weekday = s.isCertain('weekday') ? (s.get('weekday') ?? undefined) : undefined;
+    const year = s.isCertain('year')
+      ? parsedYear
+      : likeliestYear(day, month, parsedYear, weekday, ref);
     out.push({
       start: r.index,
       end: r.index + r.text.length,

@@ -14,7 +14,7 @@ import { extractDates, referenceDate } from './harvest/dates';
 import { harvestNames } from './harvest/names';
 import { extractNumbers } from './harvest/numbers';
 import type { NumberMention } from './harvest/numbers';
-import { splitMessage } from './text/strip';
+import { quotedSpans, splitMessage } from './text/strip';
 import { fold, stripPossessive, words } from './text/tokens';
 import { digitTerms } from './asks/extract';
 import type {
@@ -162,6 +162,7 @@ export function check(ctx: ThreadContext, draft: Draft, opts: CheckOptions = {})
   const ignoredNumbers = new Set((opts.ignore?.numbers ?? []).flatMap(digitTerms));
   const ignoredFlags = new Set(state?.ignoredFlags ?? []);
   const text = draft.text;
+  const quoted = quotedSpans(text);
 
   const flags = [
     ...(guards.name
@@ -191,6 +192,8 @@ export function check(ctx: ThreadContext, draft: Draft, opts: CheckOptions = {})
       : []),
   ]
     .filter((f) => !ignoredFlags.has(f.id))
+    // Quoted lines in the draft are the thread's words, not the writer's.
+    .filter((f) => !quoted.some((q) => f.draftSpan.start >= q.start && f.draftSpan.start < q.end))
     .sort((a, b) => a.draftSpan.start - b.draftSpan.start);
 
   let asks: Ask[] = [];

@@ -26,6 +26,27 @@ const FORWARD_RE =
   /^[ \t]*(?:-{3,}[ \t]*Forwarded message[ \t]*-{3,}|Begin forwarded message:|-{3,}[ \t]*Original Message[ \t]*-{3,}[ \t]*\n[ \t]*From:.*\n(?:.*\n)?[ \t]*Subject:[ \t]*(?:Fwd?|FW):)/im;
 const SIG_DELIMITER_RE = /^-- ?$/m;
 
+/**
+ * Where quoted material starts in a draft: `>` lines, and everything after an
+ * "On ... wrote:", "Original Message" or forwarded-message header. The draft
+ * keeps its offsets; callers drop what falls inside. Gmail's editor already
+ * leaves its quote out of the draft; a plain textarea elsewhere does not.
+ */
+export function quotedSpans(draft: string): { start: number; end: number }[] {
+  const spans: { start: number; end: number }[] = [];
+  const headers = [QUOTE_HEADER_RE, OUTLOOK_HEADER_RE, FORWARD_RE]
+    .map((re) => re.exec(draft)?.index)
+    .filter((i): i is number => i !== undefined);
+  const tail = headers.length > 0 ? Math.min(...headers) : draft.length;
+  let at = 0;
+  for (const line of draft.slice(0, tail).split('\n')) {
+    if (/^[ \t]*>/.test(line)) spans.push({ start: at, end: at + line.length });
+    at += line.length + 1;
+  }
+  if (tail < draft.length) spans.push({ start: tail, end: draft.length });
+  return spans;
+}
+
 /** Sign-off phrases (matched case-insensitively at line start). */
 const SIGN_OFFS = [
   'thanks so much',

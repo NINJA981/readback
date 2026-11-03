@@ -140,7 +140,10 @@
       "sender": { "name": "Dev Shah", "emailLocal": "dev.shah", "role": "sender" },
       "recipients": [{ "name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to" }],
       "message": "Hi Sam,\n\nOption A is $1,250 and option B is $1,520. Which do you prefer?\n\nDev"
-    }
+    },
+    "pat": {"sentAt": "2026-11-02", "sender": {"name": "Pat Lowe", "emailLocal": "pat.lowe", "role": "sender"}, "recipients": [{"name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to"}], "message": "Hi Sam,\n\nThe second part of the survey is ready for review.\n\nPat"},
+    "marc": {"sentAt": "2026-11-02", "sender": {"name": "Marc Dubois", "emailLocal": "marc.dubois", "role": "sender"}, "recipients": [{"name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to"}], "message": "Hi Sam,\n\nThe workshop notes are in the folder.\n\nMarc"},
+    "hotel": {"sentAt": "2026-11-02", "sender": {"name": "Front Desk", "emailLocal": "frontdesk", "role": "sender"}, "recipients": [{"name": "Sam Ortiz", "emailLocal": "sam.ortiz", "role": "to"}], "message": "Hello Sam,\n\nYou are in room 204, and flight 482 lands at 9.\n\nFront Desk"}
   },
   "cases": [
     { "id": "s01-name-catherine", "kind": "slip", "thread": "deposit", "draft": "Hi Catherine,\n\nSee you Thursday.", "flags": [{ "guard": "name", "found": "Catherine", "expected": "Kathryn" }] },
@@ -221,6 +224,12 @@
     { "id": "d45-date-far-from-thread", "kind": "deliberate", "thread": "dates", "draft": "Thursday the 26th is when I return.", "flags": [] },
     { "id": "d46-plain-nothing", "kind": "deliberate", "thread": "plain", "draft": "Thanks Ruth, speak soon.", "flags": [] },
     { "id": "d47-empty-draft", "kind": "deliberate", "thread": "deposit", "draft": "", "flags": [] },
-    { "id": "d48-quoted-in-draft-correct", "kind": "deliberate", "thread": "deposit", "draft": "Hi Kathryn,\n\nConfirming the $1,250 deposit and Thursday the 12th.\n\nSam", "flags": [] }
+    { "id": "d48-quoted-in-draft-correct", "kind": "deliberate", "thread": "deposit", "draft": "Hi Kathryn,\n\nConfirming the $1,250 deposit and Thursday the 12th.\n\nSam", "flags": [] },
+    {"id": "s31-name-mark-address", "kind": "slip", "thread": "marc", "draft": "Mark, thanks for the notes.", "flags": [{"guard": "name", "found": "Mark", "expected": "Marc"}]},
+    {"id": "d49-initial-part", "kind": "deliberate", "thread": "pat", "draft": "Part two is attached.", "flags": []},
+    {"id": "d50-initial-pay", "kind": "deliberate", "thread": "pat", "draft": "Pay the deposit by Friday, please.", "flags": []},
+    {"id": "d51-initial-mark", "kind": "deliberate", "thread": "marc", "draft": "Mark the date in your calendar.", "flags": []},
+    {"id": "d52-room-next-door", "kind": "deliberate", "thread": "hotel", "draft": "Could my colleague have room 205?", "flags": []},
+    {"id": "d53-return-flight", "kind": "deliberate", "thread": "hotel", "draft": "I will be on flight 483 on the way back.", "flags": []}
   ]
 }

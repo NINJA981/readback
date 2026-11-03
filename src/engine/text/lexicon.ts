@@ -59,6 +59,8 @@ basically honestly frankly luckily sadly otherwise meanwhile besides instead sti
 since because unless whether either neither both each every few several many most some such
 mr mrs ms dr prof sir ok ps pps fyi asap eod eta tbd tba btw imo
 i i'm i'll i've i'd we we're we'll it it's that's there's here's let's what's who's
+pay paid mine job jobs wait send check give gave find ask add try hold ping sign book booked move drop
+pick read plan sort glad shall got going went ours fix fixed pls kindly rent fee fees cost costs
 `);
 
 /** Weekday names and abbreviations → 0 (Sunday) … 6 (Saturday). */

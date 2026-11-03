@@ -88,10 +88,41 @@ function sameKind(t: NumberRef, d: NumberMention): boolean {
 }
 
 /**
+ * Labels whose numbers usually have real neighbours: the room next door, the
+ * return flight, the next ticket. A one-digit change there is more often a
+ * different thing than a slip, so only a transposition fires.
+ */
+const NEIGHBOUR_LABELS: ReadonlySet<string> = new Set([
+  'room',
+  'unit',
+  'flight',
+  'job',
+  'ticket',
+  'case',
+  'member',
+  'claim',
+  'application',
+]);
+
+/** Whether an ID in the draft may be compared with one in the thread under `rule`. */
+function idComparable(
+  t: NumberRef,
+  d: NumberMention,
+  rule: 'transposition' | 'substitution',
+): boolean {
+  // "room 205" is not a near-miss of "flight 204".
+  if (t.label && d.label && t.label !== d.label) return false;
+  if (rule === 'transposition') return true;
+  if (t.digits.length < 4) return false;
+  return !NEIGHBOUR_LABELS.has(t.label) && !NEIGHBOUR_LABELS.has(d.label);
+}
+
+/**
  * Number guard (SPEC F2). Compares draft amounts and IDs with the thread's on
  * canonical digit strings of the same kind and length. Amounts fire only on a
  * single transposition (a changed digit is usually a counter-offer); IDs also
- * fire on a single substitution.
+ * fire on a single substitution, except short IDs and labels with real
+ * neighbours (room, flight, ticket...), and never across different labels.
  */
 export function numberGuard(input: NumberGuardInput): Flag[] {
   if (input.numbers.length === 0) return [];
@@ -109,6 +140,7 @@ export function numberGuard(input: NumberGuardInput): Flag[] {
       const r = digitRule(t.digits, d.digits);
       if (!r) continue;
       if (t.kind === 'amount' && r.rule !== 'transposition') continue;
+      if (t.kind === 'id' && !idComparable(t, d, r.rule)) continue;
       // Prefer a transposition over a substitution when both exist.
       if (!match || (match.rule === 'substitution' && r.rule === 'transposition')) {
         match = { ref: t, rule: r.rule };

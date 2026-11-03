@@ -59,6 +59,8 @@ Underlines a name in the draft that is a near-miss of a name the thread gives yo
   - its Damerau-Levenshtein distance to a harvested name is 1 (names ≤ 5 letters) or ≤ 2 (names ≥ 6 letters), with a matching first letter or a known phonetic pair; or
   - the variant table pairs it with a harvested name (Catherine/Kathryn/Katherine/Kathrine, Steven/Stephen, Jon/John, Sara/Sarah, Ann/Anne, Philip/Phillip, Geoff/Jeff, Megan/Meghan, Shaun/Sean/Shawn, Aimee/Amy, Jaime/Jamie, about 120 pairs, see ADR).
 - **Never fires** when the draft names someone who isn't a near-miss (`Kathryn` vs `Bob`), when both spellings appear in the thread, or on a name the user has ignored.
+- **Sentence starts:** a token that opens a sentence or line fires only in address position (followed by a comma, an exclamation mark, a dash or the end of the line: `Kathyrn, thanks`) or as a possessive (`Kathyrn's note`), because a capital there is not evidence of a name (`Pay the deposit` next to a thread from Pat).
+- **Word in progress:** a flag on the word the caret is still typing is held back until the word ends or typing pauses (600 ms), so `Catheri` on the way to `Catherine` never flashes.
 - **Tooltip:** `Signs as Kathryn`, `To: Kathryn Moss`, or `Thread says Kathryn` (wording depends on source), with the cited line shown underneath.
 - **Fix:** replaces the token with the thread spelling.
 
@@ -68,15 +70,16 @@ Underlines a number that is a transposition or near-miss of an amount, ID or ref
 - **Thread numbers:** currency amounts (`$1,250`, `1.250,00 €`, `£980`), plain amounts with a unit (`1250 USD`, `14 nights`), and IDs (order, invoice, booking, tracking, account or phone-style tokens of 4+ digits, alphanumeric IDs such as `INV-20931`).
 - **Match rule** (on the normalised digit string, same length, same kind):
   - **Amounts:** flagged only for a single transposition of two digits (`1250` vs `1520`, adjacent or one apart). A single-digit substitution never fires on amounts, because a different amount is usually a counter-offer (`$1,250` vs `$1,200` or `$1,350` stays silent).
-  - **IDs:** flagged for a single transposition **or** a single-digit substitution (`48213` vs `48231`, `48213` vs `48218`), because nobody counter-offers an order number.
+  - **IDs:** flagged for a single transposition **or** a single-digit substitution (`48213` vs `48231`, `48213` vs `48218`), because nobody counter-offers an order number. Substitution needs 4+ digits and does not apply to labels with real neighbours (room, unit, flight, job, ticket, case, member, claim, application: `room 205` next to `room 204` is usually a different room). IDs with different labels are never compared.
 - **Never fires** when the draft number appears verbatim anywhere in the thread, when units or currencies differ, or when the number sits in a counter-offer frame ("instead of", "how about", "could we do", "we can offer").
+- **Quoted text:** nothing on a `>` line of the draft, or below an `On … wrote:` / `Original Message` / forwarded header, is checked by any guard (it is the thread's words, not the writer's).
 - **Tooltip:** `Thread says $1,250. Digits swapped?` / `Order #48213 in the thread. One digit differs.`
 - **Fix:** replaces the number with the thread's value, keeping the draft's formatting style (currency symbol and separators).
 
 ### F3. Date guard
 Underlines a date whose weekday doesn't match its day number, or that is a near-miss of a date proposed in the thread.
 
-- **Parser:** chrono-node (English) with the incoming message's sent date as the reference date (falling back to today).
+- **Parser:** chrono-node (English) with the incoming message's sent date as the reference date (falling back to today). A date written without a year takes the year closest to the reference date (last, this or next); when a weekday is written, the closest year within six months whose weekday agrees.
 - **Rules:**
   - **Weekday mismatch:** the draft gives both a weekday and a day number (`Thursday the 10th`, `Thu 10 Nov`), and the calendar disagrees. Message: `The 10th is a Tuesday.`
   - **Thread near-miss:** the thread proposes a date (`Thursday the 12th`) and the draft gives the same weekday with a different day, or the same day with a different weekday, within ±7 days. Message: `Thread says Thursday the 12th.`

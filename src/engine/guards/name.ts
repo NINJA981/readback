@@ -1,6 +1,6 @@
 import { shortId } from '../hash';
 import { nameMessage } from '../cite';
-import { NAME_SOURCE_RANK, isNameLike } from '../harvest/names';
+import { NAME_SOURCE_RANK, isNameLike, startsSentence } from '../harvest/names';
 import { fold, stripPossessive, words } from '../text/tokens';
 import type { Flag, NameRef } from '../types';
 import { osaDistance } from './distance';
@@ -111,11 +111,27 @@ function bestFor(token: string, targets: readonly PreparedTarget[]): Candidate |
 }
 
 /**
+ * True when a token reads as a name being addressed or signed: the rest of its
+ * line is empty or starts with a comma, an exclamation mark or a dash
+ * ("Kathyrn, thanks", "Kathyrn!", a sign-off line).
+ */
+function inAddressPosition(text: string, end: number): boolean {
+  const lineEnd = text.indexOf('\n', end);
+  const rest = text.slice(end, lineEnd === -1 ? undefined : lineEnd);
+  return /^\s*(?:$|[,!\u2013\u2014-])/.test(rest);
+}
+
+/**
  * Name guard (SPEC F1). A capitalised draft token fires only when it is not a
  * thread name itself and is a near-miss of one: edit distance 1 (names ≤ 5
  * letters) or ≤ 2 (≥ 6 letters) with a compatible first letter, or a pair in
  * the variant table. Body-only names are weaker evidence, so they fire only
  * through the variant table or for names of 6+ letters.
+ *
+ * A capital at the start of a sentence or line is not evidence of a name
+ * ("Pay the deposit" next to a thread from Pat), so a sentence-initial token
+ * fires only in address position ("Kathyrn, thanks", a line of its own) or as
+ * a possessive ("Kathyrn's note").
  */
 export function nameGuard(input: NameGuardInput): Flag[] {
   if (input.names.length === 0) return [];
@@ -136,12 +152,18 @@ export function nameGuard(input: NameGuardInput): Flag[] {
       cache.set(token, best);
     }
     if (!best) continue;
+    const end = w.start + text.length;
+    // A possessive ("Catherine's note") is a name wherever it stands.
+    const possessive = text !== w.text;
+    if (!possessive && startsSentence(input.draft, w.start) && !inAddressPosition(input.draft, end)) {
+      continue;
+    }
 
     const expected = best.target.text;
     flags.push({
       id: shortId(input.threadKey, 'name', token, fold(best.target.text)),
       guard: 'name',
-      draftSpan: { start: w.start, end: w.start + text.length },
+      draftSpan: { start: w.start, end },
       found: text,
       expected,
       rule: best.rule,
