@@ -71,7 +71,9 @@ export async function startGmailController(deps: GmailControllerDeps): Promise<G
   let scanQueued = false;
 
   const origin = doc.location.origin;
-  const report = createStatusReporter((status) => deps.report(status), now);
+  const report = createStatusReporter((status) => {
+    deps.report(status);
+  }, now);
   const idle = (state: TabStatus['state']): Omit<TabStatus, 'updatedAt'> => ({
     state,
     asks: 0,

@@ -70,7 +70,9 @@ export function createSelectionController(deps: SelectionControllerDeps): Select
 
   const getHost = (): OverlayHost => (host ??= createOverlayHost(doc));
 
-  const report = createStatusReporter((status) => deps.report(status), now);
+  const report = createStatusReporter((status) => {
+    deps.report(status);
+  }, now);
 
   const viewport = (): { width: number; height: number } => ({
     width: doc.defaultView?.innerWidth ?? 1280,
