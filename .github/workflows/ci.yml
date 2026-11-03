@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, types, tests, builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            site/pnpm-lock.yaml
+
+      - name: Install
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --dir site install --frozen-lockfile
+
+      # ESLint includes the network ban: fetch, XMLHttpRequest, WebSocket, sendBeacon and
+      # EventSource fail the build in extension code.
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: |
+          pnpm typecheck
+          pnpm --dir site typecheck
+
+      # Unit tests, the corpus gates (0 false positives on the deliberate set, ask precision
+      # >= 0.90 on the synthetic corpus) and the adapter fixtures.
+      - name: Unit and corpus tests
+        run: |
+          pnpm test
+          pnpm --dir site test
+
+      - name: Build
+        run: |
+          pnpm build
+          node scripts/check-size.mjs
+          pnpm build:firefox
+          pnpm --dir site build
+
+      - name: Install Chromium for Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Fails any test that made a request leaving the machine (SPEC AC-G.2).
+      - name: Extension e2e
+        run: pnpm test:e2e
+
+      - name: Site e2e
+        run: pnpm --dir site test:e2e
+
+      - name: Package
+        run: |
+          pnpm zip
+          pnpm zip:firefox
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: readback-builds
+          path: .output/*.zip
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: |
+            test-results/
+            site/test-results/
+          if-no-files-found: ignore

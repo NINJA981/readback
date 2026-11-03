@@ -1,0 +1,35 @@
+name: Missed slip
+description: Your reply had a wrong name, amount or date that matched the thread closely, and Readback stayed quiet.
+labels: [missed-slip]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Readback only flags near-misses (one or two letters off, a known name variant, swapped or
+        changed digits, a weekday that does not match its date). A wholly different value is treated as
+        deliberate on purpose. Please use invented names and numbers that still reproduce the miss.
+  - type: textarea
+    id: thread
+    attributes:
+      label: The message you were replying to
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: draft
+    attributes:
+      label: Your reply
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: What should have been flagged
+      placeholder: '"#48231" should have matched "#48213"'
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Readback version and browser
