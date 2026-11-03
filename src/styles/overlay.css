@@ -346,7 +346,7 @@
 .rb-ledger-pos {
   position: fixed;
   z-index: 15;
-  width: 300px;
+  width: 320px;
   display: flex;
   flex-direction: column;
 }
@@ -465,7 +465,19 @@
 
 .rb-row-link {
   display: block;
-  height: 20px;
+  min-height: 20px;
+}
+
+/* A slip row shows the whole correction; a long date wraps to a second line instead of
+   cutting off the value the user is about to accept. */
+.rb-row[data-state='slip'] {
+  height: auto;
+  min-height: 32px;
+}
+
+.rb-row[data-state='slip'] .rb-row-text {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .rb-strike {

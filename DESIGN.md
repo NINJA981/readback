@@ -427,7 +427,7 @@ Each component lists its states. "Light" variants use the same geometry with lig
 - **Interaction:** click or Alt+Shift+L opens the ledger. `aria-live="polite"` announces count changes at most once per 2 s.
 
 ### Ledger (popover from the pill)
-- 300px wide, lg radius, e3, 8px padding. Sections: **Asks** (≤ 5 rows) and **Slips** (all flags, each with a Fix button, which is the keyboard-accessible list behind every squiggle).
+- 320px wide (the guard card's width), lg radius, e3, 8px padding. Slip rows wrap to a second line rather than cut the correction. Sections: **Asks** (≤ 5 rows) and **Slips** (all flags, each with a Fix button, which is the keyboard-accessible list behind every squiggle).
 - **Row:** 32px. State icon, ask text (1 line, ellipsis, full text in `title`), right-aligned actions on hover/focus: **Confirm** (check), **Answer inline**, **Dismiss** (x, with `aria-label`). Row actions stay visible on touch.
 - **Empty:** `No asks in the last message.` and, below in caption, `Readback only lists direct questions and requests.`
 - **Overflow:** `+2 more not shown` in caption.
