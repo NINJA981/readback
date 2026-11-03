@@ -3,7 +3,7 @@ declare const __SITE_VERSION__: string;
 interface ImportMetaEnv {
   readonly PROD: boolean;
   readonly DEV: boolean;
-  /** Public repository URL, set at build time once the repository exists. */
+  /** Optional: a fork's repository URL, replacing the published one at build time. */
   readonly VITE_REPO_URL?: string;
 }
 

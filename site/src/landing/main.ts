@@ -44,18 +44,18 @@ root.dataset.tier = String(tier);
 }
 
 // ---- repository link ---------------------------------------------------------
+// The published repository is written into index.html. A fork can point the page
+// at its own copy at build time with VITE_REPO_URL.
 {
+  const DEFAULT_REPO = 'https://github.com/NINJA981/readback';
   const repo = (import.meta.env.VITE_REPO_URL ?? '').trim();
-  if (repo) {
+  if (repo && repo !== DEFAULT_REPO) {
     for (const id of ['source-link', 'footer-source']) {
       const a = document.getElementById(id);
-      if (a instanceof HTMLAnchorElement) {
-        a.href = repo;
-        a.rel = 'noopener';
-      }
+      if (a instanceof HTMLAnchorElement) a.href = repo;
     }
     const build = document.getElementById('cmd-build');
-    if (build?.textContent) build.textContent = build.textContent.replace('<repository-url>', repo);
+    if (build?.textContent) build.textContent = build.textContent.replace(DEFAULT_REPO, repo);
   }
 }
 
