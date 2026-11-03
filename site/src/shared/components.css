@@ -1,7 +1,7 @@
 /*
  * Product components shared by the landing page's live reproductions and the
  * web app. Geometry and states follow DESIGN.md "Components". Touch devices
- * and phone widths get 44px controls (bible 8.1); pointer devices get the
+ * and phone widths get 44px controls; pointer devices get the
  * compact 32px sizes.
  */
 

@@ -1,6 +1,6 @@
 # Readback: product spec
 
-> Stage 1 (Architect). Scope authority: `_studio/picks.json` entry `readback` (refined_scope, signature_moment, risks). The weakness fix from the stage brief adds emphasis and never overrides picks.json. Architecture and pinned versions: [`docs/adr/0001-architecture.md`](docs/adr/0001-architecture.md). Visual system: [`DESIGN.md`](DESIGN.md). Landing narrative: [`docs/LANDING.md`](docs/LANDING.md).
+> Product spec. Architecture and pinned versions: [`docs/adr/0001-architecture.md`](docs/adr/0001-architecture.md). Visual system: [`DESIGN.md`](DESIGN.md). Landing narrative: [`docs/LANDING.md`](docs/LANDING.md). What is built and what is not: [`README.md`](README.md#limitations) and [`HANDOFF.md`](HANDOFF.md).
 
 **One line:** spellcheck that has read the thread you're replying to.
 
@@ -23,7 +23,7 @@ Grammarly, Gmail and Outlook check the draft on its own. None of them compares i
 
 People who reply to email and messages in a browser every day: office workers, freelancers juggling client asks, small-business owners, and parents answering school and landlord threads. There's no account and no setup, and it works in Gmail on the web from the first reply.
 
-Out of scope: mobile mail apps and desktop mail clients. The council risk list flags mobile as out.
+Out of scope: mobile mail apps and desktop mail clients. 
 
 ## 3. Daily trigger
 
@@ -33,16 +33,16 @@ The trigger is opening a reply. Readback runs passively in every Gmail reply com
 - **Ask pill (supporting).** It appears only when the incoming message contains asks, which happens several times a day for most office workers. It is the daily-visible value that covers the gaps between guard catches.
 - **Generic adapter.** On any other site, select the message you're answering, right-click and choose **Use as Readback context**. Readback then checks whatever text box you type into next.
 
-## 4. Weakness fix (council lowest scores: demo 6, novelty 7)
+## 4. Design review findings and answers
 
-The council scored novelty 7 because Apple Smart Reply and ThreadClear already cover "did you answer every question". It scored the demo 6 because four mechanisms in one compose box read as busy and close to Grammarly. This spec answers both points:
+A design review scored novelty 7 of 10 because Apple Smart Reply and ThreadClear already cover "did you answer every question". It scored the demo 6 of 10 because four mechanisms in one compose box read as busy and close to Grammarly. This spec answers both points:
 
-| Council finding | What this spec does | Where |
+| Review finding | What this spec does | Where |
 |---|---|---|
 | Question coverage is not novel (Apple Smart Reply, ThreadClear) | **The product leads with the three near-miss guards.** Store copy, landing hero, README, onboarding and the popup all open with the guards. The ask checklist is folded into one supporting pill that stays collapsed by default. | §5 F1–F3 lead, F6 supporting; LANDING.md beat 1 |
-| Novelty is "twist-on-existing" | The mechanism is new: **the thread is the dictionary**. Every rule compares draft tokens with tokens harvested from the thread (signature, To chips, quoted amounts, IDs and dates), and only near-misses fire. We found no tool that does this (audit, W2-9-1). | §5 F1–F3, §8 rules |
-| Demo is busy (4 mechanisms in one frame) | **One mechanism per frame.** The hero frame is a single squiggle-to-fix moment: squiggle, citation, one click, then the letters swap back. Send interception is dropped completely (picks.json: no send interception), so there is no fourth mechanism. The ask pill is one small object, not a row of chips. | §9 demo script; DESIGN.md signature moment |
-| Demo looks like Grammarly in a still frame | The still frame carries a visible **readback line**: a brass hairline from the squiggled word to the exact thread token it was checked against. No grammar checker draws that. The squiggle is paired with a citation (`She signs Kathryn`), never a generic "spelling" label. | DESIGN.md signature moment; LANDING.md hero |
+| Novelty is "twist-on-existing" | The mechanism is new: **the thread is the dictionary**. Every rule compares draft tokens with tokens harvested from the thread (signature, To chips, quoted amounts, IDs and dates), and only near-misses fire. We found no tool that does this. | §5 F1–F3, §8 rules |
+| Demo is busy (4 mechanisms in one frame) | **One mechanism per frame.** The hero frame is a single squiggle-to-fix moment: squiggle, citation, one click, then the letters swap back. Send interception is dropped completely (product brief: no send interception), so there is no fourth mechanism. The ask pill is one small object, not a row of chips. | §9 demo script; DESIGN.md signature moment |
+| Demo looks like Grammarly in a still frame | The still frame carries a visible **readback line**: a brass hairline from the squiggled word to the exact thread token it was checked against. No grammar checker draws that. The squiggle is paired with a citation (`Signs as Kathryn`), never a generic "spelling" label. | DESIGN.md signature moment; LANDING.md hero |
 | Viewers can't try it without installing | The **paste-thread playground** runs the same engine in the page. It is the landing demo, the README GIF source (deterministic frame capture) and the agents' test harness. | F9 |
 | The squiggle-to-fix moment must be screenshot-able | The playground has a deterministic demo timeline (`?demo=signature&t=<ms>`). Any frame can be rendered exactly and captured by Playwright, so the README GIF, the LinkedIn MP4 and the landing poster are frame-perfect rather than screen recordings. | F9, ADR §Testing |
 | Guards mustn't need a model | All three guards and the ask extractor are deterministic TypeScript. MiniLM only refines the optional dotted "looks answered" state. | F7 |
@@ -59,7 +59,7 @@ Underlines a name in the draft that is a near-miss of a name the thread gives yo
   - its Damerau-Levenshtein distance to a harvested name is 1 (names ≤ 5 letters) or ≤ 2 (names ≥ 6 letters), with a matching first letter or a known phonetic pair; or
   - the variant table pairs it with a harvested name (Catherine/Kathryn/Katherine/Kathrine, Steven/Stephen, Jon/John, Sara/Sarah, Ann/Anne, Philip/Phillip, Geoff/Jeff, Megan/Meghan, Shaun/Sean/Shawn, Aimee/Amy, Jaime/Jamie, about 120 pairs, see ADR).
 - **Never fires** when the draft names someone who isn't a near-miss (`Kathryn` vs `Bob`), when both spellings appear in the thread, or on a name the user has ignored.
-- **Tooltip:** `She signs Kathryn`, `To: Kathryn Moss`, or `Thread says Kathryn` (wording depends on source), with the cited line shown underneath.
+- **Tooltip:** `Signs as Kathryn`, `To: Kathryn Moss`, or `Thread says Kathryn` (wording depends on source), with the cited line shown underneath.
 - **Fix:** replaces the token with the thread spelling.
 
 ### F2. Number guard
@@ -128,7 +128,7 @@ Underlines a date whose weekday doesn't match its day number, or that is a near-
 
 ## 6. Non-goals
 
-- **No send interception**, no send-time card and no delay of Send in any form (picks.json: "There is no send interception").
+- **No send interception**, no send-time card and no delay of Send in any form (product brief: "There is no send interception").
 - No AI writing, rewriting, tone or grammar checking. Readback never generates text.
 - No hosted backend, account, sync, telemetry, analytics or crash reporting.
 - No LLM and no BYO-key calls in the MVP. The only model is the optional bundled MiniLM.
@@ -180,7 +180,7 @@ interface Flag {
   draftSpan: Span; found: string;
   expected: string;             // thread value
   rule: 'variant' | 'edit-distance' | 'transposition' | 'substitution' | 'weekday-mismatch' | 'thread-near-miss';
-  message: string;              // "She signs Kathryn"
+  message: string;              // "Signs as Kathryn"
   citation: TokenRef;
   fixes: { label: string; replacement: string }[];   // 1–2
 }
@@ -237,7 +237,7 @@ interface ThreadState {                           // chrome.storage.session, key
 IDs are referenced by tests. **U** = vitest unit, **F** = fixture corpus, **E** = Playwright e2e (Chromium with the extension loaded and Gmail fixtures served through route interception), **V** = visual capture.
 
 **F1 Name guard**
-- AC-1.1 (U) Thread signed `Kathryn`, draft `Hi Catherine,` → 1 flag, rule `variant`, message `She signs Kathryn`, fix `Kathryn`.
+- AC-1.1 (U) Thread signed `Kathryn`, draft `Hi Catherine,` → 1 flag, rule `variant`, message `Signs as Kathryn`, fix `Kathryn`.
 - AC-1.2 (U) To chip `Jon Reyes`, draft `Thanks John` → 1 flag, rule `edit-distance`.
 - AC-1.3 (U) Thread names `Kathryn`, draft mentions `Bob` → 0 flags.
 - AC-1.4 (U) Thread contains both `Catherine` and `Kathryn` → `Catherine` in the draft is not flagged.
@@ -313,7 +313,7 @@ Recorded from the playground's deterministic timeline (`?demo=signature`), captu
 |---|---|---|---|---|
 | 1 | 0.0–1.4 s | Static wide | Left: Kathryn Moss's message, ending `…can you confirm the $1,250 deposit, drop off the keys on Thursday the 12th, and send the signed lease back? Thanks, Kathryn`. Right: an empty reply with the caret blinking. The ask pill reads `3 asks · 3 open` in brass. | none |
 | 2 | 1.4–3.0 s | Typing | `Hi Catherine,` is typed at 14 chars/s. As the comma lands, a red squiggle appears under `Catherine` at 0 ms (no animation). | none |
-| 3 | 3.0–4.2 s | Card | The pointer rests on the squiggle. At 3.3 s the guard card opens (160 ms, origin at the word): `She signs Kathryn`, with the signature line `Thanks, Kathryn` cited and `Kathryn` underlined in brass. The **readback line** (1 px brass hairline) draws from the squiggle to `Kathryn` in the thread over 240 ms. | `Checked against her signature.` |
+| 3 | 3.0–4.2 s | Card | The pointer rests on the squiggle. At 3.3 s the guard card opens (160 ms, origin at the word): `Signs as Kathryn`, with the signature line `Thanks, Kathryn` cited and `Kathryn` underlined in brass. The **readback line** (1 px brass hairline) draws from the squiggle to `Kathryn` in the thread over 240 ms. | `Checked against her signature.` |
 | 4 | 4.2–5.0 s | Fix | Click **Change to Kathryn**. Swap-back: `Catherine` morphs into `Kathryn`. The shared letters (`a`, `t`, `h`, `r`, `n`) slide into place, `C`, `e`, `i` and the final `e` blur out, and `K` and `y` blur in (280 ms). The squiggle is gone. | none |
 | 5 | 5.0–6.6 s | Typing | `The $1,520 deposit is confirmed` is typed. A squiggle lands under `$1,520`. The pill reads `2 open` because the deposit ask now looks answered (dotted). | none |
 | 6 | 6.6–7.6 s | Card + fix | Card: `Thread says $1,250. Digits swapped?` Click the fix. Swap-back digit roll: the `5` and `2` trade places vertically (M5-style roll, 240 ms). | `$1,520 → $1,250, from her own email.` |
@@ -345,7 +345,7 @@ Most people who see the LinkedIn post are on a phone, where extensions cannot ru
 - AC-W.9 (E) At 375 px and 768 px (touch) every button, link, select and text area has a hit area of at least 44 px by 44 px, and at 375, 768 and 1440 px the page has no horizontal scroll.
 - AC-W.10 (E) With `prefers-reduced-motion: reduce`, **Fix** applies the correction and the reply is repaired.
 - AC-W.11 (E) The landing page has one h1, a hero link to `/app`, no `<canvas>` (no WebGL by decision), no third-party request, a Play control instead of autoplay under reduced motion, and no horizontal scroll at 375 px.
-- AC-W.12 (L) Lighthouse on `/` and `/app/` (mobile and desktop): Accessibility 100 and Best practices 100; LCP at most 2.0 s and CLS 0 in a cold trace on the mobile profile (375 px, 4x CPU, Fast 4G); initial JS of the landing page at most 120 KB gz (bible 11.3). SEO and agentic-browsing score below 100 only because Lighthouse fetches `robots.txt` and `llms.txt` from inside the page, which the page's own CSP (`connect-src 'none'`, AC-W.6) blocks; with the CSP meta removed both pass at 100. The strict CSP is kept on purpose.
+- AC-W.12 (L) Lighthouse on `/` and `/app/` (mobile and desktop): Accessibility 100 and Best practices 100; LCP at most 2.0 s and CLS 0 in a cold trace on the mobile profile (375 px, 4x CPU, Fast 4G); initial JS of the landing page at most 120 KB gz. SEO and agentic-browsing score below 100 only because Lighthouse fetches `robots.txt` and `llms.txt` from inside the page, which the page's own CSP (`connect-src 'none'`, AC-W.6) blocks; with the CSP meta removed both pass at 100. The strict CSP is kept on purpose.
 - AC-W.13 (E) Ctrl/Cmd+K (or the header's **Commands** button on touch) opens the command palette with focus in its input; it lists the six `Load sample` entries, `Clear thread`, `Clear reply`, `Next slip`, `Open ledger`, the four guard toggles and `Export result as JSON`; typing filters the list, `xyz` shows `No command matches "xyz".`, and Enter runs the highlighted command and closes the palette.
 - AC-W.14 (E) The playground header has a `Checks` group of four toggle buttons (Names, Numbers, Dates, Asks) with `aria-pressed`. With the sample loaded, turning Names off removes the `Catherine` slip at once, turning Numbers off as well shows `No slips against this thread.`, and turning both back on restores the two slips.
 - AC-W.15 (E) An ask that only looks answered is never shown as a fact: the pill shows `1 looks answered` with a dotted ring in the open (brass) tone, not `All covered`, and the ledger does not say `Everything asked is covered.` until the ask is confirmed.

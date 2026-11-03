@@ -80,10 +80,10 @@
   --sp-24: 96px;
   --sp-32: 128px;
 
-  /* Page gutters (bible 8.1): 16 / 24 / 32 at 375 / 768 / 1440. */
+  /* Page gutters: 16 / 24 / 32 at 375 / 768 / 1440. */
   --gutter: 16px;
 
-  /* Z-index (bible 5.4, plus the overlay values from DESIGN.md Layout). */
+  /* Z-index (plus the overlay values from DESIGN.md Layout). */
   --z-sticky: 10;
   --z-overlay: 30;
   --z-modal: 40;

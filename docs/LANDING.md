@@ -1,12 +1,12 @@
 # Landing page: narrative, hero concept and draft copy
 
-> Mode: **Persuade**. Structure: the 5 beats from `_studio/3D_INSPIRATION.md` §3.1, in ≤ 7 viewports at 1440 × 900. Visual rules: [`DESIGN.md`](../DESIGN.md) (D5 Bronze Vault, T8, CSS/SVG only, no WebGL by decision). Every example on the page is a synthetic **Sample thread** and is labelled as one. There are no testimonials, install counts, star counts or invented stats: the GitHub stars badge from beat 5 is shown only once the repository is public, and it comes from the live shields endpoint with no number hard-coded.
+> Mode: **Persuade**. Structure: five beats (hook, proof, how it works, privacy, install), in ≤ 7 viewports at 1440 × 900. Visual rules: [`DESIGN.md`](../DESIGN.md) (D5 Bronze Vault, T8, CSS/SVG only, no WebGL by decision). Every example on the page is a synthetic **Sample thread** and is labelled as one. There are no testimonials, install counts, star counts or invented stats: the GitHub stars badge from beat 5 is shown only once the repository is public, and it comes from the live shields endpoint with no number hard-coded.
 
 **Who must act:** someone who replies to email all day and has been burned by a wrong name or a wrong number.
 **What they should believe:** "It checks my reply against *their* message, it only speaks up when it's nearly certain, and it never sends my mail anywhere."
 **Proof we can honestly show:** the live playground (the real engine), the fixture-corpus precision number from CI (published only once measured), the "0 network requests" DevTools capture, and the zero-host-permission manifest excerpt.
 
-**Lead with the guards.** The ask pill appears on the page only as supporting value in beat 3. It is never the headline (council weakness fix, SPEC §4).
+**Lead with the guards.** The ask pill appears on the page only as supporting value in beat 3. It is never the headline (SPEC §4).
 
 ---
 
@@ -50,7 +50,7 @@ A single wide frame of the extension in a Gmail-shaped compose box: a real captu
 Each proof gets its own viewport: a 4–6 s loop from the playground capture on one side and one heading plus one sentence on the other, alternating sides. Under each loop is a **never fires** footnote, the line that sets Readback apart from a nagging checker.
 
 ### Proof 1: names
-- **Loop:** `Hi Catherine,` → squiggle → `She signs Kathryn` → fix → swap-back.
+- **Loop:** `Hi Catherine,` → squiggle → `Signs as Kathryn` → fix → swap-back.
 - **Heading:** "Names, checked against her signature."
 - **Line:** "Readback reads the names in her signature and your To field, and catches the near-misses: Catherine for Kathryn, John for Jon, Stephen for Steven."
 - **Never fires:** "Write to Bob when the thread says Kathryn, and nothing happens. A different person isn't a typo."
@@ -69,7 +69,7 @@ Each proof gets its own viewport: a 4–6 s loop from the playground capture on 
 
 ## Beat 4: The how (viewport 6)
 
-An SVG architecture diagram drawn in tokens (slate strokes, brass for the one data path that matters). Following the 3D_INSPIRATION §3.7 template, every step shows a number, and numbers appear only once they are measured in CI (placeholders below are marked `[measured in Stage 2]` and must not ship as-is).
+An SVG architecture diagram drawn in tokens (slate strokes, brass for the one data path that matters). Every step shows a number, and numbers appear only once they are measured in CI (placeholders below are marked `[measured in Stage 2]` and must not ship as-is).
 
 **Heading:** "How it works, without a server."
 
@@ -93,11 +93,11 @@ An SVG architecture diagram drawn in tokens (slate strokes, brass for the one da
   followed by `Load apps/extension/.output/chrome-mv3 as an unpacked extension.`
 - Platform line: `Chrome, Edge (untested) and Firefox 140+. Gmail on the web. Any text box via "Use as Readback context".`
 - The GitHub stars badge from the live shields endpoint, only after the repo is public.
-- **Footer:** a `<nav>` list of four links (Playground, Source, Privacy, License), with no middle-dot separators. It carries the note `"Readback" is a working name; trademark not yet checked.` until that check is done (council risk).
+- **Footer:** a `<nav>` list of four links (Playground, Source, Privacy, License), with no middle-dot separators. It carries the note `"Readback" is a working name; trademark not yet checked.` until that check is done.
 
 ---
 
-## README: the same beats in text (3D_INSPIRATION §3.1)
+## README: the same beats in text
 
 1. **One line:** "Spellcheck that read the thread: Readback underlines names, amounts and dates in your reply that nearly match the message you're answering."
 2. **Hero GIF:** the 10 s demo, 800px wide, ≤ 3 MB, captured from `?demo=signature`.

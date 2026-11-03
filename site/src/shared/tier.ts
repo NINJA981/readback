@@ -1,5 +1,5 @@
 /**
- * Capability tiers for the landing page's 3D (bible §11.4, adapted).
+ * Capability tiers for the landing page's 3D.
  *
  * The page uses no WebGL (DESIGN.md "Landing 3D plan": CSS/SVG only, by
  * decision, so the 3D chunk is 0 KB and there is no canvas to lose). The

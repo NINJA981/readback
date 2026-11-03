@@ -3,7 +3,7 @@
  * Renders the site's raster assets from the real thing:
  *   - hero posters (public/posters/hero-{wide,narrow}-{dark,light}.avif): the
  *     live hero frozen at t=4600 (`?demo=signature&t=4600&capture=1`), the card
- *     open and the readback line drawn. Each must stay under 80 KB (bible 11.3).
+ *     open and the readback line drawn. Each must stay under 80 KB.
  *   - PWA icons, apple-touch-icon and the 1200x630 Open Graph card.
  *
  *   pnpm build && pnpm preview   (in another shell, port 4173)

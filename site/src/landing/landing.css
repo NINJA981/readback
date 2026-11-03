@@ -44,7 +44,7 @@
   top: var(--sp-2);
 }
 
-/* Header: opaque enough that blur is only a hint (bible anti-slop 2). */
+/* Header: opaque enough that blur is only a hint. */
 .site-header {
   position: sticky;
   top: 0;

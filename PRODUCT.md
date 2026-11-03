@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-> Source note: rewritten in Stage 1 (Architect) by an unattended agent, replacing a stale stub from an aborted run that contradicted the studio scope (it mentioned a send-time warning, a BYO Anthropic key and Outlook/Slack support). No interview was possible. Every fact below comes from `_studio/picks.json` (entry `readback`, authoritative), the council transcript `W2-9-1-readback.md` and the Stage 1 weakness fix. Inferred items are marked *(inferred)*.
+> Product context: who Readback is for, what it promises and the principles it is built on. Items marked *(inferred)* are reasoned, not researched.
 
 ## Platform
 
@@ -27,30 +27,30 @@ The conversation is the spellcheck dictionary, and only near-misses fire. Gramma
 ## Operating Context
 
 - Runs passively in Gmail reply compose boxes. Nothing to open for the core loop.
-- Used many times a day. Most replies trigger nothing, and guard catches are rare but valuable (council risk: daily visible value depends on the pill).
+- Used many times a day. Most replies trigger nothing, and guard catches are rare but valuable (a known risk: daily visible value depends on the pill).
 - The host app owns the page. Readback never changes Gmail's DOM (squiggles use the CSS Custom Highlight API), **never intercepts or delays Send**, and fails silently (a missing pill, never a lost email).
 - Gmail can be light, dark or themed, independent of the OS theme *(inferred)*.
 
 ## Capabilities and Constraints
 
 - Deterministic guards and ask extraction. The optional on-device MiniLM (bundled, never downloaded) only refines the dotted "looks answered" state.
-- No hosted backend, no telemetry, no account, no LLM, no BYO key. The extension makes zero network requests, enforced in CI.
+- No hosted backend, no telemetry, no account, no LLM, no BYO key. The extension makes zero network requests. A lint rule bans network APIs in extension code, and the e2e suite fails on any request that leaves the machine; both run in `.github/workflows/ci.yml`.
 - Settings and ignore lists go in `chrome.storage.local`. Per-thread state goes in `chrome.storage.session` under hashed keys. Mail text stays in memory only and is never logged.
 - Only one host permission (`mail.google.com`). Other sites only through `activeTab` after the user picks "Use as Readback context".
 - Out of scope: mobile, Outlook web and WhatsApp Web (stretch), send interception, AI writing.
-- Undecided: store listing names; trademark check of "Readback" (not done, council risk).
+- Undecided: store listing names; trademark check of "Readback" (not done).
 
 ## Brand Commitments
 
 - Name: Readback, from the aviation practice of reading an instruction back to confirm it.
-- Visual direction assigned by the studio: D5 Bronze Vault colours, T8 type pairing (Hubot Sans + Mona Sans + Geist Mono). See `DESIGN.md`.
-- Voice: plain, specific, calm. Never cute, never alarmist. Every slip message cites the thread ("She signs Kathryn"). Errors name the problem and the next step.
+- Visual direction: D5 Bronze Vault colours, T8 type pairing (Hubot Sans + Mona Sans + Geist Mono). See `DESIGN.md`.
+- Voice: plain, specific, calm. Never cute, never alarmist. Every slip message cites the thread ("Signs as Kathryn"). Errors name the problem and the next step.
 
 ## Evidence on Hand
 
 - No users, testimonials, install counts, benchmarks or press exist. None may be invented.
 - The demo thread (Sam replying to Kathryn Moss about a $1,250 deposit, keys on Thursday 12 November 2026) is synthetic and is labelled `Sample thread` wherever it appears.
-- Evidence to produce during the build: corpus precision and false-positive numbers from CI, check-latency p95, the "0 network requests" capture, measured package size and real captures of the extension.
+- Evidence produced so far: fixture-corpus precision (unit tests), a real-mail accuracy run on 4,104 public reply pairs (README, Accuracy), check-latency p95, the e2e network gate, measured package size and screenshots of the real extension on synthetic mail pages. Not yet produced: a capture on live Gmail.
 
 ## Product Principles
 

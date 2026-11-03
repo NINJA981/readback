@@ -2,15 +2,15 @@
 
 **Status:** Accepted (Stage 1, Architect)
 **Date:** 2026-10-20
-**Deciders:** Readback maintainers (studio build pipeline). Stage 2 builders may amend this ADR through a follow-up ADR, never by silent drift.
+**Deciders:** Readback maintainers. Stage 2 builders may amend this ADR through a follow-up ADR, never by silent drift.
 
 ## Context
 
 Readback checks a reply draft against the message it answers: names, numbers and dates through near-miss guards (the lead), plus a supporting ask pill. See [`SPEC.md`](../../SPEC.md). These forces shape the architecture:
 
-1. **Host hostility.** Gmail's compose DOM is obfuscated, re-rendered often and owned by Google. The council's roast: Grammarly-class overlays glitch, and eating a Send gets you uninstalled. Readback must never change Gmail's editor DOM, never intercept Send, and fail silently.
-2. **Privacy.** No hosted backend, no telemetry, and keys and data stay local. The studio rule allows network calls only for user-initiated BYO-key requests. This MVP has no LLM and no BYO key, so the extension makes **zero** requests.
-3. **Latency.** Guards run on every keystroke. Bible P1: ≤ 100 ms to visible feedback. Our engine budget is p95 ≤ 16 ms per check, so feedback lands in the same frame as the keystroke.
+1. **Host hostility.** Gmail's compose DOM is obfuscated, re-rendered often and owned by Google. The common failure: Grammarly-class overlays glitch, and eating a Send gets you uninstalled. Readback must never change Gmail's editor DOM, never intercept Send, and fail silently.
+2. **Privacy.** No hosted backend, no telemetry, and keys and data stay local. This MVP has no LLM and no BYO key, so the extension makes **zero** requests.
+3. **Latency.** Guards run on every keystroke. Target: ≤ 100 ms to visible feedback. Our engine budget is p95 ≤ 16 ms per check, so feedback lands in the same frame as the keystroke.
 4. **Testability without a Gmail account.** Agents can't log in to Gmail, so the engine must be pure and fixture-driven, the Gmail adapter must run against saved DOM fixtures, and the playground must double as the harness.
 5. **Two browsers.** Chrome MV3 first, plus a Firefox MV3 build. WXT handles manifest differences.
 6. **Optional model.** MiniLM refines only the dotted "looks answered" state. Everything else is deterministic.
@@ -186,7 +186,7 @@ readback/
 | B. Wrap tokens in `<span>`s (Grammarly-classic) | Med | Mutates the editor | Low: fights Gmail's model, breaks undo and autosave | Rejected: violates "never change Gmail's DOM" |
 | C. Absolutely-positioned overlay underlines | High | None | Med: drift on scroll, zoom and reflow | Kept only as the textarea fallback |
 
-**Why A:** it is the only option that is both non-invasive and cheap to keep aligned, which is the robustness story the council asked for. **Open risk:** which properties `::highlight()` honours (wavy `text-decoration`) in Firefox. Stage 2 runs a spike. If wavy isn't honoured, the Firefox fallback is a solid underline plus a `danger-soft` background on the highlight.
+**Why A:** it is the only option that is both non-invasive and cheap to keep aligned, which is the robustness story this product needs. **Open risk:** which properties `::highlight()` honours (wavy `text-decoration`) in Firefox. Stage 2 runs a spike. If wavy isn't honoured, the Firefox fallback is a solid underline plus a `danger-soft` background on the highlight.
 
 ### Decision 2: framework for the extension
 
@@ -211,11 +211,11 @@ readback/
 | **A. React 19 in one WXT shadow root** (chosen) | One component library across popup, options, overlay and site, so the playground shows the real components | About 58 KB gz React baseline in the content script |
 | B. Vanilla DOM for the overlay, React elsewhere | Smaller content script | Two implementations of GuardCard and AskPill drift apart, and the playground stops being proof |
 
-Budget (`size-limit`): Gmail content script ≤ **150 KB gz** (React ~58 + engine + chrono subset + UI). Popup ≤ 90 KB gz. Site initial ≤ 120 KB gz (bible B1).
+Budget (`size-limit`): Gmail content script ≤ **150 KB gz** (React ~58 + engine + chrono subset + UI). Popup ≤ 90 KB gz. Site initial ≤ 120 KB gz.
 
 ## Trade-off analysis
 
-- **Determinism over recall.** The guards are near-miss only and accept missing some slips (`$1,250` → `$1,260` on an amount stays silent) in exchange for near-zero false positives. That is the council's core defence against Grammarly-style fatigue, and it is gated by "0 false positives on the deliberate set".
+- **Determinism over recall.** The guards are near-miss only and accept missing some slips (`$1,250` → `$1,260` on an amount stays silent) in exchange for few false positives (measured: about 2 false squiggles per 100 real replies, see README). That is the core defence against Grammarly-style fatigue, and it is gated by "0 false positives on the deliberate set".
 - **`execCommand('insertText')`** is deprecated, but it is the only editor-agnostic way to make a fix that the host's undo stack understands. The alternative (synthetic `beforeinput`/`InputEvent` with `insertReplacementText`) isn't honoured consistently by Gmail. If browsers remove `execCommand`, the fallback is copy-to-clipboard plus selecting the range.
 - **Bundling the model** respects the zero-request rule but costs package size. It is opt-in at runtime, and stage 2 measures it. A lite flavour is ready if needed.
 - **React in the content script** costs about 58 KB gz but buys one source of truth for the components the landing page sells.
@@ -230,9 +230,9 @@ Budget (`size-limit`): Gmail content script ≤ **150 KB gz** (React ~58 + engin
 | Extension e2e | Playwright 1.64.1, Chromium persistent context with `--load-extension=apps/extension/.output/chrome-mv3` | `context.route('https://mail.google.com/**')` fulfils from `packages/fixtures/gmail/*.html`, so the real content script runs on its real match pattern with **no** real network. Typing is scripted through `page.keyboard` | All E ACs; MutationObserver proof (AC-4.1) |
 | Privacy | Playwright request listeners on the whole suite | Any request whose URL is not `chrome-extension://`, `moz-extension://`, `data:`, `blob:` or the fixture/localhost origin fails the run | AC-G.2 |
 | Playground e2e | Playwright against `vite preview` | Samples, demo timeline, URL state, 0 requests after load | AC-9.x |
-| Visual capture | Playwright, DPR 2, `?demo=signature&t=` | Frame strips for the signature moment (light, dark, reduced motion); README GIF and LinkedIn MP4 encoded with ffmpeg (bible §11.7 commands) | Repeat-run pixel diff = 0 |
+| Visual capture | Playwright, DPR 2, `?demo=signature&t=` | Frame strips for the signature moment (light, dark, reduced motion); README GIF and LinkedIn MP4 encoded with ffmpeg | Repeat-run pixel diff = 0 |
 | Accessibility | @axe-core/playwright 4.14.0 | Popup, options, playground, landing, overlay shadow root, both themes | 0 violations |
-| Tokens | Node script with culori 4.0.2 | Every text/background role pair meets the DESIGN.md contrast table; accent ΔE_OK ≥ 0.06 from the bible blocklist; no raw palette utilities | Fail CI on regression |
+| Tokens | Node script with culori 4.0.2 | Every text/background role pair meets the DESIGN.md contrast table; accent ΔE_OK ≥ 0.06 from the blocklist; no raw palette utilities | Fail CI on regression |
 | Firefox smoke | `wxt build -b firefox` plus web-ext lint (manual run in Stage 2) | Builds and lints; manual check of highlights in Firefox ≥ 140 | Recorded in HANDOFF.md |
 
 **Gmail fixtures are honest approximations.** Agents have no Gmail account, so `packages/fixtures/gmail/*.html` are hand-built to mirror Gmail's public DOM conventions (`[data-message-id]`, `.gmail_quote`, `.gmail_signature`, `[email]` chips, `g_editable` editor), with synthetic content. Each has an `expected.json`. A human with an account should later replace them with sanitised real snapshots (script: `pnpm fixtures:sanitize <saved.html>` strips text to synthetic placeholders while keeping structure). Until then, HANDOFF.md lists live-Gmail behaviour as **unverified**.
@@ -243,7 +243,7 @@ Budget (`size-limit`): Gmail content script ≤ **150 KB gz** (React ~58 + engin
 
 - **Easier:** proving the privacy claim (one host permission, zero requests, CI-enforced); recording frame-perfect demos; keeping the engine correct (pure functions plus a corpus); surviving Gmail changes (selectors in one file, silent failure, generic fallback).
 - **Harder:** hover affordances need rect hit-testing because highlights get no events; the textarea path needs a mirror; Firefox needs `strict_min_version` 140; model packaging is heavy.
-- **Revisit:** package size once measured (lite flavour?); `execCommand` support each Chrome major; whether Edge needs its own QA pass; Outlook web adapter after the Gmail fixtures stabilise; a trademark check of the name "Readback" (council risk, not done).
+- **Revisit:** package size once measured (lite flavour?); `execCommand` support each Chrome major; whether Edge needs its own QA pass; Outlook web adapter after the Gmail fixtures stabilise; a trademark check of the name "Readback" (not done).
 
 ## Action items
 

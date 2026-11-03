@@ -268,7 +268,7 @@ components:
 
 # Design System: Readback
 
-> Stage 1 (Architect). This file is written before any UI code exists, but it is **not** a seed: the studio assigned the colour direction (**D5 Bronze Vault**) and the type pairing (**T8: Hubot Sans + Mona Sans + Geist Mono**), so the tokens are normative from day one. Re-run `/impeccable document` once code exists to reconcile the implemented components. No interview was possible (unattended subagent run), so every qualitative choice below is derived from `_studio/DESIGN_BIBLE.md`, the council transcript and `PRODUCT.md`.
+> The visual system for every Readback surface. Colour direction **D5 Bronze Vault** and type pairing **T8: Hubot Sans + Mona Sans + Geist Mono** are fixed; tokens are normative. `.impeccable/design.json` is the machine-readable sidecar of this file.
 
 ## Overview
 
@@ -283,17 +283,17 @@ Density is compact (Raycast-like) in every surface the product draws. Marketing 
 **Key Characteristics:**
 - Dark-first brass-on-slate for Readback's own surfaces (popup, options, site). The Gmail overlay follows the host's theme.
 - One accent, brass, used as a signal: open asks, focus, the primary fix and the readback line. Never for errors.
-- Slips are red squiggles (picks.json: "two red squiggles land"), always paired with a citation, never with a generic "spelling" label.
+- Slips are red squiggles (product brief: \"two red squiggles land\"), always paired with a citation, never with a generic "spelling" label.
 - Evidence is set in Geist Mono: the cited amount, name or date the guard compared against.
 - Depth from a cold surface ladder and hairlines. Shadows only on things that float over a host page.
 - Zero motion on keystrokes. One choreographed moment on the fix.
 
 ## Colors
 
-Cold slate neutrals (hue 250, chroma ≤ 0.016) under a warm brass accent (hue 62–75): metal on steel. Values are the bible's D5 direction. OKLCH is canonical, and the hex values are computed sRGB. Contrast was computed with WCAG 2 and APCA on 2026-10-20 (script in the ADR's token-check step).
+Cold slate neutrals (hue 250, chroma ≤ 0.016) under a warm brass accent (hue 62–75): metal on steel. Values follow the D5 direction. OKLCH is canonical, and the hex values are computed sRGB. Contrast was computed with WCAG 2 and APCA on 2026-10-20 (script in the ADR's token-check step).
 
 ### Primary
-- **Instrument Brass** (dark `oklch(0.76 0.10 72)` #d9a767 · light `oklch(0.50 0.10 62)` #8b551c): primary fix button, focus ring, open-ask pill text, the readback line, the active tab indicator and links in prose. Dark: 8.86:1 on bg (Lc 59, labels ≥ 14px/600 or 15px/500 per bible §4.3). Light: 5.82:1 on bg, 6.15:1 on white.
+- **Instrument Brass** (dark `oklch(0.76 0.10 72)` #d9a767 · light `oklch(0.50 0.10 62)` #8b551c): primary fix button, focus ring, open-ask pill text, the readback line, the active tab indicator and links in prose. Dark: 8.86:1 on bg (Lc 59, labels ≥ 14px/600 or 15px/500 per ). Light: 5.82:1 on bg, 6.15:1 on white.
 - **Brass Hover** (dark #e3b97e · light #784817): hover and pressed fill for brass buttons.
 - **On Brass** (dark `oklch(0.17 0.02 70)` #150e06, 8.82:1 · light #fefbf7, 5.96:1): label colour on brass fills.
 - **Brass Soft** (dark #342611 · light #fbecd9): open-ask pill background, `::selection`, hovered citation token.
@@ -303,7 +303,7 @@ Cold slate neutrals (hue 250, chroma ≤ 0.016) under a warm brass accent (hue 6
 - **Slip Red** (dark `oklch(0.70 0.17 25)` #f66d67 · light `oklch(0.56 0.20 27)` #d02c2a): **only** the squiggle stroke. It is more saturated than danger text so a 1.5 px wavy line reads at a glance. 5.15:1 on Gmail white, 5.6:1 on Gmail's dark grey #202124.
 - **Danger** (dark #fc928a · light #c52c2a) on **Danger Soft** (dark #421c19 · light #ffe8e6), at 6.81:1 and 4.76:1: the slip icon and rule label in the guard card, and the highlight's background tint on the active slip.
 - **Success** (dark #6fc884 · light #287c42) on **Success Soft** (dark #15301b · light #dff6e2), at 6.98:1 and 4.55:1: the covered pill, answered checks and "Fixed" confirmation.
-- No warning or info colours. Bible §4.1 step 4: the accent sits on the warning hue (65–80), so "attention" states use brass with an icon, and informational states are neutral with an icon.
+- No warning or info colours. The accent sits on the warning hue (65–80), so "attention" states use brass with an icon, and informational states are neutral with an icon.
 
 ### Neutral (cold slate)
 
@@ -320,7 +320,7 @@ Cold slate neutrals (hue 250, chroma ≤ 0.016) under a warm brass accent (hue 6
 | text-subtle | #969ca3 (6.94:1, Lc 48) | #5e646a (5.66:1 on bg, 4.88:1 on surface-3) | Meta only; in dark only for ≥ 13px meta labels. Light was #6c7278 (4.26:1 on surface-2) until QA round 1 |
 
 ### Brand distance
-Brass dark #d9a767 is ΔE_OK **0.069** from PostHog #f7a501 (the nearest blocklisted colour). Brass light #8b551c is **0.112** from Oura gold #af751b. Both clear the 0.06 floor (bible §4.4). CI rechecks this with culori.
+Brass dark #d9a767 is ΔE_OK **0.069** from PostHog #f7a501 (the nearest blocklisted colour). Brass light #8b551c is **0.112** from Oura gold #af751b. Both clear the 0.06 floor. CI rechecks this with culori.
 
 ### Named Rules
 **The Brass Means Reading Rule.** Brass says "Readback is reading this with you": open asks, focus and the fix. It never marks a mistake. Mistakes are red, carry an icon and are always cited.
@@ -335,12 +335,12 @@ Brass dark #d9a767 is ΔE_OK **0.069** from PostHog #f7a501 (the nearest blockli
 **UI/Body Font:** Mona Sans Variable (wdth 75–125, wght 200–900), fallback system-ui
 **Mono Font:** Geist Mono Variable (wght 100–900), fallback ui-monospace
 
-**Character:** a wide, engineered display (Hubot at `wdth 104–112`) over a regular-width grotesque (Mona at `wdth 100`), so the contrast is width, not style (bible pairing guardrail: wide + regular). Geist Mono is the evidence voice: it sets only what was quoted from the thread or what must be read exactly (amounts, IDs, dates, names inside citations, keycaps). Weights are sub-default throughout (420/450/520/550/600/650), a quality borrowed from the email-client reference: warmer than 400/500/700 and never shouty.
+**Character:** a wide, engineered display (Hubot at `wdth 104–112`) over a regular-width grotesque (Mona at `wdth 100`), so the contrast is width, not style. Geist Mono is the evidence voice: it sets only what was quoted from the thread or what must be read exactly (amounts, IDs, dates, names inside citations, keycaps). Weights are sub-default throughout (420/450/520/550/600/650), a quality borrowed from the email-client reference: warmer than 400/500/700 and never shouty.
 
-All fonts are bundled from Fontsource 5.3.0 packages as Latin-subset variable woff2, with no network fonts anywhere. Extension budget: ≤ 40 KB per face after subsetting (bible §8.3). Metric-matched fallbacks use `size-adjust` for CLS 0.
+All fonts are bundled from Fontsource 5.3.0 packages as Latin-subset variable woff2, with no network fonts anywhere. Extension budget: ≤ 40 KB per face after subsetting. Metric-matched fallbacks use `size-adjust` for CLS 0.
 
 ### Hierarchy
-Compact scale for product surfaces (popup, overlay, options, playground chrome). T8 sets the default UI text at 14/20 rather than the bible's compact 13/20, because the overlay sits next to Gmail's 14px body text, and anything smaller looks like a footnote.
+Compact scale for product surfaces (popup, overlay, options, playground chrome). T8 sets the default UI text at 14/20 rather than the more common compact 13/20, because the overlay sits next to Gmail's 14px body text, and anything smaller looks like a footnote.
 
 | Token | Face | Size / LH | Weight | Tracking | Use |
 |---|---|---|---|---|---|
@@ -352,7 +352,7 @@ Compact scale for product surfaces (popup, overlay, options, playground chrome).
 | lead | Mona | 17 / 26 | 420 | −0.01em | Landing body lead (comfortable scale) |
 | body | Mona | 15 / 24 | 420 | −0.005em | Long text, playground editors, prose ≤ 68ch |
 | ui | Mona | 14 / 20 | 450 | 0 | **Default UI text**, ledger rows |
-| label-strong | Mona | 14 / 18 | 600 | 0 | Brass-filled button labels (bible §4.3) |
+| label-strong | Mona | 14 / 18 | 600 | 0 | Brass-filled button labels |
 | label | Mona | 13 / 18 | 520 | 0 | Secondary/ghost buttons, pill, toggles |
 | caption | Mona | 12 / 16 | 450 | +0.005em | Meta, timestamps, helper text |
 | micro | Mona | 11 / 16 | 520 | +0.01em | Keycaps, tiny counts |
@@ -377,7 +377,7 @@ Comfortable scale for the landing body: lead 17/26, body 16/26 Mona 420, h2 28/3
 - **Overlay (Gmail):** the ask pill docks 8px inside the compose editor's bottom-right corner, above Gmail's toolbar row and never over it. It is measured from the editor's rect, re-anchored on resize and scroll with a `ResizeObserver` and rAF. The guard card anchors below the slip's first client rect (flips above when there's < 220px of space), offset 6px, kept inside the viewport with 8px insets.
 - **Options:** single column, max-width 720, gutters 16/24/32 at 375/768/1440, section gap 32, a left in-page nav at ≥ 1024.
 - **Playground:** two panes (thread | reply) at ≥ 960 on a 12-column grid with 24px gaps (5 + 7 columns, so the reply is wider because it's the working surface). They stack at < 960 with the thread collapsed to a 6-line preview that expands. The ledger and slip list sit in a 320px inspector at ≥ 1280 and below the reply otherwise.
-- **Landing:** content max 1200, prose 68ch, sections 96 desktop / 64 mobile, left-aligned. Every layout follows the bible §8.1 reference widths (375 / 768 / 1440). No horizontal scroll at 375.
+- **Landing:** content max 1200, prose 68ch, sections 96 desktop / 64 mobile, left-aligned. Every layout follows the reference widths (375 / 768 / 1440). No horizontal scroll at 375.
 - **Z-index:** overlay shadow host `2147483647`. Inside it: pill 10, card 20, swap-back ghost 30.
 
 ## Elevation & Depth
@@ -408,7 +408,7 @@ Readback's own surfaces are flat and tonal: depth comes from the cold surface la
 Each component lists its states. "Light" variants use the same geometry with light tokens, chosen by host luminance (overlay) or `prefers-color-scheme` / the theme toggle (own pages).
 
 ### Buttons
-- **Primary (brass):** 28px tall, 6 × 12 padding, label-strong 14/600 in both themes. Dark labels on brass measure Lc 61 (8.82:1), which meets bible §4.3 only at ≥ 14px/600, so primary labels never drop to 13px. Hover: brass-hover (100 ms colour). Pressed: `scale(.97)` 100 ms. Focus-visible: 2px brass outline, offset 2px. Loading: label kept, 14px spinner prepended, width locked, `aria-busy`. Disabled: never used on submit; elsewhere `opacity .5` with a tooltip explaining why.
+- **Primary (brass):** 28px tall, 6 × 12 padding, label-strong 14/600 in both themes. Dark labels on brass measure Lc 61 (8.82:1), which meets the contrast rule for brass labels only at ≥ 14px/600, so primary labels never drop to 13px. Hover: brass-hover (100 ms colour). Pressed: `scale(.97)` 100 ms. Focus-visible: 2px brass outline, offset 2px. Loading: label kept, 14px spinner prepended, width locked, `aria-busy`. Disabled: never used on submit; elsewhere `opacity .5` with a tooltip explaining why.
 - **Secondary:** surface-2 fill, text, 1px border.
 - **Ghost:** text-muted, hover surface-3. Used for **Ignore** and **Dismiss**.
 
@@ -421,7 +421,7 @@ Each component lists its states. "Light" variants use the same geometry with lig
   - **Covered (success):** only when every ask is confirmed. Success-soft background, success text, check icon, text `All covered`. The colour change takes 150 ms. The count rolls with NumberFlow when the last *open* ask is covered by confirming it.
   - **With slips:** a 6px slip-red dot and `1 slip` segment are appended after a 1px border divider (`3 asks · 1 open | 1 slip`). Clicking the slip segment jumps to the slip.
   - **Fixed confirmation (6 s):** `Fixed: Kathryn · Undo Ctrl+Z` replaces the text, then reverts.
-  - **Separator exception:** the middle dot in `3 asks · 1 open` and `Fixed: Kathryn · Undo Ctrl+Z` is a deliberate exception to the bible's no-middle-dot copy rule (section 2, item 25). The pill is a one-line status, and a comma reads as a sentence (`3 asks, 1 open`) where the dot reads as two separate readouts. It is used in the pill and the popup status row only, never in prose.
+  - **Separator exception:** the middle dot in `3 asks · 1 open` and `Fixed: Kathryn · Undo Ctrl+Z` is a deliberate exception to the no-middle-dot copy rule. The pill is a one-line status, and a comma reads as a sentence (`3 asks, 1 open`) where the dot reads as two separate readouts. It is used in the pill and the popup status row only, never in prose.
   - **Loading:** none. The pill appears only after the first check, which takes ≤ 16 ms. There is no skeleton because there's nothing to wait for.
   - **Error:** the adapter self-test fails, so the pill doesn't render (fail silent). The status shows in the popup.
 - **Interaction:** click or Alt+Shift+L opens the ledger. `aria-live="polite"` announces count changes at most once per 2 s.
@@ -429,7 +429,7 @@ Each component lists its states. "Light" variants use the same geometry with lig
 ### Ledger (popover from the pill)
 - 300px wide, lg radius, e3, 8px padding. Sections: **Asks** (≤ 5 rows) and **Slips** (all flags, each with a Fix button, which is the keyboard-accessible list behind every squiggle).
 - **Row:** 32px. State icon, ask text (1 line, ellipsis, full text in `title`), right-aligned actions on hover/focus: **Confirm** (check), **Answer inline**, **Dismiss** (x, with `aria-label`). Row actions stay visible on touch.
-- **Empty:** `No asks in her last message.` and, below in caption, `Readback only lists direct questions and requests.`
+- **Empty:** `No asks in the last message.` and, below in caption, `Readback only lists direct questions and requests.`
 - **Overflow:** `+2 more not shown` in caption.
 - **Error:** not applicable (the ledger never opens without data).
 - **Success:** all rows checked, plus a header line `Everything she asked is covered.`
@@ -437,7 +437,7 @@ Each component lists its states. "Light" variants use the same geometry with lig
 ### Guard card (the citation tooltip)
 - **Geometry:** 320px wide, lg radius, 12px padding, surface-2 (dark) or surface (light), e3. Opens after 300 ms of hover, or instantly from the keyboard. Entry `opacity 0 → 1, scale .96 → 1` over 160 ms `--ease-out`, origin at the slip. Exit 120 ms.
 - **Content, top to bottom:**
-  1. Message line (h3 17/24 550): `She signs Kathryn`, `Thread says $1,250. Digits swapped?` or `The 10th is a Tuesday.`
+  1. Message line (h3 17/24 550): `Signs as Kathryn`, `Thread says $1,250. Digits swapped?` or `The 10th is a Tuesday.`
   2. Citation block (mono 13/18, surface/bg, sm radius): the thread line with the matched token in text colour plus a brass underline, and the source in caption beneath (`From her signature`, `To: Kathryn Moss`, `Her message, 2 Nov`).
   3. Actions: primary **Change to Kathryn** (one or two fixes), ghost **Ignore**, overflow menu with **Never flag "Catherine"**. Keycap hints: `↵` on the primary, `Esc` to close.
 - **States:** rest; keyboard-focused (focus ring on the primary); applying (a 0 ms text swap, then the card closes and swap-back plays); fix unavailable (the host refused `insertText`): the message becomes `Couldn't edit this box. "Kathryn" is copied, so paste it over the word.`, the primary becomes **Copy again**, and nothing is lost.
@@ -506,7 +506,7 @@ Sections follow `docs/LANDING.md`: hero (live playground in demo mode), the real
 
 ## Signature moment: "Swap-back" (squiggle-to-fix)
 
-**Event:** the user applies a fix. It's rare and meaningful, never on the core typing loop (bible P7). It combines the bible's **M3 text morph** (letters) and **M5 rolling digits** (numbers) into one Readback-specific moment, plus the **readback line**. Studio note: if another app claims M3 or M5 as its signature, Readback's distinct version is the combined swap-back with the line, and the swap test still holds.
+**Event:** the user applies a fix. It's rare and meaningful, never on the core typing loop. It combines the **M3 text morph** (letters) and **M5 rolling digits** (numbers) into one Readback-specific moment, plus the **readback line**. Studio note: if another app claims M3 or M5 as its signature, Readback's distinct version is the combined swap-back with the line, and the swap test still holds.
 
 ### Frame by frame (60 fps, playground capture; Gmail runs the same steps 3–6)
 
@@ -529,27 +529,27 @@ Sections follow `docs/LANDING.md`: hero (live playground in demo mode), the real
 
 **Screenshot-ability:** the playground's `?demo=signature&t=<ms>` renders any frame above deterministically (all motion derives from the timeline's `t`, not wall-clock time). Frames t = 4,600 (card + line) and t = 9,800 (clean reply, brass dotted pill `3 look answered`) are the poster frames.
 
-## Landing 3D / immersive plan (bible §11): CSS/SVG only, by decision
+## Landing 3D / immersive plan: CSS/SVG only, by decision
 
 **The sentence the visual says:** *"Your reply was checked against her own words."* A flat line between two words says that exactly. A 3D object would only decorate it (3P2: 3D must explain something the flat version can't).
 
-- **Decision:** no WebGL, no R3F, no shader. The hero is the **real playground** in demo mode (DOM text, real engine), with the readback line as inline SVG. That is bible P5 ("show the real thing") and 3P10 ("the DOM stays the source of truth"), the same choice Linear makes with 0 canvases.
+- **Decision:** no WebGL, no R3F, no shader. The hero is the **real playground** in demo mode (DOM text, real engine), with the readback line as inline SVG. That follows two rules: ("show the real thing") and 3P10 ("the DOM stays the source of truth"), the same choice Linear makes with 0 canvases.
 - **Patterns used (≤ 2):** **T1 poster-first handoff**, with a static frame of the demo as the server-rendered LCP image under the live DOM demo, and **T21 (CSS version)**, two real-UI cards (thread and reply) in a shallow stack: `perspective: 1200px`, the thread card at `rotateY(4deg) translateZ(-24px)` and the reply flat. The perspective is removed at < 768px and under reduced motion.
-- **Atmosphere:** one radial brass glow at ≤ 6% alpha behind the reply card (bible §2 #1 allowance), plus static SVG `feTurbulence` grain at 4% opacity (T23, ≈ 400 B). No animated gradient.
-- **Pre-rendered deliverables (bible §11.7):** README GIF (800px, ≤ 3 MB, ≤ 6 s), LinkedIn MP4 1:1 and 4:5, the landing poster AVIF (≤ 80 KB) and the OG card PNG (1200 × 630), all captured from `?demo=signature` with Playwright frame stepping and encoded with the bible's ffmpeg commands. There's no WebGL, so no SwiftShader flags are needed.
+- **Atmosphere:** one radial brass glow at ≤ 6% alpha behind the reply card, plus static SVG `feTurbulence` grain at 4% opacity (T23, ≈ 400 B). No animated gradient.
+- **Pre-rendered deliverables:** README GIF (800px, ≤ 3 MB, ≤ 6 s), LinkedIn MP4 1:1 and 4:5, the landing poster AVIF (≤ 80 KB) and the OG card PNG (1200 × 630), all captured from `?demo=signature` with Playwright frame stepping and encoded with the bible's ffmpeg commands. There's no WebGL, so no SwiftShader flags are needed.
 - **Budgets:** initial JS ≤ 120 KB gz (it includes the engine for the live hero; if it goes over, the hero hydrates the engine on idle and the poster carries the first paint). 3D chunk: none (0 KB). CLS 0. LCP = poster or H1, ≤ 2.0 s.
 - **Tier 0 / reduced motion / no JS:** the poster frame plus a `Play the demo` button (no autoplay under reduced motion). The demo, when played, is instant cuts between key frames.
 - **Autoplay:** the hero demo plays once when ≥ 50% in view, then rests on the final frame. **Replay** and **Pause** buttons (32px, bottom-right) satisfy WCAG 2.2.2. It never loops.
 
 ## Do's and Don'ts
 
-### We never (bible P8: the three refusals that make Readback Readback)
+### We never
 1. **We never touch the host's text or DOM without a click.** No wrapped spans, no injected styles, no auto-corrections. Squiggles are highlights. Fixes happen only on Click or Enter, through the editor's own undo stack.
 2. **We never use brass to mark a mistake.** Brass is reading, focus and the fix. Slips are red, with an icon and a citation, every time.
 3. **We never animate a keystroke.** Squiggles, counts and chips change at 0 ms while the user types. Motion is reserved for the fix (swap-back) and the pill's final flip.
 
 ### Do:
-- **Do** cite the thread in every slip message, in the reader's terms: `She signs Kathryn`, not `Possible misspelling`.
+- **Do** cite the thread in every slip message, in the reader's terms: `Signs as Kathryn`, not `Possible misspelling`.
 - **Do** set every quoted value in Geist Mono with `tnum`, exactly as the thread wrote it.
 - **Do** follow the host's theme in the overlay (measure the editor background luminance) and `prefers-color-scheme` in our own pages, with a System/Light/Dark toggle on the site.
 - **Do** keep one brass-filled button per view (the primary fix in the card, **Open the playground** in the empty popup, **Load a sample thread** in the empty playground).
@@ -564,17 +564,17 @@ Sections follow `docs/LANDING.md`: hero (live playground in demo mode), the real
 - **Don't** place the pill over Gmail's toolbar or Send button, or anywhere a click could be mistaken for sending.
 - **Don't** reproduce reference-brand surfaces (no lavender, no red stripes, no white CTA, no indigo hero, no #010102/#07080a ladders), names or proprietary fonts.
 
-## Blend notes (bible §10, archetype: keyboard-first writing tool / quiet compose overlay, A6 extension popup + A1)
+## Blend notes
 
 | Reference | We took | We rejected | Our version differs by |
 |---|---|---|---|
 | **superhuman** | Sub-default weights for warmth (Mona 420/450/520 vs 400/500/700); one action per surface; shortcuts learned through ⌘K | Indigo hero, twilight portrait photography, violet pill CTA, the deep-teal closing band, warm grey ink | Our neutrals are cold slate (D5), the warmth lives only in brass, and the hero is product UI, not a person |
 | **raycast** | Elevation from a surface ladder, not shadows; keycaps shown inline for every shortcut (with the M9 pressed echo); 12–16px in-card padding; zero-animation open; real product UI as the hero | The red stripe hero, the white primary CTA, Inter + ss03, dark-only | We ship a re-derived light theme (the Gmail overlay needs it). Primary is brass, not white. Type is T8 |
-| **linear.app** | Accent restricted to focus, primary and link emphasis; hairline borders; negative display tracking; the 12/13/14 small-type ladder; mono for identifiers only | Lavender accent, #010102 canvas and its ladder, the custom typefaces, the refusal of light mode | Our ladder is slate hue 250 at bible L-steps, our accent is warm, and our mono is evidence (quoted values) rather than IDs |
+| **linear.app** | Accent restricted to focus, primary and link emphasis; hairline borders; negative display tracking; the 12/13/14 small-type ladder; mono for identifiers only | Lavender accent, #010102 canvas and its ladder, the custom typefaces, the refusal of light mode | Our ladder is slate hue 250 at fixed lightness steps, our accent is warm, and our mono is evidence (quoted values) rather than IDs |
 
-## Appendix B pre-flight checklist (bible), ticked
+## Appendix B pre-flight checklist, ticked
 
-- [x] **Archetype and blend notes, with what was rejected:** keyboard-first writing tool / quiet compose overlay (picks.json), using bible A6 + A1 references (superhuman, raycast, linear.app), see Blend notes.
+- [x] **Archetype and blend notes, with what was rejected:** keyboard-first writing tool / quiet compose overlay (product brief), using A6 + A1 references (superhuman, raycast, linear.app), see Blend notes.
 - [x] **Direction with adjustments, re-checked against §4.4:** D5 Bronze Vault. Adjustments: added `surface-3`, `brass-text`, `slip` (squiggle stroke); no warning/info semantics. ΔE_OK 0.069 / 0.112 ≥ 0.06.
 - [x] **Pairing, scale, font features:** T8 Hubot Sans + Mona Sans + Geist Mono. Compact in product (UI 14/20 by T8), comfortable on marketing. `tnum` on numbers, `font-synthesis: none`, no stylistic sets until verified.
 - [x] **Radius, CTA grammar, theme default:** standard-tight 4/6/8/10; rectangular CTAs; dark-first for own surfaces, host-matched overlay.

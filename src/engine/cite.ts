@@ -2,9 +2,8 @@
  * The single source of Readback's slip copy (SPEC F1–F3). Messages cite the
  * thread in the reader's terms and never use a generic "spelling" label.
  *
- * Gender: the spec's sample copy reads "She signs Kathryn", but the engine
- * cannot know the sender's pronouns, so signature citations use the neutral
- * "Signs as Kathryn" (ADR-0002).
+ * Signature citations use the neutral "Signs as Kathryn", because the engine
+ * cannot know the sender's pronouns (ADR-0002).
  */
 import { MONTH_NAMES, WEEKDAY_NAMES } from './text/lexicon';
 import type { FlagRule, NameRef, NumberRef, TokenRef } from './types';

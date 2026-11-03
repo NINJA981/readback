@@ -75,7 +75,7 @@ function page({ title, messages, composeKind, composeOpts, bodyStyle = '', renam
   </div>
   ${composeKind === 'popout' || composeKind === 'new' ? compose('popout', composeOpts) : ''}`;
   let html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>${esc(title)} - sam.ortiz@example.com - Gmail (fixture)</title></head>
+<html lang="en"><head><meta charset="utf-8"><title>${esc(title)} - sam.ortiz@example.com - Synthetic mail fixture</title></head>
 <body style="${bodyStyle}">
   <header><a aria-label="Google Account: Sam Ortiz (sam.ortiz@example.com)" href="https://accounts.google.com/SignOutOptions?hl=en">Sam</a></header>
   ${thread}
