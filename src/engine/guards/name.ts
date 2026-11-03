@@ -119,13 +119,13 @@ const NAME_WORDS: ReadonlySet<string> = new Set(
 
 /**
  * True when a token reads as a name being addressed or signed: the rest of its
- * line is empty or starts with a comma, an exclamation mark or a dash
+ * line is empty or starts with a comma, a colon, an exclamation mark or a dash
  * ("Kathyrn, thanks", "Kathyrn!", a sign-off line).
  */
 function inAddressPosition(text: string, end: number): boolean {
   const lineEnd = text.indexOf('\n', end);
   const rest = text.slice(end, lineEnd === -1 ? undefined : lineEnd);
-  return /^\s*(?:$|[,!\u2013\u2014-])/.test(rest);
+  return /^\s*(?:$|[,:!\u2013\u2014-])/.test(rest);
 }
 
 /**

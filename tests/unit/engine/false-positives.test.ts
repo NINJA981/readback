@@ -102,10 +102,18 @@ describe('date guard: a past date in the reply is read in its own year', () => {
 describe('quoted text in the reply box', () => {
   const message = 'Hi Sam,\n\nThe new figure is $1,520 for the deposit.\n\nKathryn';
 
-  it('does not flag a value on a quoted line or below an "On ... wrote:" header', () => {
+  it('does not flag a value on a quoted line or below an Original Message header', () => {
     const draft =
-      'Thanks, $1,520 it is.\n\n> Last month you said $1,250 would do.\n\nOn Mon, Nov 2, 2026 at 9:14 AM Kathryn Moss wrote:\nThe deposit was $1,250 back then.';
+      'Thanks, $1,520 it is.\n\nOn Mon, Nov 2, 2026 at 9:14 AM Kathryn Moss wrote:\n> Last month you said $1,250 would do.\n\n-----Original Message-----\nFrom: Kathryn Moss\nSent: Monday\nWe agreed $1,250 last month.';
     expect(run({ ...from('Kathryn Moss'), message }, draft).flags).toEqual([]);
+  });
+
+  it('still checks writing interleaved between quoted lines', () => {
+    const draft =
+      'On Mon, Nov 2, 2026 at 9:14 AM Kathryn Moss wrote:\n> The new figure is $1,520.\n\nThanks, $1,250 it is.';
+    expect(run({ ...from('Kathryn Moss'), message }, draft).flags.map((f) => f.found)).toEqual([
+      '$1,250',
+    ]);
   });
 
   it("still flags the same slip in the writer's own words", () => {

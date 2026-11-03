@@ -27,19 +27,25 @@ const FORWARD_RE =
 const SIG_DELIMITER_RE = /^-- ?$/m;
 
 /**
- * Where quoted material starts in a draft: `>` lines, and everything after an
- * "On ... wrote:", "Original Message" or forwarded-message header. The draft
- * keeps its offsets; callers drop what falls inside. Gmail's editor already
- * leaves its quote out of the draft; a plain textarea elsewhere does not.
+ * Quoted material in a draft: `>` lines, the "On ... wrote:" line itself, and
+ * everything below an "Original Message" or forwarded-message header (those
+ * quote without `>`). Writing interleaved between quoted lines stays checked.
+ * The draft keeps its offsets; callers drop what falls inside. Gmail's editor
+ * already leaves its quote out of the draft; a plain textarea elsewhere does not.
  */
 export function quotedSpans(draft: string): { start: number; end: number }[] {
   const spans: { start: number; end: number }[] = [];
-  const headers = [QUOTE_HEADER_RE, OUTLOOK_HEADER_RE, FORWARD_RE]
+  const headers = [OUTLOOK_HEADER_RE, FORWARD_RE]
     .map((re) => re.exec(draft)?.index)
     .filter((i): i is number => i !== undefined);
   const tail = headers.length > 0 ? Math.min(...headers) : draft.length;
+  const head = draft.slice(0, tail);
+  const attribution = QUOTE_HEADER_RE.exec(head);
+  if (attribution) {
+    spans.push({ start: attribution.index, end: attribution.index + attribution[0].length });
+  }
   let at = 0;
-  for (const line of draft.slice(0, tail).split('\n')) {
+  for (const line of head.split('\n')) {
     if (/^[ \t]*>/.test(line)) spans.push({ start: at, end: at + line.length });
     at += line.length + 1;
   }
