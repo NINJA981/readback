@@ -230,6 +230,7 @@
     {"id": "d50-initial-pay", "kind": "deliberate", "thread": "pat", "draft": "Pay the deposit by Friday, please.", "flags": []},
     {"id": "d51-initial-mark", "kind": "deliberate", "thread": "marc", "draft": "Mark the date in your calendar.", "flags": []},
     {"id": "d52-room-next-door", "kind": "deliberate", "thread": "hotel", "draft": "Could my colleague have room 205?", "flags": []},
-    {"id": "d53-return-flight", "kind": "deliberate", "thread": "hotel", "draft": "I will be on flight 483 on the way back.", "flags": []}
+    {"id": "d53-return-flight", "kind": "deliberate", "thread": "hotel", "draft": "I will be on flight 483 on the way back.", "flags": []},
+    {"id": "s32-name-john-sentence-start", "kind": "slip", "thread": "jon", "draft": "John will check section 3 today.", "flags": [{"guard": "name", "found": "John", "expected": "Jon"}]}
   ]
 }

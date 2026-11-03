@@ -110,6 +110,13 @@ function bestFor(token: string, targets: readonly PreparedTarget[]): Candidate |
   return best ?? null;
 }
 
+/** Names that are also everyday words, so they prove nothing at the start of a sentence. */
+const NAME_WORDS: ReadonlySet<string> = new Set(
+  'mark bill pat sue rob art jack frank grant rose penny chase drew gene guy ray sandy summer hope faith joy'.split(
+    ' ',
+  ),
+);
+
 /**
  * True when a token reads as a name being addressed or signed: the rest of its
  * line is empty or starts with a comma, an exclamation mark or a dash
@@ -129,9 +136,9 @@ function inAddressPosition(text: string, end: number): boolean {
  * through the variant table or for names of 6+ letters.
  *
  * A capital at the start of a sentence or line is not evidence of a name
- * ("Pay the deposit" next to a thread from Pat), so a sentence-initial token
- * fires only in address position ("Kathyrn, thanks", a line of its own) or as
- * a possessive ("Kathyrn's note").
+ * ("Part two" next to a thread from Pat), so a sentence-initial edit-distance
+ * match, or a variant that is also an everyday word (Mark), fires only in
+ * address position ("Kathyrn, thanks", a line of its own) or as a possessive.
  */
 export function nameGuard(input: NameGuardInput): Flag[] {
   if (input.names.length === 0) return [];
@@ -153,9 +160,15 @@ export function nameGuard(input: NameGuardInput): Flag[] {
     }
     if (!best) continue;
     const end = w.start + text.length;
-    // A possessive ("Catherine's note") is a name wherever it stands.
-    const possessive = text !== w.text;
-    if (!possessive && startsSentence(input.draft, w.start) && !inAddressPosition(input.draft, end)) {
+    // At the start of a sentence a capital proves nothing, so only a known variant
+    // ("John will be there" to Jon) fires there, unless the token is also an everyday
+    // word ("Mark the date" to Marc). Address position and possessives always count.
+    if (
+      startsSentence(input.draft, w.start) &&
+      (NAME_WORDS.has(token) || !isVariantPair(token, fold(best.target.text))) &&
+      text === w.text &&
+      !inAddressPosition(input.draft, end)
+    ) {
       continue;
     }
 

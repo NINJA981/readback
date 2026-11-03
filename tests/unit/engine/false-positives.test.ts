@@ -41,6 +41,18 @@ describe('name guard: a capital at the start of a sentence is not a name', () =>
     expect(r.flags.map((f) => [f.found, f.expected])).toEqual([['Mark', 'Marc']]);
   });
 
+  it('still flags a known name variant that starts a sentence', () => {
+    const r = run(
+      {
+        ...from('Mira Patel'),
+        recipients: [{ name: 'Jon Reyes', role: 'to' }],
+        message: 'Hi both,\n\nNotes are in.\n\nMira',
+      },
+      'John will be there on Tuesday.',
+    );
+    expect(r.flags.map((f) => [f.found, f.expected])).toEqual([['John', 'Jon']]);
+  });
+
   it('still flags a misspelled name on a line of its own', () => {
     const r = run(
       { ...from('Kathryn Moss'), message: 'Hi Sam,\n\nAll set.\n\nKathryn' },
