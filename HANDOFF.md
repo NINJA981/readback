@@ -130,14 +130,14 @@ rule with more labelled data.
 
 2026-11-04, every command through the studio RAM gate (`_studio/bin/heavy.sh`), one worker:
 
-| Command                                                      | Result                                                                  |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `pnpm lint` (ESLint with the network ban, Prettier)          | clean                                                                   |
-| `pnpm typecheck`, `pnpm --dir site typecheck`                | clean                                                                   |
-| `vitest run --maxWorkers=1 --no-file-parallelism`            | 25 files, 445 tests passed                                              |
-| corpus gates (part of the above)                             | 0 flags on 53 deliberate cases, 34/34 slips, asks 1.0 / 1.0 on 64       |
-| `pnpm --dir site exec vitest run`                            | 22 passed                                                               |
-| `pnpm test:e2e` (extension, `--workers=1`)                   | 51 passed                                                               |
-| `pnpm --dir site test:e2e` (desktop and phone)               | 101 passed                                                              |
-| `pnpm zip`, `pnpm zip:firefox`, `node scripts/check-size.mjs` | built; gmail.js 144.8 KB gz of 150; zips in `docs/launch/`              |
-| `gitleaks detect --no-banner`                                | no leaks (all commits)                                                  |
+| Command                                                       | Result                                                            |
+| ------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `pnpm lint` (ESLint with the network ban, Prettier)           | clean                                                             |
+| `pnpm typecheck`, `pnpm --dir site typecheck`                 | clean                                                             |
+| `vitest run --maxWorkers=1 --no-file-parallelism`             | 25 files, 445 tests passed                                        |
+| corpus gates (part of the above)                              | 0 flags on 53 deliberate cases, 34/34 slips, asks 1.0 / 1.0 on 64 |
+| `pnpm --dir site exec vitest run`                             | 22 passed                                                         |
+| `pnpm test:e2e` (extension, `--workers=1`)                    | 51 passed                                                         |
+| `pnpm --dir site test:e2e` (desktop and phone)                | 101 passed                                                        |
+| `pnpm zip`, `pnpm zip:firefox`, `node scripts/check-size.mjs` | built; gmail.js 144.8 KB gz of 150; zips in `docs/launch/`        |
+| `gitleaks detect --no-banner`                                 | no leaks (all commits)                                            |
